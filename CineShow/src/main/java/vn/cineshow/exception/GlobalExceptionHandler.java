@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.authentication.AuthenticationServiceException;
@@ -362,4 +363,37 @@ public class GlobalExceptionHandler {
         errorResponse.setTimestamp(LocalDateTime.now());
     }
 
+    @ExceptionHandler(org.springframework.web.server.ResponseStatusException.class)
+    @ResponseStatus // Status HTTP sẽ lấy từ ex.getStatusCode()
+    public ErrorResponse handleResponseStatusException(
+            org.springframework.web.server.ResponseStatusException ex,
+            WebRequest req
+    ) {
+        HttpStatusCode statusCode = ex.getStatusCode();
+        int code = statusCode.value();
+
+        // Resolve sang HttpStatus (có thể null nếu code lạ)
+        HttpStatus httpStatus = HttpStatus.resolve(code);
+        String title = (httpStatus != null) ? httpStatus.getReasonPhrase() : "Error";
+
+        ErrorResponse errorResponse = new ErrorResponse();
+        errorResponse.setTimestamp(LocalDateTime.now());
+        errorResponse.setInstance(req.getDescription(false).replace("uri=", ""));
+        errorResponse.setStatus(code);
+        errorResponse.setTitle(title);
+
+        // Fallback VN message theo mã lỗi (nếu reason trống)
+        String fallback = switch (code) {
+            case 400 -> "Tham số không hợp lệ";
+            case 401 -> "Bạn chưa được xác thực";
+            case 403 -> "Truy cập bị từ chối";
+            case 404 -> "Không tìm thấy tài nguyên";
+            case 500 -> "Lỗi máy chủ, vui lòng thử lại";
+            default -> "Đã xảy ra lỗi";
+        };
+
+        String reason = ex.getReason();
+        errorResponse.setMessage((reason == null || reason.isBlank()) ? fallback : reason);
+        return errorResponse;
+    }
 }
