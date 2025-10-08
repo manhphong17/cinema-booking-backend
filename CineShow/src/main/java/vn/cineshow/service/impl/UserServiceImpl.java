@@ -35,6 +35,7 @@ public class UserServiceImpl implements UserService {
         User user = getUserByEmail(email);
         user.setName(request.getName());
         user.setAddress(request.getAddress());
+
         userRepository.save(user);
         return mapToResponse(user);
     }

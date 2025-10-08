@@ -9,9 +9,12 @@ import vn.cineshow.dto.request.ForgotPasswordRequest;
 import vn.cineshow.dto.request.OtpVerifyDTO;
 import vn.cineshow.dto.request.ResetPasswordRequest;
 import vn.cineshow.dto.response.ResponseData;
+import vn.cineshow.dto.response.VerifyOtpResetResponse;
 import vn.cineshow.exception.IllegalParameterException;
 import vn.cineshow.service.AccountService;
 import vn.cineshow.service.RegisterService;
+
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/accounts")
@@ -55,14 +58,14 @@ public class AccountController {
 
     // B3: Verify OTP khi reset password
     @PostMapping("/verify-otp-reset")
-    public ResponseData<?> verifyOtpReset(@RequestBody @Valid OtpVerifyDTO req) {
-        boolean valid = accountService.verifyOtpForReset(req.email(), req.otpCode());
-        if (!valid) {
-            return new ResponseData<>(HttpStatus.BAD_REQUEST.value(),
-                    "Invalid or expired OTP", null);
+    public ResponseData<VerifyOtpResetResponse> verifyOtpReset(@RequestBody @Valid OtpVerifyDTO req) {
+        Optional<String> tokenOpt = accountService.verifyOtpForReset(req.email(), req.otpCode());
+        if (!tokenOpt.isPresent()) {
+            return new ResponseData<>(HttpStatus.BAD_REQUEST.value(), "Invalid or expired OTP", null);
         }
         return new ResponseData<>(HttpStatus.OK.value(),
-                "OTP verified. You can now reset your password.", null);
+                "OTP verified. Use this token to reset your password.",
+                new VerifyOtpResetResponse(tokenOpt.get()));
     }
 
     // B4: Đặt lại mật khẩu bằng OTP
