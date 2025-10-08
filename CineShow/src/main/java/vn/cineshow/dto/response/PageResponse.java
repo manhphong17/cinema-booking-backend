@@ -13,5 +13,6 @@ public class PageResponse<T> {
     int pageNo;
     int pageSize;
     int totalPages;
+    long totalItems;
     T items;
 }

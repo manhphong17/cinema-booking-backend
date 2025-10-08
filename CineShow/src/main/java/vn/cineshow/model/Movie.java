@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+import vn.cineshow.enums.MovieStatus;
 
 import java.io.Serializable;
 import java.time.LocalDate;
@@ -32,10 +33,6 @@ public class Movie extends AbstractEntity implements Serializable {
     @Column(nullable = false)
     LocalDate releaseDate;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "language_id", nullable = false)
-    private Language language;
-
     private String posterUrl;
 
     private String trailerUrl;
@@ -45,6 +42,13 @@ public class Movie extends AbstractEntity implements Serializable {
     private String director;
 
     private String actor;
+
+    @Enumerated(EnumType.STRING)
+    private MovieStatus status;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "language_id", nullable = false)
+    private Language language;
 
     @ManyToMany()
     private Set<MovieGenre> movieGenres;
@@ -56,5 +60,7 @@ public class Movie extends AbstractEntity implements Serializable {
     @JoinColumn(name = "country_id", nullable = false)
     @JsonIgnore
     private Country country;
+
+    Boolean isDeleted = false;
 
 }

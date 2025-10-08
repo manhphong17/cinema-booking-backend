@@ -19,5 +19,4 @@ public class MovieGenre extends AbstractEntity implements Serializable {
     String name;
     @ManyToMany(mappedBy = "movieGenres")
     private Set<Movie> movies;
-
 }

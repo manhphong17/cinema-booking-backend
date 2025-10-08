@@ -50,7 +50,6 @@ public class S3Service {
                         .build(),
                 RequestBody.fromBytes(file.getBytes()));
 
-
         return cdn + "/" + key;
     }
 

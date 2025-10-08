@@ -1,6 +1,7 @@
 package vn.cineshow.dto.response;
 
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -14,6 +15,7 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class MovieDetailResponse implements Serializable {
     private Long id;
     private String actor;
@@ -23,7 +25,9 @@ public class MovieDetailResponse implements Serializable {
     private String posterUrl;
     private LocalDate releaseDate;
     private String trailerUrl;
+    private String status;
     private CountryResponse country;
     private LanguageResponse language;
     private List<MovieGenreResponse> genre;
+    private int ageRating;
 }

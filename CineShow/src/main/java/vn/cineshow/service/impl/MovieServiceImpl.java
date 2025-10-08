@@ -7,16 +7,28 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
+import vn.cineshow.dto.request.MovieCreationRequest;
+import vn.cineshow.dto.request.MovieFilterRequest;
+import vn.cineshow.dto.request.MovieUpdateBasicRequest;
+import vn.cineshow.dto.request.MovieUpdateFullRequest;
 import vn.cineshow.dto.response.*;
+import vn.cineshow.enums.MovieStatus;
+import vn.cineshow.exception.AppException;
+import vn.cineshow.exception.ErrorCode;
+import vn.cineshow.model.Country;
+import vn.cineshow.model.Language;
 import vn.cineshow.model.Movie;
 import vn.cineshow.model.MovieGenre;
-import vn.cineshow.repository.MovieGenresRepository;
-import vn.cineshow.repository.MovieRepository;
+import vn.cineshow.repository.*;
 import vn.cineshow.service.MovieService;
 
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -26,7 +38,12 @@ import java.util.regex.Pattern;
 public class MovieServiceImpl implements MovieService {
 
     private final MovieRepository movieRepository;
+    private final SearchRepository searchRepository;
+    private final LanguageRepository languageRepository;
     private final MovieGenresRepository movieGenresRepository;
+    private final CountryRepository countryRepository;
+
+    private final S3Service s3Service;
 
     @Override
     public PageResponse<?> getAllMovieWithSortBy(int pageNo, int pageSize, String sortBy) {
@@ -60,6 +77,184 @@ public class MovieServiceImpl implements MovieService {
 
         return getPageResponse(pageNo, pageSize, movies);
     }
+
+    @Override
+    public PageResponse<?> getMoviesWithFilterBymanyColumnAndSortBy(MovieFilterRequest filterRequest) {
+        return searchRepository.getMoviesListWithFilterByManyColumnAndSortBy(filterRequest);
+    }
+
+
+    @Override
+    public List<LanguageResponse> getAllLanguage() {
+        return languageRepository.findAll()
+                .stream().map(language -> LanguageResponse.builder()
+                        .id(language.getId())
+                        .name(language.getName())
+                        .build())
+                .toList();
+    }
+
+    @Override
+    public List<MovieGenreResponse> getAllGenres() {
+        return movieGenresRepository.findAll()
+                .stream()
+                .map(movieGenre -> MovieGenreResponse.builder()
+                        .id(movieGenre.getId())
+                        .name(movieGenre.getName())
+                        .build())
+                .toList();
+    }
+
+    @Override
+    public MovieDetailResponse getMovie(long id) {
+        Movie movie = findById(id);
+        log.info("Movie found, id: {}", id);
+        return MovieDetailResponse.builder()
+                .id(movie.getId())
+                .actor(movie.getActor())
+                .name(movie.getName())
+                .genre(getMovieGenresByMovie(movie))
+                .country(CountryResponse.builder()
+                        .id(movie.getCountry().getId())
+                        .name(movie.getCountry().getName())
+                        .build())
+                .description(movie.getDescription())
+                .releaseDate(movie.getReleaseDate())
+                .trailerUrl(movie.getTrailerUrl())
+                .language(LanguageResponse.builder()
+                        .id(movie.getLanguage().getId())
+                        .name(movie.getLanguage().getName())
+                        .build())
+                .posterUrl(movie.getPosterUrl())
+                .director(movie.getDirector())
+                .ageRating(movie.getAgeRating())
+                .posterUrl(movie.getPosterUrl())
+                .build();
+    }
+
+    @Override
+    @Transactional
+    public Long create(MovieCreationRequest request) {
+        //check language exist
+        Language language = findLanguageById(request.getLanguageId());
+
+        // get Country
+        Country country = findCountryById(request.getCountryId());
+
+        //get Movie Genres
+        Set<MovieGenre> movieGenres = new HashSet<>();
+        for (Long genreId : request.getGenreIds()) {
+            movieGenres.add(findMovieGenreById(genreId));
+        }
+
+        Movie movie;
+
+
+        try {
+            String posterUrl = s3Service.uploadFile(request.getPoster());
+
+            log.info("Creation movie: name:{}, poster: {}", request.getPoster(), posterUrl);
+            movie = Movie.builder()
+                    .name(request.getName())
+                    .description(request.getDescription())
+                    .duration(request.getDuration())
+                    .releaseDate(request.getReleaseDate())
+                    .director(request.getDirector())
+                    .actor(request.getActor())
+                    .ageRating(request.getAgeRating())
+                    .trailerUrl(request.getTrailerUrl())
+                    .movieGenres(movieGenres)
+                    .country(country)
+                    .language(language)
+                    .posterUrl(posterUrl)
+                    .status(MovieStatus.UPCOMING)
+                    .build();
+            movieRepository.save(movie);
+            log.info("Movie created successfully, id: {}", movie.getId());
+        } catch (IOException e) {
+            throw new AppException(ErrorCode.FILE_UPLOAD_FAILED);
+        }
+
+        return movie.getId();
+    }
+
+    @Override
+    public List<CountryResponse> getAllCountries() {
+        return countryRepository.findAll().stream().map(country -> CountryResponse.builder()
+                .name(country.getName())
+                .id(country.getId())
+                .build()).toList();
+    }
+
+    @Transactional
+    @Override
+    public void updatebyId(MovieUpdateBasicRequest request) {
+        Movie movie = findById(request.getId());
+
+        Set<MovieGenre> movieGenres = new HashSet<>();
+        for (Long genreId : request.getGenreIds()) {
+            movieGenres.add(findMovieGenreById(genreId));
+        }
+
+        movie.setName(request.getName());
+        movie.setLanguage(findLanguageById(request.getLanguageId()));
+        movie.setCountry(findCountryById(request.getCountryId()));
+        movie.setMovieGenres(movieGenres);
+        movie.setStatus(MovieStatus.valueOf(request.getStatus()));
+        movie.setReleaseDate(request.getReleaseDate());
+        movieRepository.save(movie);
+
+
+        movieRepository.save(movie);
+        log.info("Movie updated successfully, id: {}", movie.getId());
+    }
+
+    @Transactional
+    @Override
+    public void updateAllFailedById(MovieUpdateFullRequest request) {
+        Movie movie = findById(request.getId());
+
+        Set<MovieGenre> movieGenres = new HashSet<>();
+        for (Long genreId : request.getGenreIds()) {
+            movieGenres.add(findMovieGenreById(genreId));
+        }
+        try {
+            String posterUrl = s3Service.uploadFile(request.getPoster());
+
+            if (request.getPoster() != null && !request.getPoster().isEmpty()) {
+                posterUrl = s3Service.uploadFile(request.getPoster());
+            }
+            
+            movie.setPosterUrl(posterUrl);
+            movie.setReleaseDate(request.getReleaseDate());
+            movie.setDuration(request.getDuration());
+            movie.setAgeRating(request.getAgeRating());
+            movie.setActor(request.getActor());
+            movie.setDirector(request.getDirector());
+            movie.setCountry(findCountryById(request.getCountryId()));
+            movie.setLanguage(findLanguageById(request.getLanguageId()));
+            movie.setMovieGenres(movieGenres);
+            movie.setTrailerUrl(request.getTrailerUrl());
+            movie.setDescription(request.getDescription());
+            movie.setName(request.getName());
+            movie.setStatus(MovieStatus.valueOf(request.getStatus()));
+
+            movieRepository.save(movie);
+            log.info("Movie updated successfully, id: {}", movie.getId());
+        } catch (IOException e) {
+            throw new AppException(ErrorCode.FILE_UPLOAD_FAILED);
+        }
+    }
+
+    @Transactional
+    @Override
+    public void delete(long id) {
+        Movie movie = findById(id);
+        movie.setIsDeleted(true);
+        movieRepository.save(movie);
+        log.info("Movie deleted successfully, id: {}", movie.getId());
+    }
+
 
     private PageResponse<?> getPageResponse(int pageNo, int pageSize, Page<Movie> movies) {
 
@@ -101,4 +296,19 @@ public class MovieServiceImpl implements MovieService {
                 .toList();
     }
 
+    private Movie findById(Long id) {
+        return movieRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.MOVIE_NOT_FOUND));
+    }
+
+    private Language findLanguageById(Long id) {
+        return languageRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.LANGUAGE_NOT_FOUND));
+    }
+
+    private Country findCountryById(Long id) {
+        return countryRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.COUNTRY_NOT_FOUND));
+    }
+
+    private MovieGenre findMovieGenreById(Long id) {
+        return movieGenresRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.MOVIE_GENRE_NOT_FOUND));
+    }
 }

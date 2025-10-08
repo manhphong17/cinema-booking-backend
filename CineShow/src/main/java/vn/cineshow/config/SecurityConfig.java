@@ -56,8 +56,15 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.
                         sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .anyRequest().permitAll()
+                        .requestMatchers("/auth/**",
+                                "/oauth2/**",
+                                "/swagger-ui/**",
+                                "/v3/api-docs/**",
+                                "/public/**")
+                        .permitAll()
+                        .anyRequest().authenticated()
                 )
+                //config provider and filter authen jwt
                 .authenticationProvider(customAuthenticationProvider)
                 .addFilterBefore(requestFilter, UsernamePasswordAuthenticationFilter.class)
                 .oauth2Login(oauth2 -> oauth2.successHandler(successHandler));
