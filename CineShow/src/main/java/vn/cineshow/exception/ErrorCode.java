@@ -12,11 +12,18 @@ public enum ErrorCode {
     OTP_NOT_FOUND(1006, "OTP not found"),
     OTP_INVALID(1007, "Invalid OTP"),
     OTP_EXPIRED(1008, "OTP expired"),
-    FILE_UPLOAD_FAILED(1009, "Failed to upload file to cloud storage"),
-    CONCESSION_NOT_FOUND(1010, "Concession not found"),
-    INVALID_QUANTITY(1011, "Invalid quantity to add"),
-    CONCESSION_ALREADY_DELETED(1012, "Concession has been deleted"),
-    ACCOUNT_NOT_FOUND(1013, "Account not found");
+
+    INVALID_SORT_ORDER(1009, "Invalid Sort Order Exception"),
+    MOVIE_NOT_FOUND(1010, "Movie not found"),
+    LANGUAGE_NOT_FOUND(1011, "Language not found"),
+    COUNTRY_NOT_FOUND(1012, "Country not found"),
+    MOVIE_GENRE_NOT_FOUND(1013, "Movie Genre not found"),
+    FILE_UPLOAD_FAILED(1014, "File upload failed"),
+    CONCESSION_NOT_FOUND(1016, "Concession not found"),
+    INVALID_QUANTITY(1017, "Invalid quantity to add"),
+    CONCESSION_ALREADY_DELETED(1018, "Concession has been deleted"),
+    ACCOUNT_NOT_FOUND(1019, "Account not found");
+    
 
     private final int code;
     private final String message;
