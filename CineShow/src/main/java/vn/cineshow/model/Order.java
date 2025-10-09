@@ -30,11 +30,11 @@ public class Order extends AbstractEntity implements Serializable {
     private List<Payment> payments;
 
     @OneToMany(cascade = {CascadeType.PERSIST, CascadeType.REMOVE}, fetch = FetchType.LAZY, mappedBy = "order")
-    private List<OrderFood> orderCombos;
+    private List<OrderConcession> orderConcession;
 
-    @ManyToOne (fetch = FetchType.LAZY )
+    @ManyToOne(fetch = FetchType.LAZY)
     Voucher voucher;
 
-    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY,mappedBy = "order")
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "order")
     private List<Ticket> tickets;
 }

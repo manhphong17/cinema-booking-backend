@@ -8,10 +8,7 @@ import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
-import software.amazon.awssdk.services.s3.model.ListObjectsV2Request;
-import software.amazon.awssdk.services.s3.model.ListObjectsV2Response;
-import software.amazon.awssdk.services.s3.model.PutObjectRequest;
-import software.amazon.awssdk.services.s3.model.S3Object;
+import software.amazon.awssdk.services.s3.model.*;
 
 import java.io.IOException;
 import java.util.List;
@@ -65,4 +62,26 @@ public class S3Service {
                 .map(S3Object::key)
                 .collect(Collectors.toList());
     }
+
+    public void deleteByUrl(String fileUrl) {
+        if (fileUrl == null || fileUrl.isBlank()) {
+            return;
+        }
+
+        try {
+            //Lấy key thực từ URL (VD: https://cdn.../uploads/abc.jpg → uploads/abc.jpg)
+            String key = fileUrl.replace(cdn + "/", "");
+
+            //  Gửi request delete object lên S3
+            s3.deleteObject(DeleteObjectRequest.builder()
+                    .bucket(bucket)
+                    .key(key)
+                    .build());
+
+            System.out.println("🧹 Đã xóa ảnh trên S3: " + key);
+        } catch (Exception e) {
+            System.err.println("⚠️ Không thể xóa file trên S3: " + e.getMessage());
+        }
+    }
+
 }

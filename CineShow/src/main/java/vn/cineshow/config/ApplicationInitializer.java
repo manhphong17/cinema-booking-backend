@@ -67,6 +67,14 @@ public class ApplicationInitializer {
     @NonFinal
     String PASSWORD_OPERATION;
 
+    @Value("${business-account-test.email}")
+    @NonFinal
+    String EMAIL_BUSINESS;
+
+    @Value("${business-account-test.password}")
+    @NonFinal
+    String PASSWORD_BUSINESS;
+
     @Bean
     public ApplicationRunner initData() {
         return args -> {
@@ -80,7 +88,8 @@ public class ApplicationInitializer {
                 new Role("ADMIN", "The administrator"),
                 new Role("CUSTOMER", "The customer using system"),
                 new Role("OPERATION", "The operation manager using system"),
-                new Role("STAFF", "The staff using system")
+                new Role("STAFF", "The staff using system"),
+                new Role("BUSINESS", "The business manager using system")
         );
 
         roles.forEach(role -> roleRepository.findByRoleName(role.getRoleName())
@@ -96,11 +105,13 @@ public class ApplicationInitializer {
         AccountCreationRequest customer = new AccountCreationRequest(EMAIL_USER, PASSWORD_USER, "System Customer", "Da Nang");
         AccountCreationRequest staff = new AccountCreationRequest(EMAIL_STAFF, PASSWORD_STAFF, "System Staff", "Ho Chi Minh");
         AccountCreationRequest manager = new AccountCreationRequest(EMAIL_OPERATION, PASSWORD_OPERATION, "Operations Manager", "Hai Phong");
+        AccountCreationRequest manager2 = new AccountCreationRequest(EMAIL_BUSINESS, PASSWORD_BUSINESS, "Business Manager", "Hai Duong");
 
         createAccountIfNotExists(admin, UserRole.ADMIN.name(), UserRole.CUSTOMER.name());
         createAccountIfNotExists(customer, UserRole.CUSTOMER.name());
         createAccountIfNotExists(staff, UserRole.STAFF.name(), UserRole.CUSTOMER.name());
         createAccountIfNotExists(manager, UserRole.OPERATION.name(), UserRole.CUSTOMER.name());
+        createAccountIfNotExists(manager2, UserRole.BUSINESS.name(), UserRole.CUSTOMER.name());
     }
 
     void createAccountIfNotExists(AccountCreationRequest request, String... roleNames) {

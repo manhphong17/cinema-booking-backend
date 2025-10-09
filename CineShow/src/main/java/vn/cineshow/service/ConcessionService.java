@@ -1,0 +1,31 @@
+package vn.cineshow.service;
+
+
+import org.springframework.data.domain.Page;
+import vn.cineshow.dto.request.ConcessionAddRequest;
+import vn.cineshow.dto.request.ConcessionUpdateRequest;
+import vn.cineshow.dto.response.ConcessionResponse;
+import vn.cineshow.enums.ConcessionStatus;
+
+public interface ConcessionService {
+
+    Long addConcession(ConcessionAddRequest concessionAddRequest);
+
+
+    Page<ConcessionResponse> getFilteredConcessions(
+            String stockStatus,
+            String concessionType,
+            String concessionStatus,
+            String keyword,
+            int page,
+            int size
+    );
+
+    ConcessionResponse updateConcession(Long id, ConcessionUpdateRequest request);
+
+    ConcessionResponse addStock(Long id, int quantityToAdd);
+
+    ConcessionResponse updateConcessionStatus(Long id, ConcessionStatus status);
+
+    void deleteConcession(Long id);
+}

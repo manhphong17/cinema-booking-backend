@@ -11,10 +11,12 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.web.bind.annotation.*;
+import vn.cineshow.dto.request.EmailRegisterRequest;
 import vn.cineshow.dto.request.SignInRequest;
 import vn.cineshow.dto.response.ResponseData;
 import vn.cineshow.dto.response.SignInResponse;
 import vn.cineshow.dto.response.TokenResponse;
+import vn.cineshow.exception.IllegalParameterException;
 import vn.cineshow.service.AuthenticationService;
 import vn.cineshow.service.OtpService;
 import vn.cineshow.service.UserService;
@@ -98,4 +100,40 @@ public class AuthenticationController {
                 "Account verified successfully"
         );
     }
+
+    //=========================================================
+    //======================= REGISTER =========================
+
+    @PostMapping("/register-email")
+    public ResponseData<?> registerEmail(@RequestBody @Valid EmailRegisterRequest req) {
+        if (!req.password().equals(req.confirmPassword())) {
+            throw new IllegalParameterException("password != confirmPassword");
+        }
+
+        long id = authenticationService.registerByEmail(req);
+        return new ResponseData<>(HttpStatus.CREATED.value(),
+                "Temp account created. Please verify OTP to activate.", id);
+    }
+
+    @PostMapping("/verify-otp")
+    public ResponseData<?> verifyOtp(@RequestParam String email, @RequestParam String otp) {
+        authenticationService.verifyAccountAndUpdateStatus(email, otp);
+        return new ResponseData<>(HttpStatus.OK.value(),
+                "Account activated successfully", null);
+    }
+
+    @PostMapping("/resend-otp")
+    public ResponseData<?> resendOtp(
+            @RequestParam String email,
+            @RequestParam String name
+    ) {
+        otpService.sendOtp(email, name);
+
+        return new ResponseData<>(
+                HttpStatus.OK.value(),
+                "Mã OTP mới đã được gửi đến email của bạn.",
+                null
+        );
+    }
+
 }
