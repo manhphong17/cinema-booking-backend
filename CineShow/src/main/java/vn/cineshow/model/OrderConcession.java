@@ -2,7 +2,7 @@ package vn.cineshow.model;
 
 import jakarta.persistence.*;
 import lombok.*;
-import vn.cineshow.model.ids.OrderFoodId;
+import vn.cineshow.model.ids.OrderConcessionId;
 
 import java.io.Serializable;
 
@@ -13,10 +13,10 @@ import java.io.Serializable;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class OrderFood implements Serializable {
+public class OrderConcession implements Serializable {
 
     @EmbeddedId
-    private OrderFoodId orderFoodId;
+    private OrderConcessionId orderConcessionId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("orderId")
@@ -24,9 +24,9 @@ public class OrderFood implements Serializable {
     private Order order;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @MapsId("foodId")
-    @JoinColumn(name = "food_id", nullable = false)
-    private Food food;
+    @MapsId("concessionId")
+    @JoinColumn(name = "concession_id", nullable = false)
+    private Concession concession;
 
     @Column(nullable = false)
     private int quantity;

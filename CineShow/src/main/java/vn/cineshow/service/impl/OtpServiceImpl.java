@@ -72,12 +72,6 @@ public class OtpServiceImpl implements OtpService {
 
     @Transactional
     @Override
-    public void clearState(String email) {
-        otpRepo.deleteByEmail(email);
-    }
-
-    @Transactional
-    @Override
     public boolean verifyOtp(String email, String otp) {
         var code = otpRepo.findByEmail(email)
                 .orElseThrow(() -> new AppException(ErrorCode.OTP_NOT_FOUND));

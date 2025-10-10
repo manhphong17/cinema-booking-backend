@@ -97,6 +97,7 @@ admin: { email_default: "admin@test.com", password_default: "12345678" }
 user-account-test: { email: "user@test.com", password: "12345678" }
 staff-account-test: { email: "staff@test.com", password: "12345678" }
 operation-account-test: { email: "operation@test.com", password: "12345678" }
+business-account-test: { email: "business@test.com", password: "00000000" }
 
 jwt:
   secret-key-access-token: "8mhZcWZVPhDeucdGaUQhUQoSkda34jAtkBPJNP54dvQ"
