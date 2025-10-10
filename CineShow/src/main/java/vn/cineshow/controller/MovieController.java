@@ -1,25 +1,39 @@
 package vn.cineshow.controller;
 
+import java.time.LocalDate;
+import java.util.List;
+
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 import vn.cineshow.dto.request.MovieCreationRequest;
 import vn.cineshow.dto.request.MovieFilterRequest;
 import vn.cineshow.dto.request.MovieUpdateBasicRequest;
 import vn.cineshow.dto.request.MovieUpdateFullRequest;
-import vn.cineshow.dto.response.*;
+import vn.cineshow.dto.response.CountryResponse;
+import vn.cineshow.dto.response.LanguageResponse;
+import vn.cineshow.dto.response.MovieDetailResponse;
+import vn.cineshow.dto.response.MovieGenreResponse;
+import vn.cineshow.dto.response.PageResponse;
+import vn.cineshow.dto.response.ResponseData;
 import vn.cineshow.service.MovieService;
 import vn.cineshow.service.impl.S3Service;
-
-import java.time.LocalDate;
-import java.util.List;
 
 @RestController
 @RequestMapping("/movies")

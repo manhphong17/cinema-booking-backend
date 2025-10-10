@@ -43,7 +43,6 @@ public class AccountController {
                 "Account activated successfully", null);
     }
 
-
     // Quên mật khẩu → gửi OTP
     @PostMapping("/forgot-password")
     public ResponseData<?> forgotPassword(@RequestBody @Valid ForgotPasswordRequest request) {

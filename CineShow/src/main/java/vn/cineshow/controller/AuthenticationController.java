@@ -43,10 +43,10 @@ public class AuthenticationController {
         //set cookie for refresh token
         ResponseCookie cookie = ResponseCookie.from("refreshToken", tokenResponse.getRefreshToken())
                 .httpOnly(true)
-                .secure(true)
+                .secure(false)  // Fix: Set to false for localhost development
                 .path("/")
                 .maxAge(Duration.ofDays(30))
-                .sameSite("Strict")
+                .sameSite("Lax")  // Fix: Change from Strict to Lax for better compatibility
                 .build();
 
         response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
