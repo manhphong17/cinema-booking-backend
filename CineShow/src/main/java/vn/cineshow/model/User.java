@@ -28,6 +28,7 @@ public class User extends AbstractEntity implements Serializable {
 
     LocalDate dateOfBirth;
 
+    @Enumerated(EnumType.STRING)
     Gender gender;
 
     @OneToOne()

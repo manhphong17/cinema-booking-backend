@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.authentication.AuthenticationServiceException;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.method.annotation.HandlerMethodValidationException;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import java.nio.file.AccessDeniedException;
@@ -73,11 +75,8 @@ public class GlobalExceptionHandler {
         int end = message.lastIndexOf("]");
         message = message.substring(start + 1, end - 1);
         errorResponse.setMessage(message);
-
-        errorResponse.setMessage(message);
         return errorResponse;
     }
-
 
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -112,6 +111,35 @@ public class GlobalExceptionHandler {
         }
         return errorResponse;
     }
+
+    @ExceptionHandler({HandlerMethodValidationException.class})
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleValidationError(Exception ex, WebRequest req) {
+        String message = "Validation error";
+
+        if (ex instanceof MethodArgumentNotValidException e) {
+            message = e.getBindingResult()
+                    .getFieldErrors()
+                    .stream()
+                    .map(err -> "Field '" + err.getField() + "' " + err.getDefaultMessage())
+                    .findFirst()
+                    .orElse(message);
+        } else if (ex instanceof HandlerMethodValidationException e) {
+            message = e.getParameterValidationResults().stream()
+                    .flatMap(r -> r.getResolvableErrors().stream())
+                    .map(err -> err.getDefaultMessage())
+                    .findFirst()
+                    .orElse(message);
+        }
+
+        ErrorResponse errorResponse = new ErrorResponse();
+        errorResponse.setStatus(HttpStatus.BAD_REQUEST.value());
+        errorResponse.setMessage(message);
+        errorResponse.setInstance(req.getDescription(false).replace("uri=", ""));
+        errorResponse.setTimestamp(LocalDateTime.now());
+        return errorResponse;
+    }
+
 
     @ExceptionHandler(ResourceNotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
@@ -223,22 +251,22 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler({NullPointerException.class, InvalidParameterException.class, DuplicateResourceException.class, HttpMessageNotReadableException.class})
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ResponseStatus(HttpStatus.CONFLICT)
     @ApiResponses(value = {
             @ApiResponse(
-                    responseCode = "400",
-                    description = "Bad Request Error",
+                    responseCode = "409",
+                    description = "ConflictRequest Error",
                     content = @Content(
                             mediaType = MediaType.APPLICATION_JSON_VALUE,
                             examples = @ExampleObject(
-                                    name = "400 Response",
-                                    summary = "Invalid request error",
+                                    name = "409 Response",
+                                    summary = "Conflict request error",
                                     value = """
                                             {
                                               "timestamp": "2023-10-19T06:07:35.321+00:00",
-                                              "status": 400,
+                                              "status": 409,
                                               "path": "/api/v1/...",
-                                              "error": "Invalid parameter"
+                                              "error": "Conflict parameter"
                                             }
                                             """
                             )
@@ -248,8 +276,8 @@ public class GlobalExceptionHandler {
     public ErrorResponse handleNullPointerError(Exception e, WebRequest req) {
         log.info("================> ERROR");
         ErrorResponse errorResponse = new ErrorResponse();
-        errorResponse.setTitle(HttpStatus.BAD_REQUEST.getReasonPhrase()); // "NOT_FOUND"
-        errorResponse.setStatus(HttpStatus.BAD_REQUEST.value());
+        errorResponse.setTitle(HttpStatus.CONFLICT.getReasonPhrase()); // "NOT_FOUND"
+        errorResponse.setStatus(HttpStatus.CONFLICT.value());
         errorResponse.setInstance(req.getDescription(false).replace("uri=", ""));
         errorResponse.setTimestamp(LocalDateTime.now());
 
@@ -362,4 +390,37 @@ public class GlobalExceptionHandler {
         errorResponse.setTimestamp(LocalDateTime.now());
     }
 
+    @ExceptionHandler(org.springframework.web.server.ResponseStatusException.class)
+    @ResponseStatus // Status HTTP sẽ lấy từ ex.getStatusCode()
+    public ErrorResponse handleResponseStatusException(
+            org.springframework.web.server.ResponseStatusException ex,
+            WebRequest req
+    ) {
+        HttpStatusCode statusCode = ex.getStatusCode();
+        int code = statusCode.value();
+
+        // Resolve sang HttpStatus (có thể null nếu code lạ)
+        HttpStatus httpStatus = HttpStatus.resolve(code);
+        String title = (httpStatus != null) ? httpStatus.getReasonPhrase() : "Error";
+
+        ErrorResponse errorResponse = new ErrorResponse();
+        errorResponse.setTimestamp(LocalDateTime.now());
+        errorResponse.setInstance(req.getDescription(false).replace("uri=", ""));
+        errorResponse.setStatus(code);
+        errorResponse.setTitle(title);
+
+        // Fallback VN message theo mã lỗi (nếu reason trống)
+        String fallback = switch (code) {
+            case 400 -> "Tham số không hợp lệ";
+            case 401 -> "Bạn chưa được xác thực";
+            case 403 -> "Truy cập bị từ chối";
+            case 404 -> "Không tìm thấy tài nguyên";
+            case 500 -> "Lỗi máy chủ, vui lòng thử lại";
+            default -> "Đã xảy ra lỗi";
+        };
+
+        String reason = ex.getReason();
+        errorResponse.setMessage((reason == null || reason.isBlank()) ? fallback : reason);
+        return errorResponse;
+    }
 }

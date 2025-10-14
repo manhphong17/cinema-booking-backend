@@ -10,11 +10,11 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode
-public class OrderFoodId {
+public class OrderConcessionId {
     @Column(name = "order_id")
     private Long orderId;
 
-    @Column(name = "food_id")
-    private Long foodId;
+    @Column(name = "concession_id")
+    private Long concessionId;
 
 }

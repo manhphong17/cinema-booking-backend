@@ -43,7 +43,6 @@ public class JWTServiceImpl implements JWTService {
     @Value("${jwt.expiration-refresh-token}")
     long expiration_refresh_token;
 
-
     @Override
     public String generateAccessToken(String email, List<String> authorities) {
         log.info("Generate access token for  and email {}", email);
@@ -64,7 +63,7 @@ public class JWTServiceImpl implements JWTService {
     @Override
     public String extractUsername(String token, TokenType tokenType) {
         log.info("Extract username from access token: {}", token);
-        return extractClaims(tokenType, token, claims -> claims.getSubject());
+        return extractClaims(tokenType, token, Claims::getSubject);
     }
 
     @Override

@@ -2,6 +2,8 @@ package vn.cineshow.dto.response;
 
 import lombok.*;
 
+import java.util.List;
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -10,6 +12,6 @@ import lombok.*;
 public class SignInResponse {
     private String accessToken;
     private long userId;
-    private String roleName;
+    private List<String> roleName;
     private String email;
 }

@@ -2,6 +2,8 @@ package vn.cineshow.enums;
 
 public enum UserRole {
     ADMIN,
-    CUSTOMER, MANAGER,
+    CUSTOMER,
+    OPERATION,
+    BUSINESS,
     STAFF
 }

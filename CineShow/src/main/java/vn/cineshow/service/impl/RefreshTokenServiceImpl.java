@@ -9,6 +9,7 @@ import vn.cineshow.repository.RefreshTokenRepository;
 import vn.cineshow.service.RefreshTokenService;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -18,12 +19,22 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
 
     @Transactional
     public void replaceRefreshToken(Account account, String token, long expirySeconds) {
-        refreshTokenRepository.deleteByAccount(account);
-        RefreshToken entity = RefreshToken.builder()
-                .token(token)
-                .expiryDate(LocalDateTime.now().plusSeconds(expirySeconds))
-                .account(account)
-                .build();
-        refreshTokenRepository.save(entity);
+
+        Optional<RefreshToken> optionalRefreshToken = refreshTokenRepository.findByAccount(account);
+
+        if (optionalRefreshToken.isPresent()) {
+            RefreshToken refreshToken = optionalRefreshToken.get();
+            refreshToken.setToken(token);
+            refreshToken.setExpiryDate(LocalDateTime.now().plusSeconds(expirySeconds));
+            refreshTokenRepository.save(refreshToken);
+        } else {
+            RefreshToken refreshToken = new RefreshToken();
+            refreshToken.setAccount(account);
+            refreshToken.setToken(token);
+            refreshToken.setExpiryDate(LocalDateTime.now().plusSeconds(expirySeconds));
+            refreshTokenRepository.save(refreshToken);
+        }
+
     }
+
 }

@@ -18,7 +18,7 @@ public class RefreshToken extends AbstractEntity {
 
     private LocalDateTime expiryDate;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "account_id", nullable = false, unique = true)
     private Account account;
 }

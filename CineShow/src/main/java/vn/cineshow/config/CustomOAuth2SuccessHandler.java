@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 @Component
 @RequiredArgsConstructor
@@ -134,7 +135,7 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
 
             account = Account.builder()
                     .email(email)
-                    .role(role)
+                    .roles(Set.of(role))
                     .user(user)
                     .status(AccountStatus.ACTIVE)
                     .build();
@@ -148,13 +149,14 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
             accountRepository.save(account);
         }
 
+        List<String> roleNames = account.getRoles()
+                .stream().map(role -> role.getRoleName())
+                .toList();
 
         // 4. create refresh token
         String refreshToken = jwtService.generateRefreshToken(
                 email,
-                List.of(account.getRole().getRoleName())
-        );
-
+                roleNames);
 
         refreshTokenService.replaceRefreshToken(account, refreshToken, jwtService.getRefreshTokenExpiryInSecond());
 

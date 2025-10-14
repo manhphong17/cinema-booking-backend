@@ -1,8 +1,10 @@
 package vn.cineshow.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+import vn.cineshow.enums.MovieStatus;
 
 import java.io.Serializable;
 import java.time.LocalDate;
@@ -22,25 +24,51 @@ public class Movie extends AbstractEntity implements Serializable {
     @Column(nullable = false, length = 200)
     String name;
 
-    @Column(columnDefinition = "TEXT")
+    @Column(columnDefinition = "TEXT", length = 2000)
     String description;
 
     @Column(nullable = false)
     int duration;
+
     @Column(nullable = false)
     LocalDate releaseDate;
+
+    private String posterUrl;
+
+    private String bannerUrl;
+
+    private String trailerUrl;
+
+    private int ageRating = 0;
+
+    private String director;
+
+    private String actor;
+
+
+    @Enumerated(EnumType.STRING)
+    private MovieStatus status;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "language_id", nullable = false)
     private Language language;
 
-    private String posterUrl;
-    private String bannerUrl;
-    private String trailerUrl;
-
     @ManyToMany()
+    @JoinTable(
+        name = "movie_movie_genres",
+        joinColumns = @JoinColumn(name = "movie_id"),
+        inverseJoinColumns = @JoinColumn(name = "movie_genres_id")
+    )
     private Set<MovieGenre> movieGenres;
 
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "movie")
     private List<ShowTime> showTimes;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "country_id", nullable = false)
+    @JsonIgnore
+    private Country country;
+
+    Boolean isDeleted = false;
+
 }
