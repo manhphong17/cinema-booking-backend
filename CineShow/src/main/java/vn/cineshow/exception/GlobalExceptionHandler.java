@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.method.annotation.HandlerMethodValidationException;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import java.nio.file.AccessDeniedException;
@@ -74,11 +75,8 @@ public class GlobalExceptionHandler {
         int end = message.lastIndexOf("]");
         message = message.substring(start + 1, end - 1);
         errorResponse.setMessage(message);
-
-        errorResponse.setMessage(message);
         return errorResponse;
     }
-
 
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -113,6 +111,35 @@ public class GlobalExceptionHandler {
         }
         return errorResponse;
     }
+
+    @ExceptionHandler({HandlerMethodValidationException.class})
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleValidationError(Exception ex, WebRequest req) {
+        String message = "Validation error";
+
+        if (ex instanceof MethodArgumentNotValidException e) {
+            message = e.getBindingResult()
+                    .getFieldErrors()
+                    .stream()
+                    .map(err -> "Field '" + err.getField() + "' " + err.getDefaultMessage())
+                    .findFirst()
+                    .orElse(message);
+        } else if (ex instanceof HandlerMethodValidationException e) {
+            message = e.getParameterValidationResults().stream()
+                    .flatMap(r -> r.getResolvableErrors().stream())
+                    .map(err -> err.getDefaultMessage())
+                    .findFirst()
+                    .orElse(message);
+        }
+
+        ErrorResponse errorResponse = new ErrorResponse();
+        errorResponse.setStatus(HttpStatus.BAD_REQUEST.value());
+        errorResponse.setMessage(message);
+        errorResponse.setInstance(req.getDescription(false).replace("uri=", ""));
+        errorResponse.setTimestamp(LocalDateTime.now());
+        return errorResponse;
+    }
+
 
     @ExceptionHandler(ResourceNotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
@@ -224,22 +251,22 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler({NullPointerException.class, InvalidParameterException.class, DuplicateResourceException.class, HttpMessageNotReadableException.class})
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ResponseStatus(HttpStatus.CONFLICT)
     @ApiResponses(value = {
             @ApiResponse(
-                    responseCode = "400",
-                    description = "Bad Request Error",
+                    responseCode = "409",
+                    description = "ConflictRequest Error",
                     content = @Content(
                             mediaType = MediaType.APPLICATION_JSON_VALUE,
                             examples = @ExampleObject(
-                                    name = "400 Response",
-                                    summary = "Invalid request error",
+                                    name = "409 Response",
+                                    summary = "Conflict request error",
                                     value = """
                                             {
                                               "timestamp": "2023-10-19T06:07:35.321+00:00",
-                                              "status": 400,
+                                              "status": 409,
                                               "path": "/api/v1/...",
-                                              "error": "Invalid parameter"
+                                              "error": "Conflict parameter"
                                             }
                                             """
                             )
@@ -249,8 +276,8 @@ public class GlobalExceptionHandler {
     public ErrorResponse handleNullPointerError(Exception e, WebRequest req) {
         log.info("================> ERROR");
         ErrorResponse errorResponse = new ErrorResponse();
-        errorResponse.setTitle(HttpStatus.BAD_REQUEST.getReasonPhrase()); // "NOT_FOUND"
-        errorResponse.setStatus(HttpStatus.BAD_REQUEST.value());
+        errorResponse.setTitle(HttpStatus.CONFLICT.getReasonPhrase()); // "NOT_FOUND"
+        errorResponse.setStatus(HttpStatus.CONFLICT.value());
         errorResponse.setInstance(req.getDescription(false).replace("uri=", ""));
         errorResponse.setTimestamp(LocalDateTime.now());
 

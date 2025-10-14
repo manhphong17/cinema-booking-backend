@@ -15,9 +15,6 @@ import java.util.List;
 @Builder
 public class MovieUpdateBasicRequest {
 
-    @NotNull
-    long id;
-
     @NotNull(message = "Name cannot null")
     String name;
 

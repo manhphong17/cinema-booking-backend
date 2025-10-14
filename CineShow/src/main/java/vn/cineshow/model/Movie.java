@@ -24,7 +24,7 @@ public class Movie extends AbstractEntity implements Serializable {
     @Column(nullable = false, length = 200)
     String name;
 
-    @Column(columnDefinition = "TEXT")
+    @Column(columnDefinition = "TEXT", length = 2000)
     String description;
 
     @Column(nullable = false)
@@ -35,6 +35,8 @@ public class Movie extends AbstractEntity implements Serializable {
 
     private String posterUrl;
 
+    private String bannerUrl;
+
     private String trailerUrl;
 
     private int ageRating = 0;
@@ -42,6 +44,7 @@ public class Movie extends AbstractEntity implements Serializable {
     private String director;
 
     private String actor;
+
 
     @Enumerated(EnumType.STRING)
     private MovieStatus status;
@@ -51,6 +54,11 @@ public class Movie extends AbstractEntity implements Serializable {
     private Language language;
 
     @ManyToMany()
+    @JoinTable(
+        name = "movie_movie_genres",
+        joinColumns = @JoinColumn(name = "movie_id"),
+        inverseJoinColumns = @JoinColumn(name = "movie_genres_id")
+    )
     private Set<MovieGenre> movieGenres;
 
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "movie")
