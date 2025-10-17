@@ -77,6 +77,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
         String accessToken = jwtService.generateAccessToken(req.getEmail(), authorities);
         String refreshToken = jwtService.generateRefreshToken(req.getEmail(), authorities);
+        log.info("refresh token: " + refreshToken);
 
         refreshTokenService.replaceRefreshToken(account, refreshToken, jwtService.getRefreshTokenExpiryInSecond());
 

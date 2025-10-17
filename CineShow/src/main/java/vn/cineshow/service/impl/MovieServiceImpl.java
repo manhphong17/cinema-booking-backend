@@ -16,6 +16,7 @@ import vn.cineshow.dto.request.MovieUpdateFullRequest;
 import vn.cineshow.dto.response.*;
 import vn.cineshow.enums.MovieStatus;
 import vn.cineshow.exception.AppException;
+import vn.cineshow.exception.DuplicateResourceException;
 import vn.cineshow.exception.ErrorCode;
 import vn.cineshow.model.Country;
 import vn.cineshow.model.Language;
@@ -25,6 +26,7 @@ import vn.cineshow.repository.*;
 import vn.cineshow.service.MovieService;
 
 import java.io.IOException;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -121,6 +123,7 @@ public class MovieServiceImpl implements MovieService {
                 .description(movie.getDescription())
                 .releaseDate(movie.getReleaseDate())
                 .trailerUrl(movie.getTrailerUrl())
+                .bannerUrl(movie.getBannerUrl())
                 .language(LanguageResponse.builder()
                         .id(movie.getLanguage().getId())
                         .name(movie.getLanguage().getName())
@@ -129,6 +132,8 @@ public class MovieServiceImpl implements MovieService {
                 .director(movie.getDirector())
                 .ageRating(movie.getAgeRating())
                 .posterUrl(movie.getPosterUrl())
+                .duration(movie.getDuration())
+                .status(movie.getStatus().name())
                 .build();
     }
 
@@ -147,14 +152,16 @@ public class MovieServiceImpl implements MovieService {
             movieGenres.add(findMovieGenreById(genreId));
         }
 
-        Movie movie;
-
+        if (isMovieExist(request.getName(), request.getReleaseDate())) {
+            log.warn("Movie with name {} already exists", request.getName());
+            throw new DuplicateResourceException("Movie already exists");
+        }
 
         try {
             String posterUrl = s3Service.uploadFile(request.getPoster());
 
             log.info("Creation movie: name:{}, poster: {}", request.getPoster(), posterUrl);
-            movie = Movie.builder()
+            Movie movie = Movie.builder()
                     .name(request.getName())
                     .description(request.getDescription())
                     .duration(request.getDuration())
@@ -171,11 +178,10 @@ public class MovieServiceImpl implements MovieService {
                     .build();
             movieRepository.save(movie);
             log.info("Movie created successfully, id: {}", movie.getId());
+            return movie.getId();
         } catch (IOException e) {
             throw new AppException(ErrorCode.FILE_UPLOAD_FAILED);
         }
-
-        return movie.getId();
     }
 
     @Override
@@ -188,8 +194,8 @@ public class MovieServiceImpl implements MovieService {
 
     @Transactional
     @Override
-    public void updatebyId(MovieUpdateBasicRequest request) {
-        Movie movie = findById(request.getId());
+    public void updatebyId(long id, MovieUpdateBasicRequest request) {
+        Movie movie = findById(id);
 
         Set<MovieGenre> movieGenres = new HashSet<>();
         for (Long genreId : request.getGenreIds()) {
@@ -211,24 +217,33 @@ public class MovieServiceImpl implements MovieService {
 
     @Transactional
     @Override
-    public void updateAllFailedById(MovieUpdateFullRequest request) {
-        Movie movie = findById(request.getId());
+    public void updateFullById(long id, MovieUpdateFullRequest request) {
+        Movie movie = findById(id);
 
         Set<MovieGenre> movieGenres = new HashSet<>();
         for (Long genreId : request.getGenreIds()) {
             movieGenres.add(findMovieGenreById(genreId));
         }
         try {
-            String posterUrl = s3Service.uploadFile(request.getPoster());
 
             if (request.getPoster() != null && !request.getPoster().isEmpty()) {
-                posterUrl = s3Service.uploadFile(request.getPoster());
+                String posterUrl = s3Service.uploadFile(request.getPoster());
+                movie.setPosterUrl(posterUrl);
             }
-            
-            movie.setPosterUrl(posterUrl);
+
+            // Banner
+            if (request.getBanner() != null && !request.getBanner().isEmpty()) {
+                String bannerUrl = s3Service.uploadFile(request.getBanner());
+                movie.setBannerUrl(bannerUrl);
+            }
+
             movie.setReleaseDate(request.getReleaseDate());
-            movie.setDuration(request.getDuration());
-            movie.setAgeRating(request.getAgeRating());
+            if (request.getDuration() != null) {
+                movie.setDuration(request.getDuration());
+            }
+            if (request.getAgeRating() != null) {
+                movie.setAgeRating(request.getAgeRating());
+            }
             movie.setActor(request.getActor());
             movie.setDirector(request.getDirector());
             movie.setCountry(findCountryById(request.getCountryId()));
@@ -236,7 +251,6 @@ public class MovieServiceImpl implements MovieService {
             movie.setMovieGenres(movieGenres);
             movie.setTrailerUrl(request.getTrailerUrl());
             movie.setDescription(request.getDescription());
-            movie.setName(request.getName());
             movie.setStatus(MovieStatus.valueOf(request.getStatus()));
 
             movieRepository.save(movie);
@@ -248,13 +262,13 @@ public class MovieServiceImpl implements MovieService {
 
     @Transactional
     @Override
-    public void delete(long id) {
+    public void softDelete(long id) {
         Movie movie = findById(id);
         movie.setIsDeleted(true);
+        movie.setStatus(MovieStatus.ENDED);
         movieRepository.save(movie);
         log.info("Movie deleted successfully, id: {}", movie.getId());
     }
-
 
     private PageResponse<?> getPageResponse(int pageNo, int pageSize, Page<Movie> movies) {
 
@@ -287,6 +301,10 @@ public class MovieServiceImpl implements MovieService {
 
     }
 
+    private boolean isMovieExist(String name, LocalDate releaseDate) {
+        return movieRepository.existsByNameAndReleaseDate(name, releaseDate);
+    }
+
     private List<MovieGenreResponse> getMovieGenresByMovie(Movie movie) {
         List<MovieGenre> movieGenres = movie.getMovieGenres().stream().toList();
         return movieGenres.stream().map(movieGenre -> MovieGenreResponse.builder()
@@ -297,18 +315,22 @@ public class MovieServiceImpl implements MovieService {
     }
 
     private Movie findById(Long id) {
+        log.info("Finding movie by id: {}", id);
         return movieRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.MOVIE_NOT_FOUND));
     }
 
     private Language findLanguageById(Long id) {
+        log.info("Finding language by id: {}", id);
         return languageRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.LANGUAGE_NOT_FOUND));
     }
 
     private Country findCountryById(Long id) {
+        log.info("Finding country by id: {}", id);
         return countryRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.COUNTRY_NOT_FOUND));
     }
 
     private MovieGenre findMovieGenreById(Long id) {
+        log.info("Finding movie genre by id: {}", id);
         return movieGenresRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.MOVIE_GENRE_NOT_FOUND));
     }
 }

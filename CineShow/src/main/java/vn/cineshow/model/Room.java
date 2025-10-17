@@ -7,6 +7,23 @@ import vn.cineshow.enums.RoomStatus;
 import java.io.Serializable;
 import java.util.List;
 
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.experimental.FieldDefaults;
+import vn.cineshow.enums.RoomStatus;
+
 @Entity
 @Table(name = "rooms")
 @Getter
@@ -22,7 +39,6 @@ public class Room extends AbstractEntity implements Serializable {
     @ManyToOne(fetch = FetchType.LAZY)
     RoomType roomType;
 
-    @Enumerated(EnumType.STRING)   // <-- add this for enums
     RoomStatus status;
 
     @OneToMany(mappedBy = "room",  cascade = CascadeType.ALL,fetch = FetchType.LAZY)

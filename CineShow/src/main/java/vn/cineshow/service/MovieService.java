@@ -1,6 +1,5 @@
 package vn.cineshow.service;
 
-import jakarta.validation.Valid;
 import vn.cineshow.dto.request.MovieCreationRequest;
 import vn.cineshow.dto.request.MovieFilterRequest;
 import vn.cineshow.dto.request.MovieUpdateBasicRequest;
@@ -24,9 +23,9 @@ public interface MovieService {
 
     List<CountryResponse> getAllCountries();
 
-    void updatebyId(@Valid MovieUpdateBasicRequest request);
+    void updatebyId(long id, MovieUpdateBasicRequest request);
 
-    void updateAllFailedById(@Valid MovieUpdateFullRequest request);
+    void updateFullById(long id, MovieUpdateFullRequest request);
 
-    void delete(long id);
+    void softDelete(long id);
 }

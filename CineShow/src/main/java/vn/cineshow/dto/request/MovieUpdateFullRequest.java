@@ -1,10 +1,7 @@
 package vn.cineshow.dto.request;
 
-import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
-import lombok.Builder;
-import lombok.Getter;
+import jakarta.validation.constraints.*;
+import lombok.*;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.multipart.MultipartFile;
 import vn.cineshow.utils.validator.FileType;
@@ -13,38 +10,49 @@ import java.time.LocalDate;
 import java.util.List;
 
 @Getter
+@Setter
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class MovieUpdateFullRequest {
-    @NotNull
-    long id;
 
-    @NotNull(message = "Name cannot null")
-    String name;
+    @NotBlank(message = "Description must not blank")
+    private String description;
 
-    String description;
+    @Min(value = 1, message = "Duration must be at least 1 minute")
+    private Integer duration;
 
-    Integer duration;
-
+    @NotNull(message = "Release date is required")
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-    LocalDate releaseDate;
+    private LocalDate releaseDate;
 
-    String director;
-    String actor;
+    @NotBlank(message = "Director must not blank")
+    private String director;
 
-    Integer ageRating;
-    String trailerUrl;
+    @NotBlank(message = "Actor must not blank")
+    private String actor;
 
-    @NotNull(message = "Genre list cannot be null")
-    @Size(min = 1, message = "At least one genre is required")
-    List<Long> genreIds;
+    @Min(0)
+    private Integer ageRating;
 
-    Long languageId;
+    private String trailerUrl;
 
-    Long countryId;
+    @NotEmpty(message = "Genre list must not be empty")
+    private List<Long> genreIds;
 
-    String status;
+    @Min(1)
+    private Long languageId;
+
+    @Min(1)
+    private Long countryId;
+
+    @NotBlank
+    private String status;
 
     @FileType(allowed = {"image/jpeg", "image/png"})
-    @Schema(type = "string", format = "binary", description = "Poster image file")
-    MultipartFile poster;
+    private MultipartFile poster;
+
+    @FileType(allowed = {"image/jpeg", "image/png"})
+    private MultipartFile banner;
 }
+

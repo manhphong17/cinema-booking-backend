@@ -5,7 +5,4 @@ public class DuplicateResourceException extends RuntimeException {
         super(message);
     }
 
-    public DuplicateResourceException(String message, Throwable cause) {
-        super(message, cause);
-    }
 }

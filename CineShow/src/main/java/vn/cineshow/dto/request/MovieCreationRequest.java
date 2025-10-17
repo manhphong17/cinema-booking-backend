@@ -1,7 +1,6 @@
 package vn.cineshow.dto.request;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -18,25 +17,33 @@ import java.util.List;
 @Getter
 @AllArgsConstructor
 public class MovieCreationRequest {
-    @NotNull(message = "Name cannot null")
+    @NotNull(message = "Name must be can not null")
     String name;
 
-    @Length(min = 10, max = 2000, message = "Description must be between 10 and 2000 characters")
+    @Length(min = 1, max = 2000, message = "Description must be between 10 and 2000 characters")
     String description;
 
     @Min(value = 1, message = "Duration must be greater than 0")
     Integer duration;
 
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-    @Future(message = "Release date must be in the future")
+    @Schema(
+            type = "string",
+            example = "2025-12-01",
+            format = "date",
+            description = "Release date in ISO format (yyyy-MM-dd). Must be in the future."
+    )
     LocalDate releaseDate;
 
-    @NotNull
+    @NotNull(message = "Director can not null")
     String director;
-    @NotNull
+
+    @NotNull(message = ("Actor can not null"))
     String actor;
 
+    @Min(0)
     Integer ageRating;
+    
     String trailerUrl;
 
     @NotNull(message = "Genre list cannot be null")

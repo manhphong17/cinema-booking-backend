@@ -1,6 +1,7 @@
 package vn.cineshow.model;
 
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import lombok.*;
@@ -17,6 +18,7 @@ import java.io.Serializable;
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class Language extends AbstractEntity implements Serializable {
+    @Column(unique = true)
     String code;
     String name;
 }

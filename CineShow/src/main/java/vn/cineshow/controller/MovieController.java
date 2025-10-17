@@ -1,39 +1,24 @@
 package vn.cineshow.controller;
 
-import java.time.LocalDate;
-import java.util.List;
-
-import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RequestPart;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
-
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.*;
 import vn.cineshow.dto.request.MovieCreationRequest;
 import vn.cineshow.dto.request.MovieFilterRequest;
 import vn.cineshow.dto.request.MovieUpdateBasicRequest;
 import vn.cineshow.dto.request.MovieUpdateFullRequest;
-import vn.cineshow.dto.response.CountryResponse;
-import vn.cineshow.dto.response.LanguageResponse;
-import vn.cineshow.dto.response.MovieDetailResponse;
-import vn.cineshow.dto.response.MovieGenreResponse;
-import vn.cineshow.dto.response.PageResponse;
-import vn.cineshow.dto.response.ResponseData;
+import vn.cineshow.dto.response.*;
 import vn.cineshow.service.MovieService;
 import vn.cineshow.service.impl.S3Service;
+
+import java.time.LocalDate;
+import java.util.List;
 
 @RestController
 @RequestMapping("/movies")
@@ -154,46 +139,14 @@ public class MovieController {
         return new ResponseData<>(HttpStatus.OK.value(), "Movie genre founded successfully", movie);
     }
 
-
- /*   @Operation(
-            summary = "Create a movie",
-            description = "Send a request via this API to create a new movie"
-    )
-    @PostMapping(value = "/add2", consumes = {"multipart/form-data"})
-    public ResponseData<?> createMovie2(@Valid @ModelAttribute MovieCreationRequest request) {
-
-        log.info("Name = {}", request.getName());
-        log.info("Poster = {}", request.getPoster() != null ? request.getPoster().getOriginalFilename() : "null");
-        log.info("Genres = {}", request.getGenreIds());
-        movieService.create(request);
-        log.info("Response create movie: {}", request);
-        return new ResponseData<>(HttpStatus.OK.value(), "Movie created successfully");
-    }*/
-
     @Operation(
             summary = "Create a movie",
             description = "Send a request via this API to create a new movie"
     )
-    @PostMapping(value = "/add", consumes = {"multipart/form-data"})
-    public ResponseData<?> createMovie(@RequestParam String name,
-                                       @RequestParam String description,
-                                       @RequestParam Integer duration,
-                                       @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate releaseDate,
-                                       @RequestParam String director,
-                                       @RequestParam String actor,
-                                       @RequestParam Integer ageRating,
-                                       @RequestParam String trailerUrl,
-                                       @RequestParam List<Long> genreIds,
-                                       @RequestParam Long languageId,
-                                       @RequestParam Long countryId,
-                                       @RequestPart MultipartFile poster) {
-
-        MovieCreationRequest request = new MovieCreationRequest(name, description, duration, releaseDate, director,
-                actor, ageRating, trailerUrl, genreIds, languageId, countryId, poster);
-
+    @PostMapping(value = "/add", consumes = "multipart/form-data")
+    public ResponseData<?> createMovie(@Valid @ModelAttribute MovieCreationRequest request) {
         log.info("Request create movie: {}", request);
         movieService.create(request);
-        log.info("Response create movie: {}", request);
         return new ResponseData<>(HttpStatus.OK.value(), "Movie created successfully");
     }
 
@@ -202,60 +155,34 @@ public class MovieController {
             description = "Send a request via this API to update a movie by id"
     )
     @PutMapping(value = "/update/{id}")
-    public ResponseData<?> updateSomeFailedById(@Valid @RequestBody MovieUpdateBasicRequest request) {
+    public ResponseData<?> updateSomeFailedById(@PathVariable long id, @Valid @RequestBody MovieUpdateBasicRequest request) {
 
         log.info("Request update movie: {}", request);
-        movieService.updatebyId(request);
+        movieService.updatebyId(id, request);
         log.info("Response update movie: {}", request);
         return new ResponseData<>(HttpStatus.OK.value(), "Movie updated successfully");
     }
 
     @Operation(
             summary = "Update complete movie information by id",
-            description = "Send a request via this API to update complete movie information by id including poster file"
+            description = "Send a request via this API to update complete movie information by id including poster and banner files"
     )
-    @PutMapping(value = "/update-full/{id}", consumes = {"multipart/form-data"})
-    public ResponseData<?> updateFullMovieById(@PathVariable long id,
-                                               @RequestParam String name,
-                                               @RequestParam String description,
-                                               @RequestParam Integer duration,
-                                               @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate releaseDate,
-                                               @RequestParam String director,
-                                               @RequestParam String actor,
-                                               @RequestParam Integer ageRating,
-                                               @RequestParam String trailerUrl,
-                                               @RequestParam List<Long> genreIds,
-                                               @RequestParam(required = false) Long languageId,
-                                               @RequestParam(required = false) Long countryId,
-                                               @RequestPart(required = false) MultipartFile poster) {
-
-        MovieUpdateFullRequest request = MovieUpdateFullRequest.builder()
-                .id(id)
-                .name(name)
-                .description(description)
-                .duration(duration)
-                .releaseDate(releaseDate)
-                .director(director)
-                .actor(actor)
-                .ageRating(ageRating)
-                .trailerUrl(trailerUrl)
-                .genreIds(genreIds)
-                .languageId(languageId)
-                .countryId(countryId)
-                .status(null)
-                .poster(poster)
-                .build();
-
-        log.info("Request update full movie: id: {}", id);
-        movieService.updateAllFailedById(request);
-        log.info("Response update full movie: id: {}", id);
+    @PutMapping(value = "/update-full/{movieId}", consumes = {"multipart/form-data"})
+    public ResponseData<?> updateFullMovieById(
+            @PathVariable @Min(1) long movieId,
+            @Valid @ModelAttribute MovieUpdateFullRequest request
+    ) {
+        log.info("Request update full movie: id={}", movieId);
+        movieService.updateFullById(movieId, request);
+        log.info("Response update full movie: id={}", movieId);
         return new ResponseData<>(HttpStatus.OK.value(), "Movie updated successfully");
     }
 
-    @PutMapping("/delete/{id}")
+
+    @PatchMapping("/delete/{id}")
     public ResponseData<?> deleteMovie(@PathVariable long id) {
         log.info("Request delete movie: {}", id);
-        movieService.delete(id);
+        movieService.softDelete(id);
         log.info("Response delete movie: {}", id);
         return new ResponseData<>(HttpStatus.OK.value(), "Movie deleted successfully");
     }

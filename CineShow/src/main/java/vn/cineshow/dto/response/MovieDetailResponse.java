@@ -23,6 +23,8 @@ public class MovieDetailResponse implements Serializable {
     private String director;
     private String name;
     private String posterUrl;
+    private String bannerUrl;
+    private Integer duration;
     private LocalDate releaseDate;
     private String trailerUrl;
     private String status;
