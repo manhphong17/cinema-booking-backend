@@ -23,4 +23,7 @@ public class RoomType extends AbstractEntity implements Serializable {
 
     String description;
 
+    @Column(nullable = false, unique = true, length = 50)
+    private String code;
+
 }
