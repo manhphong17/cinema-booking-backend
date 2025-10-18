@@ -1303,3 +1303,6 @@ INSERT INTO tickets (order_id, seat_id, showtime_id, ticket_price, qr_code, crea
 (5, 33, 4, 80000, 'QR012', NOW(), NOW()),
 (5, 34, 4, 80000, 'QR013', NOW(), NOW()),
 (5, 35, 4, 80000, 'QR014', NOW(), NOW());
+
+
+
