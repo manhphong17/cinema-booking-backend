@@ -2,7 +2,6 @@
 <project version="4">
   <component name="DataSourcePerFileMappings">
     <file url="file://$APPLICATION_CONFIG_DIR$/consoles/db/66594c51-702a-4d58-a932-21ec60c5ced1/console.sql" value="66594c51-702a-4d58-a932-21ec60c5ced1" />
-    <file url="file://$APPLICATION_CONFIG_DIR$/consoles/db/66594c51-702a-4d58-a932-21ec60c5ced1/console_3.sql" value="66594c51-702a-4d58-a932-21ec60c5ced1" />
     <file url="file://$PROJECT_DIR$/CineShow/src/main/resources/data.sql" value="66594c51-702a-4d58-a932-21ec60c5ced1" />
   </component>
 </project>

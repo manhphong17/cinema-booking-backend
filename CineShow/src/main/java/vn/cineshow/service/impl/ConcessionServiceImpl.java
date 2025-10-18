@@ -11,13 +11,16 @@ import org.springframework.stereotype.Service;
 import vn.cineshow.dto.request.ConcessionAddRequest;
 import vn.cineshow.dto.request.ConcessionUpdateRequest;
 import vn.cineshow.dto.response.ConcessionResponse;
+import vn.cineshow.dto.response.ConcessionTypeResponse;
 import vn.cineshow.enums.ConcessionStatus;
-import vn.cineshow.enums.ConcessionType;
+import vn.cineshow.enums.ConcessionTypeStatus;
 import vn.cineshow.enums.StockStatus;
 import vn.cineshow.exception.AppException;
 import vn.cineshow.exception.ErrorCode;
 import vn.cineshow.model.Concession;
+import vn.cineshow.model.ConcessionType;
 import vn.cineshow.repository.ConcessionRepository;
+import vn.cineshow.repository.ConcessionTypeRepository;
 import vn.cineshow.service.ConcessionService;
 
 import java.io.IOException;
@@ -29,12 +32,13 @@ import java.io.IOException;
 class ConcessionServiceImpl implements ConcessionService {
 
     private final ConcessionRepository concessionRepository;
+    private final ConcessionTypeRepository concessionTypeRepository;
     private final S3Service s3Service;
 
     @Override
     public Page<ConcessionResponse> getFilteredConcessions(
             String stockStatus,
-            String concessionType,
+            Long concessionTypeId,
             String concessionStatus,
             String keyword,
             int page,
@@ -48,8 +52,6 @@ class ConcessionServiceImpl implements ConcessionService {
         try {
             if (stockStatus != null && !stockStatus.equalsIgnoreCase("ALL"))
                 stock = StockStatus.valueOf(stockStatus.toUpperCase());
-            if (concessionType != null && !concessionType.equalsIgnoreCase("ALL"))
-                type = ConcessionType.valueOf(concessionType.toUpperCase());
             if (concessionStatus != null && !concessionStatus.equalsIgnoreCase("ALL"))
                 status = ConcessionStatus.valueOf(concessionStatus.toUpperCase());
         } catch (IllegalArgumentException e) {
@@ -61,7 +63,7 @@ class ConcessionServiceImpl implements ConcessionService {
 
         // 3. Gọi repo để lấy page kết quả
         Page<Concession> pageResult =
-                concessionRepository.findFilteredConcessions(stock, type, status, keyword, pageable);
+                concessionRepository.findFilteredConcessions(stock, concessionTypeId, status, keyword, pageable);
 
         //  4. Map sang Page<ConcessionResponse>
         return pageResult.map(c -> new ConcessionResponse(
@@ -69,7 +71,11 @@ class ConcessionServiceImpl implements ConcessionService {
                 c.getName(),
                 c.getPrice(),
                 c.getDescription(),
-                c.getConcessionType(),
+                ConcessionTypeResponse.builder()
+                        .id(c.getConcessionType().getId())
+                        .name(c.getConcessionType().getName())
+                        .status(c.getConcessionType().getStatus().name())
+                        .build(),
                 c.getUnitInStock(),
                 c.getStockStatus(),
                 c.getConcessionStatus(),
@@ -90,15 +96,19 @@ class ConcessionServiceImpl implements ConcessionService {
         } catch (IOException e) {
             // Wrap exception gốc thành AppException
             throw new AppException(ErrorCode.FILE_UPLOAD_FAILED);
-
         }
 
+        ConcessionType concessionType =
+                concessionTypeRepository.findByIdAndStatusNot(
+                        concessionAddRequest.concessionTypeId(),
+                        ConcessionTypeStatus.DELETED
+                );
 
         Concession concession = new Concession();
         concession.setName(concessionAddRequest.name());
         concession.setPrice(concessionAddRequest.price());
         concession.setDescription(concessionAddRequest.description());
-        concession.setConcessionType(concessionAddRequest.concessionType());
+        concession.setConcessionType(concessionType);
         concession.setUnitInStock(concessionAddRequest.unitInStock());
         concession.setStockStatus(StockStatus.IN_STOCK);
         concession.setConcessionStatus(ConcessionStatus.ACTIVE);
@@ -114,10 +124,16 @@ class ConcessionServiceImpl implements ConcessionService {
                 .orElseThrow(() -> new AppException(ErrorCode.CONCESSION_NOT_FOUND));
 
         //  2. Cập nhật các thông tin cơ bản
+        ConcessionType concessionType =
+                concessionTypeRepository.findByIdAndStatusNot(
+                        request.concessionTypeId(),
+                        ConcessionTypeStatus.DELETED
+                );
+
         concession.setName(request.name());
         concession.setPrice(request.price());
         concession.setDescription(request.description());
-        concession.setConcessionType(request.concessionType());
+        concession.setConcessionType(concessionType);
         concession.setUnitInStock(request.unitInStock());
 
         //  3. Upload ảnh mới nếu có
@@ -145,12 +161,17 @@ class ConcessionServiceImpl implements ConcessionService {
         // 6. Lưu và trả về DTO
         Concession saved = concessionRepository.save(concession);
 
+
         return new ConcessionResponse(
                 saved.getId(),
                 saved.getName(),
                 saved.getPrice(),
                 saved.getDescription(),
-                saved.getConcessionType(),
+                ConcessionTypeResponse.builder()
+                        .id(saved.getConcessionType().getId())
+                        .name(saved.getConcessionType().getName())
+                        .status(saved.getConcessionType().getStatus().name())
+                        .build(),
                 saved.getUnitInStock(),
                 saved.getStockStatus(),
                 saved.getConcessionStatus(),
@@ -180,7 +201,11 @@ class ConcessionServiceImpl implements ConcessionService {
                 concession.getName(),
                 concession.getPrice(),
                 concession.getDescription(),
-                concession.getConcessionType(),
+                ConcessionTypeResponse.builder()
+                        .id(concession.getConcessionType().getId())
+                        .name(concession.getConcessionType().getName())
+                        .status(concession.getConcessionType().getStatus().name())
+                        .build(),
                 concession.getUnitInStock(),
                 concession.getStockStatus(),
                 concession.getConcessionStatus(),
@@ -201,7 +226,11 @@ class ConcessionServiceImpl implements ConcessionService {
                 concession.getName(),
                 concession.getPrice(),
                 concession.getDescription(),
-                concession.getConcessionType(),
+                ConcessionTypeResponse.builder()
+                        .id(concession.getConcessionType().getId())
+                        .name(concession.getConcessionType().getName())
+                        .status(concession.getConcessionType().getStatus().name())
+                        .build(),
                 concession.getUnitInStock(),
                 concession.getStockStatus(),
                 concession.getConcessionStatus(),

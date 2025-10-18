@@ -14,7 +14,7 @@ public interface ConcessionService {
 
     Page<ConcessionResponse> getFilteredConcessions(
             String stockStatus,
-            String concessionType,
+            Long concessionTypeId,
             String concessionStatus,
             String keyword,
             int page,
