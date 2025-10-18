@@ -1,5 +1,9 @@
 package vn.cineshow.model;
 
+import jakarta.persistence.*;
+import lombok.*;
+import lombok.experimental.FieldDefaults;
+import vn.cineshow.enums.RoomStatus;
 import java.io.Serializable;
 import java.util.List;
 
@@ -35,14 +39,26 @@ public class Room extends AbstractEntity implements Serializable {
     @ManyToOne(fetch = FetchType.LAZY)
     RoomType roomType;
 
-    @Enumerated(EnumType.STRING)
     RoomStatus status;
 
-    @OneToMany(mappedBy = "room", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "room",  cascade = CascadeType.ALL,fetch = FetchType.LAZY)
     List<Seat> seats;
 
-    @OneToMany(mappedBy = "room", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "room", cascade = CascadeType.ALL,fetch = FetchType.LAZY)
     List<ShowTime> shows;
 
+    @Column(name = "rows_count")
+    Integer rows;
 
+    @Column(name = "columns_count")
+    Integer columns;
+
+    @Column
+    Integer capacity;
+
+    @Column(length = 500)
+    String description;
+
+    @Column(length = 100)
+    String screenType;
 }

@@ -2,7 +2,6 @@ package vn.cineshow.dto.request;
 
 import jakarta.validation.constraints.*;
 import org.springframework.web.multipart.MultipartFile;
-import vn.cineshow.enums.ConcessionType;
 
 public record ConcessionUpdateRequest(
 
@@ -18,7 +17,7 @@ public record ConcessionUpdateRequest(
         String description,
 
         @NotNull
-        ConcessionType concessionType,
+        Long concessionTypeId,
 
         @NotNull
         @PositiveOrZero(message = "Số lượng tồn kho không thể là số âm")
