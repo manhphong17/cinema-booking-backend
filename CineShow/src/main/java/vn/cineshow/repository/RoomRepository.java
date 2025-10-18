@@ -2,14 +2,18 @@ package vn.cineshow.repository;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.*;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import vn.cineshow.enums.RoomStatus;
 import vn.cineshow.model.Room;
 
+import java.util.List;
+
 @Repository
 public interface RoomRepository extends JpaRepository<Room, Long>, JpaSpecificationExecutor<Room> {
+    List<Room> findByRoomType_Id(Long roomTypeId, Sort sort);
 
     /**
      * Tìm kiếm phòng có filter tùy chọn:
