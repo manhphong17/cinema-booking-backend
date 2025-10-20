@@ -1,8 +1,8 @@
+
 package vn.cineshow.dto.request;
 
 import jakarta.validation.constraints.*;
 import org.springframework.web.multipart.MultipartFile;
-import vn.cineshow.enums.ConcessionType;
 
 public record ConcessionAddRequest(
 
@@ -18,7 +18,7 @@ public record ConcessionAddRequest(
         String description,
 
         @NotNull(message = "Loại sản phẩm không được để trống")
-        ConcessionType concessionType,
+        Long concessionTypeId,
 
         @NotNull(message = "Số lượng tồn kho không được để trống")
         @PositiveOrZero(message = "Số lượng tồn kho không thể là số âm")

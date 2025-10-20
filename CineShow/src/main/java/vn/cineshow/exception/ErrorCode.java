@@ -12,7 +12,6 @@ public enum ErrorCode {
     OTP_NOT_FOUND(1006, "OTP not found"),
     OTP_INVALID(1007, "Invalid OTP"),
     OTP_EXPIRED(1008, "OTP expired"),
-
     INVALID_SORT_ORDER(1009, "Invalid Sort Order Exception"),
     MOVIE_NOT_FOUND(1010, "Movie not found"),
     LANGUAGE_NOT_FOUND(1011, "Language not found"),
@@ -22,8 +21,12 @@ public enum ErrorCode {
     CONCESSION_NOT_FOUND(1016, "Concession not found"),
     INVALID_QUANTITY(1017, "Invalid quantity to add"),
     CONCESSION_ALREADY_DELETED(1018, "Concession has been deleted"),
-    ACCOUNT_NOT_FOUND(1019, "Account not found");
-    
+    ACCOUNT_NOT_FOUND(1019, "Account not found"),
+    CONCESSION_TYPE_NOT_FOUND(1025, "Concession type not found"),
+    CONCESSION_TYPE_IN_USE(1026, "Concession has been in use"),
+    CONCESSION_TYPE_EXISTED(1027, "Concession already existed");
+
+
 
     private final int code;
     private final String message;

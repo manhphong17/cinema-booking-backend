@@ -12,6 +12,7 @@
     <artifactId>CineShow</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>CineShow</name>
+
     <description>Manage and booking movie ticket</description>
     <url/>
     <licenses>

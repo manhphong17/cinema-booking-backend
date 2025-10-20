@@ -8,11 +8,16 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import vn.cineshow.dto.request.ConcessionAddRequest;
+import vn.cineshow.dto.request.ConcessionTypeRequest;
 import vn.cineshow.dto.request.ConcessionUpdateRequest;
 import vn.cineshow.dto.response.ConcessionResponse;
+import vn.cineshow.dto.response.ConcessionTypeResponse;
 import vn.cineshow.dto.response.ResponseData;
 import vn.cineshow.enums.ConcessionStatus;
 import vn.cineshow.service.ConcessionService;
+import vn.cineshow.service.ConcessionTypeService;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/concession")
@@ -20,18 +25,19 @@ import vn.cineshow.service.ConcessionService;
 public class ConcessionController {
 
     private final ConcessionService concessionService;
+    private final ConcessionTypeService concessionTypeService;
 
     @GetMapping
-    public ResponseData<Page<ConcessionResponse>> showList(
+    public ResponseData<Page<ConcessionResponse>> showListConcessions(
             @RequestParam(defaultValue = "0") int page,        // trang hiện tại (mặc định 0)
             @RequestParam(defaultValue = "10") int size,       // số item / trang
             @RequestParam(required = false) String stockStatus,
-            @RequestParam(required = false) String concessionType,
+            @RequestParam(required = false) Long concessionTypeId,
             @RequestParam(required = false) String concessionStatus,
             @RequestParam(required = false) String keyword
     ) {
         Page<ConcessionResponse> concessions = concessionService.getFilteredConcessions(
-                stockStatus, concessionType, concessionStatus, keyword, page, size
+                stockStatus, concessionTypeId, concessionStatus, keyword, page, size
         );
 
         if (concessions.isEmpty()) {
@@ -119,4 +125,36 @@ public class ConcessionController {
         );
     }
 
+    // TYPE
+    @GetMapping("/types")
+    public ResponseData<List<ConcessionTypeResponse>> getAllConcessionTypes() {
+        List<ConcessionTypeResponse> types = concessionTypeService.getAll();
+
+        return new ResponseData<>(
+                HttpStatus.OK.value(),
+                "Fetched all concession types successfully.",
+                types
+        );
+    }
+
+    @PutMapping("/types/{id}/status")
+    public ResponseData<Void> updateConcessionTypeStatus(@PathVariable Long id) {
+        concessionTypeService.updateStatus(id);
+        return new ResponseData<>(
+                HttpStatus.OK.value(),
+                "Cập nhật trạng thái loại sản phẩm thành công."
+        );
+    }
+
+    @PostMapping("/type")
+    public ResponseData<Void> addConcessionType(@Valid @RequestBody ConcessionTypeRequest request) {
+        concessionTypeService.addConcessionType(request.getName());
+        return new ResponseData<>(
+                HttpStatus.OK.value(),
+                "Thêm loại sản phẩm mới thành công."
+        );
+    }
+
 }
+
+

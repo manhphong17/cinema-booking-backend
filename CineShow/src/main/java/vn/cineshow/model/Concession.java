@@ -4,7 +4,6 @@ import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 import vn.cineshow.enums.ConcessionStatus;
-import vn.cineshow.enums.ConcessionType;
 import vn.cineshow.enums.StockStatus;
 
 import java.io.Serializable;
@@ -31,8 +30,8 @@ public class Concession extends AbstractEntity implements Serializable {
     @OneToMany(mappedBy = "concession", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
     private List<OrderConcession> orderConcessions;
 
-
-    @Enumerated(EnumType.STRING)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "concession_type_id", nullable = false)
     private ConcessionType concessionType;
 
     private int unitInStock;
