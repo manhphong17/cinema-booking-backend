@@ -34,7 +34,7 @@ public class SeatTypeServiceImpl implements SeatTypeService {
     private SeatTypeDTO toDTO(SeatType st) {
         return SeatTypeDTO.builder()
                 .id(st.getId())
-                .code(st.getCode())
+//                .code(st.getCode())
                 .name(st.getName())
                 .description(st.getDescription())
                 .build();

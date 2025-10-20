@@ -12,7 +12,11 @@ import java.util.List;
 import java.util.Set;
 
 @Entity
-@Table(name = "movies")
+@Table(name = "movies", indexes = {
+    @Index(name = "idx_movies_is_featured", columnList = "is_featured"),
+    @Index(name = "idx_movies_status", columnList = "status"),
+    @Index(name = "idx_movies_release_date", columnList = "release_date")
+})
 @Getter
 @Setter
 @NoArgsConstructor
@@ -45,7 +49,6 @@ public class Movie extends AbstractEntity implements Serializable {
 
     private String actor;
 
-
     @Enumerated(EnumType.STRING)
     private MovieStatus status;
 
@@ -55,9 +58,9 @@ public class Movie extends AbstractEntity implements Serializable {
 
     @ManyToMany()
     @JoinTable(
-        name = "movie_movie_genres",
-        joinColumns = @JoinColumn(name = "movie_id"),
-        inverseJoinColumns = @JoinColumn(name = "movie_genres_id")
+            name = "movie_movie_genres",
+            joinColumns = @JoinColumn(name = "movie_id"),
+            inverseJoinColumns = @JoinColumn(name = "movie_genres_id")
     )
     private Set<MovieGenre> movieGenres;
 
@@ -69,6 +72,10 @@ public class Movie extends AbstractEntity implements Serializable {
     @JsonIgnore
     private Country country;
 
-    Boolean isDeleted = false;
+    @Column(name = "is_deleted", nullable = false)
+    boolean isDeleted = false;
+
+    @Column(name = "is_featured", nullable = false)
+    boolean isFeatured = false;
 
 }

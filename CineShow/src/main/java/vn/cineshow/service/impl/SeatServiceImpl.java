@@ -109,7 +109,7 @@ public class SeatServiceImpl implements SeatService {
             SeatType st = s.getSeatType();
             SeatTypeDTO seatTypeDTO = (st == null) ? null : SeatTypeDTO.builder()
                     .id(st.getId())
-                    .code(st.getCode())
+//                    .code(st.getCode())
                     .name(st.getName())
                     .description(st.getDescription())
                     .build();
@@ -120,7 +120,7 @@ public class SeatServiceImpl implements SeatService {
                     .columnIndex(c)
                     .rowLabel(s.getRowLabel())
                     .number(c) // không có field number trong entity, dùng cột làm số ghế
-                    .code(s.getCode())
+//                    .code(s.getCode())
                     .seatType(seatTypeDTO)
                     .status(s.getStatus() == null ? null : s.getStatus().name()) // enum -> String
                     .isBlocked(Boolean.TRUE.equals(s.getBlocked()))
@@ -322,7 +322,7 @@ public class SeatServiceImpl implements SeatService {
         if (rt != null) {
             rtDTO = RoomTypeDTO.builder()
                     .id(rt.getId())
-                    .code(rt.getCode())
+//                    .code(rt.getCode())
                     .name(rt.getName())
                     .description(rt.getDescription())
                     .build();

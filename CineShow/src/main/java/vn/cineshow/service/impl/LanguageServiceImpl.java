@@ -2,7 +2,7 @@ package vn.cineshow.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import vn.cineshow.dto.response.LanguageResponse;
+import vn.cineshow.dto.response.movie.LanguageResponse;
 import vn.cineshow.repository.LanguageRepository;
 import vn.cineshow.service.LanguageService;
 

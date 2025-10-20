@@ -18,7 +18,7 @@ import java.io.Serializable;
 public class SignInRequest implements Serializable {
 
     @Email
-    @Schema(example = "user1@gmail.com", defaultValue = "operation@test.con")
+    @Schema(example = "user1@gmail.com", defaultValue = "operation@test.com")
     String email;
 
     @Password

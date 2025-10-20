@@ -48,18 +48,17 @@ public class Room extends AbstractEntity implements Serializable {
     List<ShowTime> shows;
 
     @Column(name = "rows_count")
-    Integer rows;                    // số hàng ghế
+    Integer rows;
 
     @Column(name = "columns_count")
-    Integer columns;                 // số cột ghế
+    Integer columns;
 
     @Column
-    Integer capacity;                // = rows * columns (cập nhật ở service)
+    Integer capacity;
 
     @Column(length = 500)
-    String description;              // mô tả phòng (optional)
+    String description;
 
     @Column(length = 100)
-    String screenType;               // loại màn hình (optional)
-
+    String screenType;
 }

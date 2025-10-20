@@ -1,4 +1,4 @@
-package vn.cineshow.dto.request;
+package vn.cineshow.dto.request.movie;
 
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;

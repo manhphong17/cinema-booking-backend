@@ -26,7 +26,7 @@ public class RoomTypeServiceImpl implements RoomTypeService {
         return entities.stream()
                 .map(rt -> RoomTypeDTO.builder()
                         .id(rt.getId())
-                        .code(rt.getCode())
+//                        .code(rt.getCode())
                         .name(rt.getName())
                         .description(rt.getDescription())
                         .build())

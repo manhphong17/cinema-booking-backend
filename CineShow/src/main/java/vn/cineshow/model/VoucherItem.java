@@ -1,8 +1,6 @@
 package vn.cineshow.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.*;
 import vn.cineshow.enums.VoucherItemStatus;
 
@@ -16,6 +14,7 @@ import java.io.Serializable;
 @Setter
 @Builder
 public class VoucherItem extends AbstractEntity implements Serializable {
+    @Enumerated(EnumType.STRING)
     private VoucherItemStatus status;
 
     @ManyToOne

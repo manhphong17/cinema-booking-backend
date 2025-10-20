@@ -7,7 +7,7 @@ import vn.cineshow.model.ids.OrderConcessionId;
 import java.io.Serializable;
 
 @Entity
-@Table(name = "order_foods")
+@Table(name = "order_concessions")
 @Getter
 @Setter
 @NoArgsConstructor

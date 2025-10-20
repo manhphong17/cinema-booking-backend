@@ -1,10 +1,8 @@
 package vn.cineshow.service;
 
-import vn.cineshow.dto.request.MovieCreationRequest;
-import vn.cineshow.dto.request.MovieFilterRequest;
-import vn.cineshow.dto.request.MovieUpdateBasicRequest;
-import vn.cineshow.dto.request.MovieUpdateFullRequest;
-import vn.cineshow.dto.response.*;
+import vn.cineshow.dto.request.movie.*;
+import vn.cineshow.dto.response.PageResponse;
+import vn.cineshow.dto.response.movie.*;
 
 import java.util.List;
 
@@ -17,7 +15,7 @@ public interface MovieService {
 
     List<MovieGenreResponse> getAllGenres();
 
-    MovieDetailResponse getMovie(long id);
+    OperatorMovieOverviewResponse getMovie(long id);
 
     Long create(MovieCreationRequest request);
 
@@ -28,4 +26,12 @@ public interface MovieService {
     void updateFullById(long id, MovieUpdateFullRequest request);
 
     void softDelete(long id);
+
+    List<OperatorMovieOverviewResponse> getTopMovieForHomePage(String status, int limit);
+
+    void updateFeatureMovie(long id, boolean isFeatured);
+
+    List<BannerResponse> getBanners();
+
+    PageResponse<?> getMovieListToBooking(UserSearchMovieRequest request);
 }

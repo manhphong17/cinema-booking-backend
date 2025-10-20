@@ -1,4 +1,4 @@
-package vn.cineshow.dto.response;
+package vn.cineshow.dto.response.movie;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

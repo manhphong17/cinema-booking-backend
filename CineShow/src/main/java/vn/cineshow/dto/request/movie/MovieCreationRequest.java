@@ -1,4 +1,4 @@
-package vn.cineshow.dto.request;
+package vn.cineshow.dto.request.movie;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Min;
@@ -43,7 +43,7 @@ public class MovieCreationRequest {
 
     @Min(0)
     Integer ageRating;
-    
+
     String trailerUrl;
 
     @NotNull(message = "Genre list cannot be null")

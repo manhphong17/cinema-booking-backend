@@ -23,7 +23,7 @@ public class SeatType extends AbstractEntity implements Serializable {
     String description;
 
 
-    @Column(name = "code", nullable = false, unique = true, length = 50)
-    String code;
+//    @Column(name = "code", nullable = false, unique = true, length = 50)
+//    String code;
 
 }

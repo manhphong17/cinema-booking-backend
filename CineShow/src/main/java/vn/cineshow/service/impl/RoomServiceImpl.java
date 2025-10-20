@@ -165,7 +165,7 @@ public class RoomServiceImpl implements RoomService {
         if (rt != null) {
             rtDTO = RoomTypeDTO.builder()
                     .id(rt.getId())
-                    .code(rt.getCode())
+//                    .code(rt.getCode())
                     .name(rt.getName())
                     .description(rt.getDescription())
                     .build();
