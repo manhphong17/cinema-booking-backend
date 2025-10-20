@@ -1,4 +1,4 @@
-package vn.cineshow.dto.response;
+package vn.cineshow.dto.response.concession;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;

@@ -47,8 +47,6 @@ public class ShowTime extends AbstractEntity implements Serializable {
     @JoinColumn(name = "movie_id", nullable = false)
     Movie movie;
 
-    @OneToMany(mappedBy = "showTime", fetch = FetchType.LAZY,cascade = CascadeType.ALL)
-    private List<TicketPrice> ticketPrices;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "subtitle_id", nullable = false)

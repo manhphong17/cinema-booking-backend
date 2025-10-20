@@ -1,4 +1,4 @@
-package vn.cineshow.dto.request;
+package vn.cineshow.dto.request.concession;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;

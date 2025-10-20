@@ -24,7 +24,11 @@ public enum ErrorCode {
     ACCOUNT_NOT_FOUND(1019, "Account not found"),
     CONCESSION_TYPE_NOT_FOUND(1025, "Concession type not found"),
     CONCESSION_TYPE_IN_USE(1026, "Concession has been in use"),
-    CONCESSION_TYPE_EXISTED(1027, "Concession already existed");
+    CONCESSION_TYPE_EXISTED(1027, "Concession already existed"),
+    HOLIDAY_EXISTED(1028, "Holiday has been added"),
+    HOLIDAY_NOT_FOUND(1029, "Holiday not found"),
+    SEAT_TYPE_NOT_FOUND(1030, "Seat type not found"),
+    ROOM_TYPE_NOT_FOUND(1031, "Room type not found");
 
 
 

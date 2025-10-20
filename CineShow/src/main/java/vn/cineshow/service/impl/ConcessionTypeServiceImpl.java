@@ -4,7 +4,7 @@ package vn.cineshow.service.impl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import vn.cineshow.dto.response.ConcessionTypeResponse;
+import vn.cineshow.dto.response.concession.ConcessionTypeResponse;
 import vn.cineshow.enums.ConcessionTypeStatus;
 import vn.cineshow.exception.AppException;
 import vn.cineshow.exception.ErrorCode;

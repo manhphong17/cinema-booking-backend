@@ -1,6 +1,6 @@
 package vn.cineshow.service;
 
-import vn.cineshow.dto.response.ConcessionTypeResponse;
+import vn.cineshow.dto.response.concession.ConcessionTypeResponse;
 
 import java.util.List;
 
