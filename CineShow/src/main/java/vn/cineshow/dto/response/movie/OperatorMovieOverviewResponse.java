@@ -1,4 +1,4 @@
-package vn.cineshow.dto.response;
+package vn.cineshow.dto.response.movie;
 
 
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -16,7 +16,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class MovieDetailResponse implements Serializable {
+public class OperatorMovieOverviewResponse implements Serializable {
     private Long id;
     private String actor;
     private String description;
@@ -32,4 +32,5 @@ public class MovieDetailResponse implements Serializable {
     private LanguageResponse language;
     private List<MovieGenreResponse> genre;
     private int ageRating;
+    private Boolean isFeatured;
 }

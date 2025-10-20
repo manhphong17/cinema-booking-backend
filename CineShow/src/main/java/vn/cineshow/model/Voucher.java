@@ -37,10 +37,9 @@ public class Voucher extends AbstractEntity implements Serializable {
     @OneToMany(mappedBy = "voucher", cascade = CascadeType.ALL)
     private List<VoucherItem> voucherItems;
 
-
     @Column(nullable = false)
-    boolean isActive =false;
+    boolean isActive = false;
 
-    boolean isDeleted =false;
+    boolean isDeleted = false;
 
 }
