@@ -5,167 +5,24 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="3f0d3c28-6448-4f6d-b4d8-ba1a65b293b0" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/.gitignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/cinema-booking-backend.iml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/data_source_mapping.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/jarRepositories.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/jarRepositories.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/.gitattributes" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/.gitignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/.mvn/wrapper/maven-wrapper.properties" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/CineShow_Postman_Collection.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/mvnw" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/mvnw.cmd" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/pom.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/CineShowApplication.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/config/ApplicationInitializer.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/config/CustomAuthenticationProvider.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/config/CustomOAuth2SuccessHandler.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/config/CustomizeRequestFilter.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/config/OpenApiConfig.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/config/SecurityConfig.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/controller/AccountController.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/controller/AuthenticationController.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/controller/ConcessionController.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/controller/MovieController.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/controller/UserController.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/dto/request/AccountCreationRequest.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/dto/request/AuthenticationRequest.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/dto/request/ConcessionAddRequest.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/dto/request/ConcessionUpdateRequest.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/dto/request/EmailRegisterRequest.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/dto/request/ForgotPasswordRequest.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/dto/request/MovieCreationRequest.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/dto/request/MovieFilterRequest.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/dto/request/MovieUpdateBasicRequest.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/dto/request/MovieUpdateFullRequest.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/dto/request/OtpVerifyDTO.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/dto/request/ResetPasswordRequest.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/dto/request/SignInRequest.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/dto/request/UpdateUserRequest.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/dto/request/UserRequest.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/dto/response/ConcessionResponse.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/dto/response/CountryResponse.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/dto/response/LanguageRequest.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/dto/response/LanguageResponse.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/dto/response/MovieDetailResponse.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/dto/response/MovieGenreResponse.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/dto/response/PageResponse.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/dto/response/ResponeError.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/dto/response/ResponseData.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/dto/response/SignInResponse.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/dto/response/TokenResponse.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/dto/response/UserResponse.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/dto/response/VerifyOtpResetResponse.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/enums/AccountStatus.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/enums/AgeRating.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/enums/AuthProvider.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/enums/ConcessionStatus.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/enums/ConcessionType.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/enums/Gender.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/enums/MovieStatus.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/enums/OrderStatus.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/enums/PaymentStatus.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/enums/ProductType.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/enums/RoomStatus.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/enums/SeatStatus.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/enums/StockStatus.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/enums/TokenType.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/enums/UserRole.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/enums/UserStatus.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/enums/VoucherItemStatus.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/exception/AppException.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/exception/AuthenticatedException.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/exception/DuplicateResourceException.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/exception/ErrorCode.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/exception/ErrorResponse.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/exception/GlobalExceptionHandler.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/exception/IllegalParameterException.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/exception/ResourceNotFoundException.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/model/AbstractEntity.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/model/Account.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/model/AccountProvider.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/model/Concession.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/model/Country.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/model/Language.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/model/Movie.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/model/MovieGenre.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/model/Order.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/model/OrderConcession.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/model/OtpCode.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/model/PasswordResetToken.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/model/Payment.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/model/PaymentMethod.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/model/RefreshToken.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/model/Role.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/model/Room.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/model/RoomType.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/model/Seat.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/model/SeatReservation.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/model/SeatType.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/model/ShowTime.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/model/SubTitle.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/model/Ticket.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/model/TicketPrice.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/model/User.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/model/Voucher.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/model/VoucherItem.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/model/ids/OrderConcessionId.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/repository/AccountProviderRepository.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/repository/AccountRepository.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/repository/ConcessionRepository.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/repository/CountryRepository.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/repository/LanguageRepository.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/repository/MovieGenresRepository.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/repository/MovieRepository.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/repository/OtpCodeRepository.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/repository/PasswordResetTokenRepository.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/repository/RefreshTokenRepository.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/repository/RoleRepository.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/repository/SearchRepository.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/repository/UserRepository.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/service/AccountService.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/service/AuthenticationService.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/service/ConcessionService.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/service/JWTService.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/service/LanguageService.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/service/MovieService.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/service/OtpService.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/service/RefreshTokenService.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/service/TempRegisterService.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/service/UserService.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/service/impl/AccountDetailsService.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/service/impl/AccountServiceImpl.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/service/impl/AuthenticationServiceImpl.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/service/impl/ConcessionServiceImpl.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/service/impl/EmailService.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/service/impl/EmailServiceImpl.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/service/impl/JWTServiceImpl.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/service/impl/LanguageServiceImpl.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/service/impl/MovieServiceImpl.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/service/impl/OtpServiceImpl.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/service/impl/RefreshTokenServiceImpl.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/service/impl/S3Service.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/service/impl/UserServiceImpl.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/utils/validator/DateRangeValidator.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/utils/validator/Email.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/utils/validator/EmailValidator.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/utils/validator/FileType.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/utils/validator/FileTypeValidator.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/utils/validator/Password.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/utils/validator/PasswordValidator.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/utils/validator/PhoneNumber.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/utils/validator/PhoneValidator.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/utils/validator/ValidDateRange.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/src/main/resources/application-dev.yaml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/src/main/resources/application.yml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/src/main/resources/data.sql" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/src/test/java/vn/cineshow/CineShowApplicationTests.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/src/test/java/vn/cineshow/JWTLoginTest.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CineShow/src/test/java/vn/cineshow/controller/UserControllerTest.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/a" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/compiler.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/compiler.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/dataSources.local.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/controller/RoomTypeController.java" beforeDir="false" afterPath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/controller/RoomTypeController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/controller/SeatTypeController.java" beforeDir="false" afterPath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/controller/SeatTypeController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/model/RoomType.java" beforeDir="false" afterPath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/model/RoomType.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/model/Seat.java" beforeDir="false" afterPath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/model/Seat.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/model/SeatType.java" beforeDir="false" afterPath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/model/SeatType.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/repository/RoomRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/repository/RoomRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/repository/RoomTypeRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/repository/RoomTypeRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/repository/SeatRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/repository/SeatRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/repository/SeatTypeRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/repository/SeatTypeRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/service/RoomTypeService.java" beforeDir="false" afterPath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/service/RoomTypeService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/service/SeatTypeService.java" beforeDir="false" afterPath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/service/SeatTypeService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/service/impl/RoomTypeServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/service/impl/RoomTypeServiceImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/service/impl/SeatServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/service/impl/SeatServiceImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/service/impl/SeatTypeServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/CineShow/src/main/java/vn/cineshow/service/impl/SeatTypeServiceImpl.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -258,6 +115,7 @@
       <workItem from="1760790292680" duration="635000" />
       <workItem from="1760790948509" duration="195000" />
       <workItem from="1760791233303" duration="130000" />
+      <workItem from="1761021435143" duration="513000" />
     </task>
     <servers />
   </component>
