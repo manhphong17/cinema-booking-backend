@@ -9,11 +9,9 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
-import vn.cineshow.dto.request.MovieCreationRequest;
-import vn.cineshow.dto.request.MovieFilterRequest;
-import vn.cineshow.dto.request.MovieUpdateBasicRequest;
-import vn.cineshow.dto.request.MovieUpdateFullRequest;
-import vn.cineshow.dto.response.*;
+import vn.cineshow.dto.request.movie.*;
+import vn.cineshow.dto.response.PageResponse;
+import vn.cineshow.dto.response.movie.*;
 import vn.cineshow.enums.MovieStatus;
 import vn.cineshow.exception.AppException;
 import vn.cineshow.exception.DuplicateResourceException;
@@ -40,7 +38,7 @@ import java.util.regex.Pattern;
 public class MovieServiceImpl implements MovieService {
 
     private final MovieRepository movieRepository;
-    private final SearchRepository searchRepository;
+    private final SearchMovieRepository searchRepository;
     private final LanguageRepository languageRepository;
     private final MovieGenresRepository movieGenresRepository;
     private final CountryRepository countryRepository;
@@ -108,10 +106,10 @@ public class MovieServiceImpl implements MovieService {
     }
 
     @Override
-    public MovieDetailResponse getMovie(long id) {
+    public OperatorMovieOverviewResponse getMovie(long id) {
         Movie movie = findById(id);
         log.info("Movie found, id: {}", id);
-        return MovieDetailResponse.builder()
+        return OperatorMovieOverviewResponse.builder()
                 .id(movie.getId())
                 .actor(movie.getActor())
                 .name(movie.getName())
@@ -208,8 +206,6 @@ public class MovieServiceImpl implements MovieService {
         movie.setMovieGenres(movieGenres);
         movie.setStatus(MovieStatus.valueOf(request.getStatus()));
         movie.setReleaseDate(request.getReleaseDate());
-        movieRepository.save(movie);
-
 
         movieRepository.save(movie);
         log.info("Movie updated successfully, id: {}", movie.getId());
@@ -264,15 +260,69 @@ public class MovieServiceImpl implements MovieService {
     @Override
     public void softDelete(long id) {
         Movie movie = findById(id);
-        movie.setIsDeleted(true);
+        movie.setDeleted(true);
         movie.setStatus(MovieStatus.ENDED);
         movieRepository.save(movie);
         log.info("Movie deleted successfully, id: {}", movie.getId());
     }
 
+    @Override
+    public List<OperatorMovieOverviewResponse> getTopMovieForHomePage(String movieStatus, int limit) {
+        try {
+            MovieStatus status = MovieStatus.valueOf(movieStatus.toUpperCase());
+            List<Movie> topMovies = movieRepository.findTopNMovieByStatus(status, PageRequest.of(0, limit));
+            return topMovies.stream()
+                    .map(movie -> OperatorMovieOverviewResponse
+                            .builder()
+                            .id(movie.getId())
+                            .name(movie.getName())
+                            .ageRating(movie.getAgeRating())
+                            .posterUrl(movie.getPosterUrl())
+                            .status(movie.getStatus().name())
+                            .build())
+                    .toList();
+        } catch (IllegalArgumentException ex) {
+            throw new IllegalArgumentException("Movie status invalid");
+        }
+    }
+
+    @Override
+    public void updateFeatureMovie(long id, boolean isFeatured) {
+        Movie movie = findById(id);
+        movie.setFeatured(isFeatured);
+        movieRepository.save(movie);
+        log.info("Movie updated successfully, id: {}", movie.getId());
+    }
+
+    @Override
+    public List<BannerResponse> getBanners() {
+
+        List<Movie> movies = movieRepository.findAllFeaturedMovies();
+
+        return movies.stream()
+                .map(movie -> BannerResponse
+                        .builder()
+                        .movieId(movie.getId())
+                        .bannerUrl(movie.getBannerUrl())
+                        .build())
+                .toList();
+    }
+
+    @Override
+    public PageResponse<?> getMovieListToBooking(UserSearchMovieRequest request) {
+        return searchRepository.findMoviesBySearchAndFilter(request);
+    }
+
+    private String getCutDescription(String description) {
+        if (description.length() > 200) {
+            description = description.substring(0, 201) + "...";
+        }
+        return description;
+    }
+
     private PageResponse<?> getPageResponse(int pageNo, int pageSize, Page<Movie> movies) {
 
-        List<MovieDetailResponse> responses = movies.stream().map(movie -> MovieDetailResponse.builder()
+        List<OperatorMovieOverviewResponse> responses = movies.stream().map(movie -> OperatorMovieOverviewResponse.builder()
                 .id(movie.getId())
                 .actor(movie.getActor())
                 .name(movie.getName())

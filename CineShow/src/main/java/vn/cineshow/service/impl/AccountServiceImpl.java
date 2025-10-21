@@ -9,14 +9,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
-import vn.cineshow.dto.request.EmailRegisterRequest;
 import vn.cineshow.dto.request.ForgotPasswordRequest;
 import vn.cineshow.dto.request.ResetPasswordRequest;
-import vn.cineshow.enums.AccountStatus;
-import vn.cineshow.enums.AuthProvider;
-import vn.cineshow.model.*;
+import vn.cineshow.model.Account;
+import vn.cineshow.model.PasswordResetToken;
 import vn.cineshow.repository.AccountRepository;
-import vn.cineshow.repository.OtpCodeRepository;
 import vn.cineshow.repository.PasswordResetTokenRepository;
 import vn.cineshow.repository.RefreshTokenRepository;
 import vn.cineshow.service.AccountService;
@@ -25,7 +22,6 @@ import vn.cineshow.service.OtpService;
 import java.security.SecureRandom;
 import java.time.Instant;
 import java.util.Base64;
-import java.util.List;
 import java.util.Optional;
 
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
@@ -50,34 +46,6 @@ class AccountServiceImpl implements AccountService {
         return Base64.getUrlEncoder().withoutPadding().encodeToString(b);
     }
 
-    @Override
-    public long createCustomerAccount(EmailRegisterRequest req) {
-        User user = User.builder()
-                .name(req.name())
-                .gender(req.gender())
-                .dateOfBirth(req.dateOfBirth()).build();
-
-
-        Account account = new Account();
-        Account.builder()
-                .email(req.email())
-                .password(req.password())
-                .status(AccountStatus.PENDING)
-                .user(user)
-                .build();
-
-        AccountProvider provider = AccountProvider.builder()
-                .account(account)
-                .provider(AuthProvider.LOCAL)
-                .build();
-
-        account.setProviders(List.of(provider));
-
-        accountRepository.save(account);
-
-
-        return account.getId();
-    }
 
     // -----------------------------------------------------------------------------------
     // Forgot password: validate → check email tồn tại → send OTP

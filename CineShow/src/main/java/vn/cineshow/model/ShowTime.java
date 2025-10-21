@@ -30,10 +30,10 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class ShowTime extends AbstractEntity implements Serializable {
 
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "DATETIME(6)")
     LocalDateTime startTime;
 
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "DATETIME(6)")
     LocalDateTime  endTime;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -47,8 +47,6 @@ public class ShowTime extends AbstractEntity implements Serializable {
     @JoinColumn(name = "movie_id", nullable = false)
     Movie movie;
 
-    @OneToMany(mappedBy = "showTime", fetch = FetchType.LAZY,cascade = CascadeType.ALL)
-    private List<TicketPrice> ticketPrices;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "subtitle_id", nullable = false)

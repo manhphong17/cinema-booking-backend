@@ -2,7 +2,7 @@ package vn.cineshow.utils.validator;
 
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
-import vn.cineshow.dto.request.MovieFilterRequest;
+import vn.cineshow.dto.request.movie.MovieFilterRequest;
 
 public class DateRangeValidator implements ConstraintValidator<ValidDateRange, MovieFilterRequest> {
     @Override

@@ -37,8 +37,18 @@ public class Seat extends AbstractEntity implements Serializable {
 
     Double price;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "room_id")
     Room room;
+
+    @Column(name = "row_label", length = 4)
+    String rowLabel;
+
+    @Column(name = "code", nullable = false, length = 16)
+    String code;
+
+    @Column
+    Boolean blocked;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "seat_type_id", nullable = false)
