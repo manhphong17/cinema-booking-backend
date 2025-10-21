@@ -1,28 +1,61 @@
 package vn.cineshow.controller;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-import vn.cineshow.dto.response.ResponseData;
-import vn.cineshow.dto.response.room.room_type.RoomTypeDTO;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import vn.cineshow.dto.request.room.RoomTypeCreateRequest;
+import vn.cineshow.dto.request.room.RoomTypeUpdateRequest;
 import vn.cineshow.service.RoomTypeService;
 
-import java.util.List;
+import java.net.URI;
+import java.util.EnumSet;
 
 @RestController
-@RequestMapping("/room-types")
+@RequestMapping("/api/room-types")
 @RequiredArgsConstructor
 public class RoomTypeController {
 
-    private final RoomTypeService roomTypeService;
+    private final RoomTypeService service;
 
-    // GET /room-types
-    // Response: [ { id, code, name, description? }, ... ]
     @GetMapping
-    public ResponseData<List<RoomTypeDTO>> getRoomTypes() {
-        List<RoomTypeDTO> roomTypes = roomTypeService.getAllRoomTypesDTO();
-        return new ResponseData<>(HttpStatus.OK.value(), "Lấy danh sách loại phòng thành công", roomTypes);
+    public ResponseEntity<?> list(@RequestParam(required = false) Boolean onlyActive) {
+        return ResponseEntity.ok(service.findAll(onlyActive));
     }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<?> get(@PathVariable Long id) {
+        return ResponseEntity.ok(service.findById(id));
+    }
+
+    @PostMapping
+    public ResponseEntity<?> create(@Valid @RequestBody RoomTypeCreateRequest req) {
+        var dto = service.create(req);
+        return ResponseEntity.created(URI.create("/api/room-types/" + dto.getId())).body(dto);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<?> update(@PathVariable Long id, @Valid @RequestBody RoomTypeUpdateRequest req) {
+        return ResponseEntity.ok(service.update(id, req));
+    }
+
+    @PatchMapping("/{id}")
+    public ResponseEntity<?> patch(@PathVariable Long id, @RequestBody RoomTypeUpdateRequest req) {
+        return ResponseEntity.ok(service.patch(id, req));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> delete(@PathVariable Long id) {
+        service.delete(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/{id}/activate")
+    public ResponseEntity<?> activate(@PathVariable Long id) { return ResponseEntity.ok(service.activate(id)); }
+
+    @PostMapping("/{id}/deactivate")
+    public ResponseEntity<?> deactivate(@PathVariable Long id) { return ResponseEntity.ok(service.deactivate(id)); }
+
+
 }
