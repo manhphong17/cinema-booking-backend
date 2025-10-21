@@ -77,7 +77,7 @@ public class ShowTimeController {
 
 
     // Dropdown Room (có filter theo roomType)
-    @GetMapping("/lookup/rooms")
+ /*   @GetMapping("/lookup/rooms")
     public List<IdNameDTO> lookupRooms(@RequestParam(required = false) Long roomTypeId) {
         Sort sort = Sort.by("name").ascending();
         var rooms = (roomTypeId == null)
@@ -87,7 +87,7 @@ public class ShowTimeController {
         return rooms.stream()
                 .map(r -> IdNameDTO.of(r.getId(), r.getName()))
                 .toList();
-    }
+    }*/
 
     @GetMapping("/lookup/subtitles")
     public List<IdNameDTO> lookupSubtitles(@RequestParam(required = false) Long subTitleId) {
