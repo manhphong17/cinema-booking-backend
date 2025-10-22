@@ -20,7 +20,7 @@ import vn.cineshow.dto.response.showtime.ShowTimeResponse;
 import vn.cineshow.repository.MovieRepository;
 import vn.cineshow.repository.RoomRepository;
 import vn.cineshow.repository.RoomTypeRepository;
-//import vn.cineshow.repository.SubTitleRepository;
+import vn.cineshow.repository.SubTitleRepository;
 import vn.cineshow.service.ShowTimeService;
 
 import java.time.LocalDate;
@@ -38,8 +38,8 @@ public class ShowTimeController {
     private final RoomRepository roomRepository;
     private final ShowTimeService showTimeService;
     private final MovieRepository movieRepository;
+    private final SubTitleRepository subTitleRepository;
 
-//    private final SubTitleRepository subTitleRepository;
     @Operation(summary = "Lookup movies (id + name)")
     @GetMapping("/lookup/id-name-movies")
     public List<IdNameDTO> lookupMovieIdName() {
@@ -77,48 +77,19 @@ public class ShowTimeController {
     }
 
 
-//    // Dropdown Room (có filter theo roomType)
-//    @GetMapping("/lookup/rooms")
-//    public List<IdNameDTO> lookupRooms(@RequestParam(required = false) Long roomTypeId) {
-//        Sort sort = Sort.by("name").ascending();
-//        var rooms = (roomTypeId == null)
-//                ? roomRepository.findAll(sort)
-//                : roomRepository.findByRoomType_Id(roomTypeId, sort);
-//
-//        return rooms.stream()
-//                .map(r -> IdNameDTO.of(r.getId(), r.getName()))
-//                .toList();
-//    }
-//
-//    @GetMapping("/lookup/subtitles")
-//    public List<IdNameDTO> lookupSubtitles(@RequestParam(required = false) Long subTitleId) {
-//        Sort sort = Sort.by("name").ascending();
-//        var subtitles = (subTitleId == null)
-//                ? subTitleRepository.findAll(sort)
-//                : subTitleRepository.findSubTitleBy(subTitleId, sort);
-//
-//        return subtitles.stream()
-//                .map(s -> IdNameDTO.of(s.getId(), s.getName()))
-//                .toList();
-//    }
 
-//    @GetMapping("/showTime")
-//    @Operation(summary = "Get showtimes by movie, date and room type",
-//            description = "Retrieve showtimes filtered by movie ID, date and room type ID (all parameters are required)")
-//    public ResponseData<List<ShowTimeListDTO>> getShowtimes(
-//            @RequestParam Long movieId,
-//            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
-//            @RequestParam Long roomTypeId) {
-//
-//        List<ShowTimeListDTO> showtimes = showTimeService.getShowtimesByMovieAndDateAndRoomType(
-//                movieId, date, roomTypeId);
-//
-//        return new ResponseData<>(
-//                HttpStatus.OK.value(),
-//                "Showtimes retrieved successfully",
-//                showtimes
-//        );
-//    }
+    @GetMapping("/lookup/subtitles")
+    public List<IdNameDTO> lookupSubtitles(@RequestParam(required = false) Long subTitleId) {
+        Sort sort = Sort.by("name").ascending();
+        var subtitles = (subTitleId == null)
+                ? subTitleRepository.findAll(sort)
+                : subTitleRepository.findSubTitleBy(subTitleId, sort);
+
+        return subtitles.stream()
+                .map(s -> IdNameDTO.of(s.getId(), s.getName()))
+                .toList();
+    }
+
 
     @GetMapping("/filter")
     @Operation(summary = "Filter showtimes flexibly",

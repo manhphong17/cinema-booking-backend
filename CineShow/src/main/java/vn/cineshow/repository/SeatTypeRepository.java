@@ -14,4 +14,7 @@ public interface SeatTypeRepository extends JpaRepository<SeatType, Long> {
 //    Optional<SeatType> findByNameIgnoreCase(String name);
 //
 //    boolean existsByCode(String code);
+
+    boolean existsByNameIgnoreCase(String name);
+    boolean existsByNameIgnoreCaseAndIdNot(String name, Long id);
 }

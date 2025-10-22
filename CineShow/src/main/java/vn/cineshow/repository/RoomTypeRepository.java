@@ -12,4 +12,7 @@ public interface RoomTypeRepository extends JpaRepository<RoomType, Long> {
 //    Optional<RoomType> findByCode(String code);
 //
 //    boolean existsByCode(String code);
+
+    boolean existsByNameIgnoreCase(String name);
+    boolean existsByNameIgnoreCaseAndIdNot(String name, Long id);
 }
