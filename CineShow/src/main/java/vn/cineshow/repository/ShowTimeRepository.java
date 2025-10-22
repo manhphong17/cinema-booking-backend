@@ -6,6 +6,8 @@ import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import vn.cineshow.dto.response.booking.ShowTimeResponse;
+import vn.cineshow.model.Movie;
 import vn.cineshow.model.ShowTime;
 
 import java.time.LocalDate;
@@ -196,4 +198,17 @@ select st from ShowTime st
 where st.startTime between :start and :end
 """)
     List<ShowTime> findWithJoins(LocalDateTime start, LocalDateTime end);
+
+    @Query("""
+SELECT DISTINCT s.startTime, s.endTime 
+FROM ShowTime s 
+JOIN s.room r
+JOIN r.seats sa
+WHERE FUNCTION('DATE', s.startTime) = :targetDate 
+AND s.movie.id = :movieId 
+AND sa.status NOT IN ('BOOKED', 'BLOCKED')
+ORDER BY s.startTime ASC """ )
+    List<Object[]> findDistinctStartAndEndTimesByDate(@Param("targetDate") LocalDate targetDate, @Param("movieId") Long movieId);
+
+    List<ShowTime> findByMovie_IdAndStartTime(Long movieId, LocalDateTime startTime);
 }

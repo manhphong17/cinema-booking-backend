@@ -39,6 +39,7 @@ public class Room extends AbstractEntity implements Serializable {
     @ManyToOne(fetch = FetchType.LAZY)
     RoomType roomType;
 
+    @Enumerated(EnumType.STRING)
     RoomStatus status;
 
     @OneToMany(mappedBy = "room",  cascade = CascadeType.ALL,fetch = FetchType.LAZY)

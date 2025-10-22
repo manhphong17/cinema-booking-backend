@@ -23,4 +23,6 @@ public interface MovieRepository extends JpaRepository<Movie, Long> {
 
     @Query("select m from Movie m where m.status =:status ORDER BY m.releaseDate desc")
     List<Movie> findTopNMovieByStatus(@Param("status") MovieStatus status, Pageable pageable);
+
+
 }

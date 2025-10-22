@@ -28,8 +28,9 @@ public enum ErrorCode {
     HOLIDAY_EXISTED(1028, "Holiday has been added"),
     HOLIDAY_NOT_FOUND(1029, "Holiday not found"),
     SEAT_TYPE_NOT_FOUND(1030, "Seat type not found"),
-    ROOM_TYPE_NOT_FOUND(1031, "Room type not found");
+    ROOM_TYPE_NOT_FOUND(1031, "Room type not found"),
 
+    SHOW_TIME_NOT_FOUND(3001,"Show time not found");
 
 
     private final int code;
