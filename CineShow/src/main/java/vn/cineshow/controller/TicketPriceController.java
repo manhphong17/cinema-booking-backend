@@ -37,4 +37,18 @@ public class TicketPriceController {
                 list
         );
     }
+
+    // GET /ticket-prices/calculate?seatId=1&showTimeId=10
+    @GetMapping("/calculate")
+    public ResponseData<Double> getTicketPrice(
+            @RequestParam Long seatId,
+            @RequestParam Long showTimeId
+    ) {
+        Double price = ticketPriceService.calculatePrice(seatId, showTimeId);
+        return new ResponseData<>(
+                HttpStatus.OK.value(),
+                "Lấy giá vé thành công",
+                price
+        );
+    }
 }

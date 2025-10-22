@@ -20,4 +20,7 @@ public interface HolidayRepository extends JpaRepository<Holiday, Long> {
     // Lấy danh sách ngày lễ riêng của năm hiện tại
     @Query("SELECT h FROM Holiday h WHERE h.isRecurring = false AND YEAR(h.holidayDate) = :year")
     Page<Holiday> findYearlyHolidays(@Param("year")int year, Pageable pageable);
+
+
+
 }
