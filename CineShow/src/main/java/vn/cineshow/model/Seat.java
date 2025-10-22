@@ -2,12 +2,7 @@ package vn.cineshow.model;
 
 import java.io.Serializable;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -32,7 +27,7 @@ public class Seat extends AbstractEntity implements Serializable {
 
     @Column(name = "seat_column")
     String column;
-
+    @Enumerated(EnumType.STRING)
     SeatStatus status;
 
     Double price;
