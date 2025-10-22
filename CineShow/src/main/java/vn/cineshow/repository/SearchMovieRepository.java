@@ -135,7 +135,7 @@ public class SearchMovieRepository implements SearchMovieRepositoryCustom {
 
         // === 4. Pagination setup ===
         int pageNo = Math.max(req.getPageNo(), 1);      // page index starts at 1
-        int pageSize = Math.max(req.getPageSize(), 10); // default size if invalid
+        int pageSize = Math.max(req.getPageSize(), 8); // default size if invalid
         int offset = (pageNo - 1) * pageSize;
 
         // === 5. Execute main data query ===
