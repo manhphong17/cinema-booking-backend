@@ -313,12 +313,6 @@ public class MovieServiceImpl implements MovieService {
         return searchRepository.findMoviesBySearchAndFilter(request);
     }
 
-    private String getCutDescription(String description) {
-        if (description.length() > 200) {
-            description = description.substring(0, 201) + "...";
-        }
-        return description;
-    }
 
     private PageResponse<?> getPageResponse(int pageNo, int pageSize, Page<Movie> movies) {
 

@@ -99,10 +99,10 @@ app:
   sendgrid:
     otp-template-id: "d-71a24bbc41824c0495bc166a115275a0"   # Template ID cho OTP
 
-admin: { email_default: "admin@test.com", password_default: "12345678" }
-user-account-test: { email: "user@test.com", password: "12345678" }
-staff-account-test: { email: "staff@test.com", password: "12345678" }
-operation-account-test: { email: "operation@test.com", password: "12345678" }
+admin: { email_default: "admin@test.com", password_default: "00000000" }
+user-account-test: { email: "user@test.com", password: "00000000" }
+staff-account-test: { email: "staff@test.com", password: "00000000" }
+operation-account-test: { email: "operation@test.com", password: "00000000" }
 business-account-test: { email: "business@test.com", password: "00000000" }
 
 jwt:
