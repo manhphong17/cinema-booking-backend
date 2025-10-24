@@ -26,11 +26,10 @@ import java.util.List;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    @Value("${sendgrid.api-key}")
-    private String sendGridKey;
-
     private final CustomizeRequestFilter requestFilter;
     private final CustomOAuth2SuccessHandler successHandler;
+    @Value("${sendgrid.api-key}")
+    private String sendGridKey;
 
     @Bean
     public SendGrid sendGrid() {
@@ -60,7 +59,8 @@ public class SecurityConfig {
                                 "/oauth2/**",
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**",
-                                "/public/**")
+                                "/public/**",
+                                "/actuator/**")
                         .permitAll()
                         .anyRequest().authenticated()
                 )

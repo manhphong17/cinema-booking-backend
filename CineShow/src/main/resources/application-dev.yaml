@@ -10,14 +10,14 @@ spring:
   #      host: localhost
   #      port: 6379
 
-  #    ###### REDIS CACHE CLOUD
-  #    data:
-  #      redis:
-  #        host: redis-15193.c292.ap-southeast-1-1.ec2.redns.redis-cloud.com
-  #        port: 15193
-  #        password: 6fSU3d43KtX7O9hPx0UekNcSLlITwA43
-  #        ssl:
-  #          enabled: true
+  data:
+    redis:
+      host: redis-16466.c1.ap-southeast-1-1.ec2.redns.redis-cloud.com
+      port: 16466
+      username: default
+      password: 9aCamrhrRMWSj12qrRaFmF09EWIwE25C
+      ssl:
+        enabled: false
 
   #config oAuth 2.0
   security:
