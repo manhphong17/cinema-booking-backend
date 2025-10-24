@@ -33,14 +33,15 @@ public class SeatServiceImpl implements SeatService {
     /* =========================
        1) INIT
        ========================= */
+
     @Override
     @Transactional
     public int initSeats(Long roomId, SeatInitRequest request) {
         Room room = roomRepository.findById(roomId).orElse(null);
         if (room == null) return 0;
 
-        // Xóa ghế cũ
         seatRepository.deleteByRoom_Id(roomId);
+        seatRepository.flush();
 
         SeatType defaultType = seatTypeRepository.findById(request.getDefaultSeatTypeId())
                 .orElseThrow(() -> new IllegalArgumentException("SeatType không tồn tại"));
@@ -50,23 +51,18 @@ public class SeatServiceImpl implements SeatService {
 
         List<Seat> batch = new ArrayList<>(rows * cols);
         for (int r = 1; r <= rows; r++) {
-            String rowLabel = toRowLabel(r);
             for (int c = 1; c <= cols; c++) {
                 Seat s = new Seat();
                 s.setRoom(room);
-                s.setRow(String.valueOf(r));       // entity dùng String
-                s.setColumn(String.valueOf(c));    // entity dùng String
-                s.setRowLabel(rowLabel);
-                s.setCode(rowLabel + c);           // unique trong phòng
+                s.setRow(String.valueOf(r));
+                s.setColumn(String.valueOf(c));
                 s.setSeatType(defaultType);
-                s.setStatus(SeatStatus.AVAILABLE);    // enum
-                s.setBlocked(false);
+                s.setStatus(SeatStatus.AVAILABLE);
                 batch.add(s);
             }
         }
         seatRepository.saveAll(batch);
 
-        // Đồng bộ room dimension & capacity
         room.setRows(rows);
         room.setColumns(cols);
         room.setCapacity(rows * cols);
@@ -109,22 +105,21 @@ public class SeatServiceImpl implements SeatService {
             SeatType st = s.getSeatType();
             SeatTypeDTO seatTypeDTO = (st == null) ? null : SeatTypeDTO.builder()
                     .id(st.getId())
-//                    .code(st.getCode())
                     .name(st.getName())
                     .description(st.getDescription())
                     .build();
 
+            String rowLabel = toRowLabel(r);
             SeatCellDTO cell = SeatCellDTO.builder()
                     .id(s.getId())
                     .rowIndex(r)
                     .columnIndex(c)
-                    .rowLabel(s.getRowLabel())
-                    .number(c) // không có field number trong entity, dùng cột làm số ghế
-//                    .code(s.getCode())
+                    .rowLabel(rowLabel)
+                    .number(c)
                     .seatType(seatTypeDTO)
-                    .status(s.getStatus() == null ? null : s.getStatus().name()) // enum -> String
-                    .isBlocked(Boolean.TRUE.equals(s.getBlocked()))
-                    .note(null) // entity không có note
+                    .status(s.getStatus() == null ? null : s.getStatus().name())
+                    .isBlocked(Boolean.FALSE)
+                    .note(null)
                     .build();
 
             matrix.get(r - 1).set(c - 1, cell);
@@ -180,17 +175,15 @@ public class SeatServiceImpl implements SeatService {
                         } catch (IllegalArgumentException ignored) { /* giữ ACTIVE */ }
                     }
 
+                    String rowLabel = toRowLabel(r);
                     if (found == null) {
                         Seat s = new Seat();
                         s.setRoom(room);
                         s.setRow(String.valueOf(r));
                         s.setColumn(String.valueOf(c));
-                        String rowLabel = toRowLabel(r);
-                        s.setRowLabel(rowLabel);
-                        s.setCode(rowLabel + c);
                         s.setSeatType(type);
                         s.setStatus(desiredStatus);
-                        s.setBlocked(Boolean.TRUE.equals(cellReq.getIsBlocked()));
+
                         seatRepository.save(s);
                         created++;
                     } else {
@@ -204,14 +197,6 @@ public class SeatServiceImpl implements SeatService {
                             found.setStatus(desiredStatus);
                             changed = true;
                         }
-                        if (cellReq.getIsBlocked() != null) {
-                            boolean nb = cellReq.getIsBlocked();
-                            if (!Objects.equals(Boolean.TRUE.equals(found.getBlocked()), nb)) {
-                                found.setBlocked(nb);
-                                changed = true;
-                            }
-                        }
-                        // entity không có note/number -> bỏ qua
 
                         if (changed) {
                             seatRepository.save(found);
@@ -285,7 +270,6 @@ public class SeatServiceImpl implements SeatService {
                             String.valueOf(pos.getRowIndex()),
                             String.valueOf(pos.getColumnIndex()))
                     .ifPresent(seat -> {
-                        seat.setBlocked(block);
                         // Sync status theo blocked
                         if (block) seat.setStatus(SeatStatus.BLOCKED);
                         else if (seat.getStatus() == SeatStatus.BLOCKED) seat.setStatus(SeatStatus.AVAILABLE);
@@ -304,7 +288,9 @@ public class SeatServiceImpl implements SeatService {
         return row + "," + column;
     }
 
-    /** 1->A, 26->Z, 27->AA, ... */
+    /**
+     * 1->A, 26->Z, 27->AA, ...
+     */
     private String toRowLabel(int index1Based) {
         StringBuilder sb = new StringBuilder();
         int n = index1Based;

@@ -124,4 +124,19 @@ public class HolidayServiceImpl implements HolidayService {
                     .build();
         }
     }
+
+    @Transactional
+    @Override
+    public boolean isHoliday(LocalDate date) {
+        // 1⃣ Kiểm tra ngày lễ cố định theo năm (isRecurring = false)
+        boolean existsSpecificHoliday = holidayRepository.existsByHolidayDate(date);
+        if (existsSpecificHoliday) return true;
+
+        // 2⃣ Kiểm tra ngày lễ lặp lại hàng năm (isRecurring = true)
+        int day = date.getDayOfMonth();
+        int month = date.getMonthValue();
+
+        return holidayRepository.existsByDayOfMonthAndMonthOfYearAndIsRecurringTrue(day, month);
+    }
+
 }

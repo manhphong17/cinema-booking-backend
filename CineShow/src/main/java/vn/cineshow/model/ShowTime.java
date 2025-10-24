@@ -47,7 +47,6 @@ public class ShowTime extends AbstractEntity implements Serializable {
     @JoinColumn(name = "movie_id", nullable = false)
     Movie movie;
 
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "subtitle_id", nullable = false)
     private SubTitle subtitle;

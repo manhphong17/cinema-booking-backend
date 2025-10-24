@@ -12,8 +12,6 @@ public interface SeatRepository extends JpaRepository<Seat, Long> {
 
     List<Seat> findByRoom_Id(Long roomId);
 
-    boolean existsByRoom_IdAndCode(Long roomId, String code);
-
     void deleteByRoom_Id(Long roomId);
 
     List<Seat> findByRoom_IdOrderByRowAscColumnAsc(Long roomId);

@@ -17,7 +17,6 @@ public class SeatCellDTO {
 
     String rowLabel;      // "A", "B", ...
     Integer number;       // 1..N (số ghế trong hàng)
-    String code;          // "A1", "B5", ...
 
     SeatTypeDTO seatType; // {id, code, name, description?}
     String status;        // "ACTIVE" | "INACTIVE" | "BLOCKED"

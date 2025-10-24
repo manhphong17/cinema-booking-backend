@@ -989,6 +989,8 @@ VALUES
 (100, 2),
 (100, 9);
 
+
+
 -- Insert sample data for accounts and users (20 additional accounts)
 -- Accounts table
 INSERT INTO accounts (email, password, status, is_deleted, created_at, updated_at)
@@ -1147,23 +1149,23 @@ VALUES ('VI', 'Tiếng Việt', NOW(), NOW()),
 INSERT INTO room_types (name, description, created_at, updated_at, active)
 VALUES ('2D', 'Phòng chiếu tiêu chuẩn', NOW(), NOW(), true),
        ('3D', 'Phòng chiếu VIP cao cấp', NOW(), NOW(), true),
-       ('IMAX', 'Phòng chiếu IMAX', NOW(), NOW(),true);
+       ('IMAX', 'Phòng chiếu IMAX', NOW(), NOW(), true);
 
 -- Seat Types
 INSERT INTO seat_types (name, description, created_at, updated_at, active)
 VALUES ('Standard', 'Ghế tiêu chuẩn', NOW(), NOW(), true),
-       ('VIP', 'Ghế VIP', NOW(), NOW(),true);
+       ('VIP', 'Ghế VIP', NOW(), NOW(), true);
 
 -- Rooms
-INSERT INTO rooms (name, room_type_id, status, created_at, updated_at,rows_count, columns_count)
-VALUES ('Phòng 1', 1, 'ACTIVE', NOW(), NOW(),10,12),
-       ('Phòng 2', 1, 'ACTIVE', NOW(), NOW(),10,12),
-       ('Phòng 3', 2, 'ACTIVE', NOW(), NOW(),10,12),
-       ('Phòng 4', 3, 'ACTIVE', NOW(), NOW(),10,12),
-       ('Phòng 5', 1, 'ACTIVE', NOW(), NOW(),10,12),
-       ('Phòng VIP 1', 2, 'ACTIVE', NOW(), NOW(),10,12),
-       ('Phòng IMAX 1', 3, 'ACTIVE', NOW(), NOW(),10,12),
-       ('Phòng 4DX 1', 1, 'ACTIVE', NOW(), NOW(),10,12);
+INSERT INTO rooms (name, room_type_id, status, created_at, updated_at, rows_count, columns_count)
+VALUES ('Phòng 1', 1, 'ACTIVE', NOW(), NOW(), 10, 12),
+       ('Phòng 2', 1, 'ACTIVE', NOW(), NOW(), 10, 12),
+       ('Phòng 3', 2, 'ACTIVE', NOW(), NOW(), 10, 12),
+       ('Phòng 4', 3, 'ACTIVE', NOW(), NOW(), 10, 12),
+       ('Phòng 5', 1, 'ACTIVE', NOW(), NOW(), 10, 12),
+       ('Phòng VIP 1', 2, 'ACTIVE', NOW(), NOW(), 10, 12),
+       ('Phòng IMAX 1', 3, 'ACTIVE', NOW(), NOW(), 10, 12),
+       ('Phòng 4DX 1', 1, 'ACTIVE', NOW(), NOW(), 10, 12);
 
 -- Ghế cho Phòng 1 (2D - 10x8 = 80 ghế)
 INSERT INTO seats (seat_row, seat_column, status, room_id, seat_type_id, created_at, updated_at)
@@ -1191,8 +1193,8 @@ VALUES
 ('B', '9', 'AVAILABLE', 1, 1, NOW(), NOW()),
 ('B', '10', 'AVAILABLE', 1, 1, NOW(), NOW()),
 -- Row C (1-10) - Một số ghế đã đặt để test
-('C', '1', 'BOOKED', 1, 1, NOW(), NOW()),
-('C', '2', 'BOOKED', 1, 1, NOW(), NOW()),
+('C', '1', 'AVAILABLE', 1, 1, NOW(), NOW()),
+('C', '2', 'AVAILABLE', 1, 1, NOW(), NOW()),
 ('C', '3', 'AVAILABLE', 1, 1, NOW(), NOW()),
 ('C', '4', 'AVAILABLE', 1, 1, NOW(), NOW()),
 ('C', '5', 'AVAILABLE', 1, 1, NOW(), NOW()),
@@ -1354,6 +1356,8 @@ INSERT INTO showtimes (start_time, end_time, room_id, movie_id, subtitle_id, cre
 VALUES
 -- Today's shows
 ('2024-12-19 09:00:00', '2024-12-19 12:00:00', 1, 1, 1, NOW(), NOW()), -- Avatar: The Way of Water
+('2024-12-19 09:00:00', '2024-12-19 12:00:00', 2, 1, 1, NOW(), NOW()),
+('2024-12-19 09:00:00', '2024-12-19 12:00:00', 3, 1, 1, NOW(), NOW()),
 ('2024-12-19 13:00:00', '2024-12-19 15:30:00', 1, 2, 1, NOW(), NOW()), -- Top Gun: Maverick
 ('2024-12-19 16:00:00', '2024-12-19 18:40:00', 1, 3, 1, NOW(), NOW()), -- Black Panther: Wakanda Forever
 ('2024-12-19 19:00:00', '2024-12-19 21:30:00', 1, 4, 1, NOW(), NOW()), -- Spider-Man: No Way Home
@@ -1371,77 +1375,31 @@ VALUES
 ('2024-12-19 14:00:00', '2024-12-19 17:00:00', 4, 1, 1, NOW(), NOW()),
 ('2024-12-20 14:00:00', '2024-12-20 17:00:00', 4, 2, 1, NOW(), NOW());
 
--- Ticket Prices
-INSERT INTO ticketprices (showtime_id, seat_type_id, room_type_id, price, created_at, updated_at)
+
+-- ShowTimes
+INSERT INTO showtimes (start_time, end_time, room_id, movie_id, subtitle_id, created_at, updated_at)
 VALUES
--- Standard room prices
-(1, 1, 1, 80000, NOW(), NOW()),   -- Standard seat in standard room
-(1, 2, 1, 120000, NOW(), NOW()),  -- VIP seat in standard room
-(2, 1, 1, 80000, NOW(), NOW()),
-(2, 2, 1, 120000, NOW(), NOW()),
-(3, 1, 1, 80000, NOW(), NOW()),
-(3, 2, 1, 120000, NOW(), NOW()),
-(4, 1, 1, 80000, NOW(), NOW()),
-(4, 2, 1, 120000, NOW(), NOW()),
-(5, 1, 1, 80000, NOW(), NOW()),
-(5, 2, 1, 120000, NOW(), NOW()),
--- VIP room prices
-(11, 1, 2, 150000, NOW(), NOW()), -- Standard seat in VIP room
-(11, 2, 2, 200000, NOW(), NOW()), -- VIP seat in VIP room
-(12, 1, 2, 150000, NOW(), NOW()),
-(12, 2, 2, 200000, NOW(), NOW()),
--- IMAX room prices
-(13, 1, 3, 120000, NOW(), NOW()), -- Standard seat in IMAX room
-(13, 2, 3, 180000, NOW(), NOW()), -- VIP seat in IMAX room
-(14, 1, 3, 120000, NOW(), NOW()),
-(14, 2, 3, 180000, NOW(), NOW());
+-- Today's shows
+('2025-10-23 09:00:00', '2025-10-23 12:00:00', 1, 1, 1, NOW(), NOW()), -- Avatar: The Way of Water
+('2025-10-23 09:00:00', '2025-10-23 12:00:00', 2, 1, 1, NOW(), NOW()),
+('2025-10-19 09:00:00', '2025-10-23 12:00:00', 3, 1, 1, NOW(), NOW()),
+('2025-10-23 13:00:00', '2025-10-23 15:30:00', 1, 2, 1, NOW(), NOW()), -- Top Gun: Maverick
+('2025-10-23 16:00:00', '2025-10-23 18:40:00', 1, 3, 1, NOW(), NOW()), -- Black Panther: Wakanda Forever
+('2025-10-23 19:00:00', '2025-10-23 21:30:00', 1, 4, 1, NOW(), NOW()), -- Spider-Man: No Way Home
+('2025-10-23 22:00:00', '2025-10-23 00:30:00', 1, 5, 1, NOW(), NOW()), -- Dune
+-- Tomorrow's shows
+('2025-10-23 09:00:00', '2025-10-23 12:00:00', 2, 1, 1, NOW(), NOW()),
+('2025-10-23 13:00:00', '2025-10-23 15:30:00', 2, 2, 1, NOW(), NOW()),
+('2025-10-23 16:00:00', '2025-12-23 18:40:00', 2, 3, 1, NOW(), NOW()),
+('2025-10-23 19:00:00', '2025-10-23 21:30:00', 2, 4, 1, NOW(), NOW()),
+('2025-10-23 22:00:00', '2025-10-23 00:30:00', 2, 5, 1, NOW(), NOW()),
+-- VIP Room shows
+('2025-10-23 20:00:00', '2025-10-23 23:00:00', 3, 1, 1, NOW(), NOW()),
+('2025-10-23 20:00:00', '2025-10-23 23:00:00', 3, 2, 1, NOW(), NOW()),
+-- IMAX shows
+('2025-10-23 14:00:00', '2025-10-23 17:00:00', 4, 1, 1, NOW(), NOW()),
+('2025-10-23 14:00:00', '2025-10-23 17:00:00', 4, 2, 1, NOW(), NOW());
 
--- Payment Methods
-INSERT INTO payment_methods (method_code, method_name, is_active, created_at, updated_at)
-VALUES ('CASH', 'Tiền mặt', true, NOW(), NOW()),
-       ('BANK_TRANSFER', 'Chuyển khoản ngân hàng', true, NOW(), NOW()),
-       ('CREDIT_CARD', 'Thẻ tín dụng', true, NOW(), NOW()),
-       ('DEBIT_CARD', 'Thẻ ghi nợ', true, NOW(), NOW()),
-       ('E_WALLET', 'Ví điện tử', true, NOW(), NOW()),
-       ('MOMO', 'Ví MoMo', true, NOW(), NOW()),
-       ('ZALOPAY', 'Ví ZaloPay', true, NOW(), NOW()),
-       ('VNPAY', 'VNPay', true, NOW(), NOW());
-
--- Sample Orders
-INSERT INTO orders (user_id, total_price, order_status, created_at, updated_at)
-VALUES (6, 160000, 'COMPLETED', NOW(), NOW()), -- Customer 1
-       (7, 240000, 'PENDING', NOW(), NOW()),   -- Customer 2
-       (8, 320000, 'COMPLETED', NOW(), NOW()), -- Customer 3
-       (9, 80000, 'CANCELED', NOW(), NOW()),   -- Customer 4
-       (10, 400000, 'COMPLETED', NOW(), NOW());
--- Customer 5
-
--- Sample Payments
-INSERT INTO payments (order_id, method_id, amount, transaction_no, payment_status, payment_date, created_at, updated_at)
-VALUES (1, 1, 160000, 'TXN001', 'COMPLETED', NOW(), NOW(), NOW()),
-       (2, 1, 240000, 'TXN002', 'PENDING', NOW(), NOW(), NOW()),
-       (3, 1, 320000, 'TXN003', 'COMPLETED', NOW(), NOW(), NOW()),
-       (5, 1, 400000, 'TXN005', 'COMPLETED', NOW(), NOW(), NOW());
-
--- Sample Tickets
-INSERT INTO tickets (order_id, seat_id, showtime_id, ticket_price, qr_code, created_at, updated_at)
-VALUES
--- Order 1 (Customer 1) - 2 tickets
-(1, 1, 1, 80000, 'QR001', NOW(), NOW()),
-(1, 2, 1, 80000, 'QR002', NOW(), NOW()),
--- Order 2 (Customer 2) - 3 tickets
-(2, 11, 2, 80000, 'QR003', NOW(), NOW()),
-(2, 12, 2, 80000, 'QR004', NOW(), NOW()),
-(2, 13, 2, 80000, 'QR005', NOW(), NOW()),
--- Order 3 (Customer 3) - 4 tickets
-(3, 21, 3, 80000, 'QR006', NOW(), NOW()),
-(3, 22, 3, 80000, 'QR007', NOW(), NOW()),
-(3, 23, 3, 80000, 'QR008', NOW(), NOW()),
-(3, 24, 3, 80000, 'QR009', NOW(), NOW()),
--- Order 5 (Customer 5) - 5 tickets
-(5, 31, 4, 80000, 'QR010', NOW(), NOW()),
-(5, 32, 4, 80000, 'QR011', NOW(), NOW()),
-(5, 33, 4, 80000, 'QR012', NOW(), NOW()),
-(5, 34, 4, 80000, 'QR013', NOW(), NOW()),
-(5, 35, 4, 80000, 'QR014', NOW(), NOW());
-
+INSERT INTO showtimes (start_time, end_time, room_id, movie_id, subtitle_id, created_at, updated_at)
+VALUES ('2025-10-23 14:00:00', '2025-10-23 17:00:00', 1, 1, 1, NOW(), NOW()),
+       ('2025-10-23 14:00:00', '2025-10-23 17:00:00', 2, 1, 1, NOW(), NOW());
