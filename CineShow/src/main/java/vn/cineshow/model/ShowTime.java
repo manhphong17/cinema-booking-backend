@@ -50,4 +50,7 @@ public class ShowTime extends AbstractEntity implements Serializable {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "subtitle_id", nullable = false)
     private SubTitle subtitle;
+
+    @Column(name = "is_deleted", nullable = false)
+    Boolean isDeleted = false;
 }

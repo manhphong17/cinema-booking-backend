@@ -2,26 +2,27 @@ package vn.cineshow.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 import vn.cineshow.dto.request.showtime.CreateShowTimeRequest;
 import vn.cineshow.dto.request.showtime.UpdateShowTimeRequest;
+import vn.cineshow.dto.response.IdNameDTO;
 import vn.cineshow.dto.response.showtime.ShowTimeListDTO;
 import vn.cineshow.dto.response.showtime.ShowTimeResponse;
+import vn.cineshow.enums.MovieStatus;
 import vn.cineshow.enums.RoomStatus;
-import vn.cineshow.exception.ShowTimeException.AppException;
-import vn.cineshow.exception.ShowTimeException.ErrorCodShowTime;
+import vn.cineshow.exception.AppException;
+import vn.cineshow.exception.ErrorCode;
 import vn.cineshow.model.Movie;
 import vn.cineshow.model.Room;
 import vn.cineshow.model.ShowTime;
 import vn.cineshow.model.SubTitle;
-import vn.cineshow.repository.MovieRepository;
-import vn.cineshow.repository.RoomRepository;
-import vn.cineshow.repository.ShowTimeRepository;
-import vn.cineshow.repository.SubTitleRepository;
+import vn.cineshow.repository.*;
 import vn.cineshow.service.ShowTimeService;
 
 
@@ -30,7 +31,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.time.temporal.ChronoField;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -41,6 +42,7 @@ public class ShowTimeServiceImpl implements ShowTimeService {
     private final MovieRepository movieRepo;
     private final RoomRepository roomRepo;
     private final SubTitleRepository subTitleRepo;
+    private final RoomTypeRepository roomTypeRepo;
 
     @Override
     @Transactional(readOnly = true)
@@ -56,66 +58,7 @@ public class ShowTimeServiceImpl implements ShowTimeService {
         return list.stream().map(ShowTimeListDTO::from).collect(Collectors.toList());
     }
 
-    @Override
-    public List<ShowTimeListDTO> getByMovieId(Long movieId, LocalDate date) {
-        List<ShowTime> result;
 
-        if (date == null) {
-            result = showTimeRepository.findByMovie_IdOrderByStartTimeAsc(movieId);
-        } else {
-            LocalDateTime from = date.atStartOfDay();
-            LocalDateTime to   = date.plusDays(1).atStartOfDay().minusNanos(1);
-            result = showTimeRepository
-                    .findByMovie_IdAndStartTimeBetweenOrderByStartTimeAsc(movieId, from, to);
-        }
-
-        return result.stream().map(ShowTimeListDTO::from).toList();
-    }
-
-    @Override
-    public List<ShowTimeListDTO> searchShowtimes(Long movieId, LocalDate date) {
-        LocalDateTime from = (date == null) ? null : date.atStartOfDay();
-        LocalDateTime to   = (date == null) ? null : date.plusDays(1).atStartOfDay().minusNanos(1);
-        List<ShowTime> list = showTimeRepository.search(movieId, from, to);
-        return list.stream().map(ShowTimeListDTO::from).toList();
-    }
-
-    @Override
-    public List<ShowTime> searchByRange(String startStr, String endStr, Long roomTypeId, Long movieId) {
-        LocalDateTime start = parseFlexible(startStr, false);
-        LocalDateTime end   = parseFlexible(endStr,   true);
-        if (start == null || end == null) {
-            throw new IllegalArgumentException("start và end là bắt buộc (yyyy-MM-dd[ HH:mm[:ss][.SSSSSS]]).");
-        }
-        if (!end.isAfter(start)) {
-            throw new IllegalArgumentException("end phải > start.");
-        }
-        return showTimeRepository.searchOverlap(start, end, roomTypeId, movieId);
-    }
-
-    @Override
-    public List<ShowTime> searchByDate(LocalDate date, Long roomTypeId, Long movieId) {
-        LocalDateTime dayStart = date.atStartOfDay();
-        LocalDateTime dayEnd   = date.plusDays(1).atStartOfDay();
-        return showTimeRepository.searchByDay(dayStart, dayEnd, roomTypeId, movieId);    }
-
-    @Override
-    public List<ShowTimeListDTO> getShowtimesByMovieAndDateAndRoomType(Long movieId, LocalDate date, Long roomTypeId) {
-        return showTimeRepository.findShowtimes(movieId, date, roomTypeId)
-                .stream()
-                .map(ShowTimeListDTO::from)
-                .distinct()
-                .collect(Collectors.toList());
-    }
-
-    @Override
-    public List<ShowTimeListDTO> findShowtimes(Long movieId, LocalDate date, Long roomId) {
-        return showTimeRepository.findShowtimes(movieId, date, roomId)
-                .stream()
-                .map(ShowTimeListDTO::from)
-                .distinct()
-                .collect(Collectors.toList());
-    }
 
     @Override
     public List<ShowTimeListDTO> findShowtimes(Long movieId, LocalDate date, Long roomId, Long roomTypeId, LocalDateTime startTime, LocalDateTime endTime) {
@@ -132,48 +75,59 @@ public class ShowTimeServiceImpl implements ShowTimeService {
                 .distinct()
                 .collect(Collectors.toList());    }
 
+
+
     @Override
     @Transactional
     public ShowTimeResponse createShowTime(CreateShowTimeRequest req) {
         // 1) Load entities
         Movie movie = movieRepo.findById(req.getMovieId())
-                .orElseThrow(() -> notFound("Movie", req.getMovieId()));
+                .orElseThrow(() ->  new AppException(ErrorCode.MOVIE_NOT_FOUND));
         Room room = roomRepo.findById(req.getRoomId())
-                .orElseThrow(() -> notFound("Room", req.getRoomId()));
+                .orElseThrow(() -> new AppException(ErrorCode.ROOM_NOT_FOUND));
         SubTitle subtitle = subTitleRepo.findById(req.getSubtitleId())
-                .orElseThrow(() -> notFound("Subtitle", req.getSubtitleId()));
+                .orElseThrow(() -> new AppException(ErrorCode.SUBTITLE_NOT_FOUND));
 
         LocalDateTime start = req.getStartTime();
         LocalDateTime end   = req.getEndTime();
 
         // 2) Validate room status
-        if (room.getStatus() == RoomStatus.INACTIVE) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Room is inactive");
+        if (room.getStatus() == RoomStatus.INACTIVE || room.getStatus() == RoomStatus.MAINTENANCE ) {
+            throw new AppException(ErrorCode.ROOM_INACTIVE);
         }
 
         // 3) Validate endTime > startTime + movie.duration
         int durationMinutes = movie.getDuration();
         LocalDateTime minEnd = start.plusMinutes(durationMinutes);
         if (!end.isAfter(minEnd)) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "endTime must be greater than startTime + movie.duration (" + durationMinutes + " minutes)");
+            throw new AppException(ErrorCode.INVALID_ENDTIME);
         }
 
-        // 4) Validate không bị chiếm khung giờ trong cùng phòng (bắt mọi TH overlap)
-        //    Điều kiện overlap: (existing.start < end) AND (existing.end > start)
+        // 4) Validate overlap trong cùng phòng
+        //    Overlap nếu: (existing.start < end) AND (existing.end > start)
         boolean conflict = showTimeRepository.existsOverlapInRoom(room.getId(), start, end);
         if (conflict) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT,
-                    "Showtime conflicts with an existing show in the same room");
+            throw new AppException(ErrorCode.SHOWTIME_CONFLICT);
         }
 
-        // 5) Persist
+        // >>> 4.5) Business rule: nếu phim UPCOMING thì chuyển về PLAYING
+        if (movie.getStatus() == MovieStatus.UPCOMING) {
+            movie.setStatus(MovieStatus.PLAYING);
+            // Nếu có audit field:
+            // movie.setUpdatedAt(LocalDateTime.now());
+            movieRepo.save(movie); // Hibernate sẽ flush trong transaction; gọi save để rõ ràng
+        }
+
+        // 5) Persist showtime
         ShowTime st = new ShowTime();
         st.setMovie(movie);
         st.setRoom(room);
         st.setSubtitle(subtitle);
         st.setStartTime(start);
         st.setEndTime(end);
+        // nếu có các field khác (price/status/isDeleted...) thì set thêm tại đây
+        // st.setStatus(ShowTimeStatus.SCHEDULED);
+        // st.setIsDeleted(false);
 
         ShowTime saved = showTimeRepository.save(st);
 
@@ -187,6 +141,9 @@ public class ShowTimeServiceImpl implements ShowTimeService {
                 .build();
     }
 
+
+
+
     @Override
     public ShowTimeListDTO getShowTimeById(Long id) {
         if (id == null || id <= 0) {
@@ -197,7 +154,7 @@ public class ShowTimeServiceImpl implements ShowTimeService {
 
         ShowTime st = showTimeRepository.findByIdFetchAll(id)
                 .orElseThrow(() ->
-                        new AppException(ErrorCodShowTime.SHOWTIME_NOT_FOUND, "Showtime not found: id=" + id));
+                        new AppException(ErrorCode.SHOWTIME_NOT_FOUND));
 
         return ShowTimeListDTO.from(st);
     }
@@ -210,7 +167,7 @@ public class ShowTimeServiceImpl implements ShowTimeService {
 
         // Lấy showtime hiện hữu (kèm fetch associations nếu có sẵn)
         ShowTime st = showTimeRepository.findByIdFetchAll(id)
-                .orElseThrow(() -> new AppException(ErrorCodShowTime.SHOWTIME_NOT_FOUND, "Showtime not found: id=" + id));
+                .orElseThrow(() -> new AppException(ErrorCode.SHOWTIME_NOT_FOUND));
 
         // Merge giá trị mới (nếu null thì giữ nguyên)
         Movie movie = (req.getMovieId() != null)
@@ -274,6 +231,86 @@ public class ShowTimeServiceImpl implements ShowTimeService {
                 .build();
     }
 
+    @Transactional
+    @Override
+    public void softDelete(Long id) {
+        ShowTime st = showTimeRepository.findById(id)
+                .orElseThrow(() -> new AppException(ErrorCode.SHOWTIME_NOT_FOUND));
+        st.setIsDeleted(true);
+        showTimeRepository.save(st);
+        // có thể đã xoá mềm trước đó hoặc race condition
+
+    }
+
+    @Override
+    public void restore(Long id) {
+        int n = showTimeRepository.restore(id);
+        if (n == 0) {
+            throw new AppException(ErrorCode.SHOWTIME_NOT_FOUND);
+        }
+    }
+
+    @Override
+    public List<IdNameDTO> lookupMovieIdNameForUpcoming(LocalDateTime from) {
+        // Lấy danh sách movieId có suất chiếu chưa bắt đầu và chưa xoá mềm
+        List<Long> movieIds = showTimeRepository.findDistinctMovieIdsForUpcoming(from);
+        if (movieIds.isEmpty()) return List.of();
+
+        return movieRepo.findAllById(movieIds).stream()
+                .sorted((a, b) -> a.getName().compareToIgnoreCase(b.getName()))
+                .map(m -> new IdNameDTO(m.getId(), m.getName()))
+                .toList();
+    }
+
+    @Override
+    public List<IdNameDTO> lookupMovieIdNameByStatuses() {
+        return movieRepo
+                .findByStatusIn(List.of(MovieStatus.PLAYING, MovieStatus.UPCOMING),
+                        Sort.by(Sort.Direction.ASC, "name"))
+                .stream()
+                .map(m -> IdNameDTO.of(m.getId(), m.getName()))
+                .toList();
+    }
+
+    @Override
+    public List<IdNameDTO> getAllRoomsIdName() {
+        return roomRepo.findAll().stream()
+                .map(room -> IdNameDTO.of(room.getId(), room.getName()))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<IdNameDTO> getAllSubTitlesIdName() {
+        return subTitleRepo.findAll().stream()
+                .map(st -> IdNameDTO.of(st.getId(), st.getName()))
+                .collect(Collectors.toList());
+    }
+
+
+    @Override
+    public List<IdNameDTO> getAllRoomTypesIdName() {
+        return roomTypeRepo.findAll().stream()
+                .map(rt -> IdNameDTO.of(rt.getId(), rt.getName()))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<IdNameDTO> getIdNameMoviesPlayingAndUpcoming() {
+        return movieRepo.findAllIdNameByStatuses(
+                List.of(MovieStatus.PLAYING, MovieStatus.UPCOMING)
+        );
+    }
+
+//    @Override
+//    public Page<ShowTimeListDTO> findShowtimesPaged(Long movieId, LocalDate date, Long roomId,
+//                                                    Long roomTypeId, LocalDateTime startTime, LocalDateTime endTime,
+//                                                    int page, int size) {
+//        Pageable pageable = PageRequest.of(page, size, Sort.by("startTime").ascending());
+//
+//        return showTimeRepository.findShowtimesPaged(
+//                movieId, date, roomId, roomTypeId, startTime, endTime, pageable
+//        ).map(ShowTimeListDTO::from);
+//    }
 
     // Chấp nhận: "yyyy-MM-dd", "yyyy-MM-ddTHH:mm", "yyyy-MM-dd HH:mm:ss.SSSSSS", v.v.
     private static final DateTimeFormatter FLEX = new DateTimeFormatterBuilder()
