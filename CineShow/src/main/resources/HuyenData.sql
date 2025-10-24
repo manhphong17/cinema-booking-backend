@@ -1,4 +1,9 @@
-INSERT INTO
+insert into concession_type
+(name)
+values ("đồ uống"),
+       ("đồ ăn nhẹ"),
+       ("combo");
+
 
 INSERT INTO concession
 (id, created_at, updated_at, concession_status, description, name, price, stock_status, unit_in_stock, url_image, concession_type_id)
