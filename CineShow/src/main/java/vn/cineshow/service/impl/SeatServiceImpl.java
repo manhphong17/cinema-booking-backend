@@ -288,7 +288,9 @@ public class SeatServiceImpl implements SeatService {
         return row + "," + column;
     }
 
-    /** 1->A, 26->Z, 27->AA, ... */
+    /**
+     * 1->A, 26->Z, 27->AA, ...
+     */
     private String toRowLabel(int index1Based) {
         StringBuilder sb = new StringBuilder();
         int n = index1Based;

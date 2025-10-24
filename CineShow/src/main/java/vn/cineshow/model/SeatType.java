@@ -20,7 +20,9 @@ public class SeatType extends AbstractEntity implements Serializable {
 
     @Column(nullable = false, length = 50)
     String name;
+
     String description;
+
 
     @Builder.Default
     @Column(nullable = false)

@@ -140,7 +140,6 @@ public class MovieServiceImpl implements MovieService {
     public Long create(MovieCreationRequest request) {
         //check language exist
         Language language = findLanguageById(request.getLanguageId());
-
         // get Country
         Country country = findCountryById(request.getCountryId());
 
@@ -155,17 +154,18 @@ public class MovieServiceImpl implements MovieService {
             throw new DuplicateResourceException("Movie already exists");
         }
 
+        String posterUrl = null;
         try {
-            String posterUrl = s3Service.uploadFile(request.getPoster());
+            posterUrl = s3Service.uploadFile(request.getPoster());
 
             log.info("Creation movie: name:{}, poster: {}", request.getPoster(), posterUrl);
             Movie movie = Movie.builder()
-                    .name(request.getName())
-                    .description(request.getDescription())
+                    .name(request.getName().trim())
+                    .description(request.getDescription().trim())
                     .duration(request.getDuration())
                     .releaseDate(request.getReleaseDate())
-                    .director(request.getDirector())
-                    .actor(request.getActor())
+                    .director(request.getDirector().trim())
+                    .actor(request.getActor().trim())
                     .ageRating(request.getAgeRating())
                     .trailerUrl(request.getTrailerUrl())
                     .movieGenres(movieGenres)
@@ -177,7 +177,15 @@ public class MovieServiceImpl implements MovieService {
             movieRepository.save(movie);
             log.info("Movie created successfully, id: {}", movie.getId());
             return movie.getId();
-        } catch (IOException e) {
+        } catch (Exception e) {
+            if (posterUrl != null) {
+                try {
+                    s3Service.deleteByUrl(posterUrl);
+                    log.warn("Deleted S3 file due to exception: {}", posterUrl);
+                } catch (Exception deleteEx) {
+                    log.error("Failed to cleanup S3 file: {}", deleteEx.getMessage());
+                }
+            }
             throw new AppException(ErrorCode.FILE_UPLOAD_FAILED);
         }
     }
@@ -195,12 +203,18 @@ public class MovieServiceImpl implements MovieService {
     public void updatebyId(long id, MovieUpdateBasicRequest request) {
         Movie movie = findById(id);
 
+        // Check for duplicate movie name (excluding current movie)
+        if (isMovieExistForUpdate(request.getName(), request.getReleaseDate(), id)) {
+            log.warn("Movie with name {} already exists", request.getName());
+            throw new DuplicateResourceException("Movie already exists");
+        }
+
         Set<MovieGenre> movieGenres = new HashSet<>();
         for (Long genreId : request.getGenreIds()) {
             movieGenres.add(findMovieGenreById(genreId));
         }
 
-        movie.setName(request.getName());
+        movie.setName(request.getName().trim());
         movie.setLanguage(findLanguageById(request.getLanguageId()));
         movie.setCountry(findCountryById(request.getCountryId()));
         movie.setMovieGenres(movieGenres);
@@ -240,13 +254,13 @@ public class MovieServiceImpl implements MovieService {
             if (request.getAgeRating() != null) {
                 movie.setAgeRating(request.getAgeRating());
             }
-            movie.setActor(request.getActor());
-            movie.setDirector(request.getDirector());
+            movie.setActor(request.getActor().trim());
+            movie.setDirector(request.getDirector().trim());
             movie.setCountry(findCountryById(request.getCountryId()));
             movie.setLanguage(findLanguageById(request.getLanguageId()));
             movie.setMovieGenres(movieGenres);
             movie.setTrailerUrl(request.getTrailerUrl());
-            movie.setDescription(request.getDescription());
+            movie.setDescription(request.getDescription().trim());
             movie.setStatus(MovieStatus.valueOf(request.getStatus()));
 
             movieRepository.save(movie);
@@ -313,12 +327,6 @@ public class MovieServiceImpl implements MovieService {
         return searchRepository.findMoviesBySearchAndFilter(request);
     }
 
-    private String getCutDescription(String description) {
-        if (description.length() > 200) {
-            description = description.substring(0, 201) + "...";
-        }
-        return description;
-    }
 
     private PageResponse<?> getPageResponse(int pageNo, int pageSize, Page<Movie> movies) {
 
@@ -353,6 +361,10 @@ public class MovieServiceImpl implements MovieService {
 
     private boolean isMovieExist(String name, LocalDate releaseDate) {
         return movieRepository.existsByNameAndReleaseDate(name, releaseDate);
+    }
+
+    private boolean isMovieExistForUpdate(String name, LocalDate releaseDate, Long excludeId) {
+        return movieRepository.existsByNameAndReleaseDateAndIdNot(name, releaseDate, excludeId);
     }
 
     private List<MovieGenreResponse> getMovieGenresByMovie(Movie movie) {

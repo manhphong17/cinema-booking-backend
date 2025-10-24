@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="DataSourcePerFileMappings">
-    <file url="file://$APPLICATION_CONFIG_DIR$/consoles/db/ffbeb62b-717b-46df-8325-a92acaf345d6/console.sql" value="ffbeb62b-717b-46df-8325-a92acaf345d6" />
-    <file url="file://$PROJECT_DIR$/CineShow/src/main/resources/HuyenData.sql" value="ffbeb62b-717b-46df-8325-a92acaf345d6" />
-    <file url="file://$PROJECT_DIR$/CineShow/src/main/resources/data.sql" value="ffbeb62b-717b-46df-8325-a92acaf345d6" />
+    <file url="file://$APPLICATION_CONFIG_DIR$/consoles/db/79725c24-38f2-4f6c-9ab2-0702756fdbbe/console_2.sql" value="79725c24-38f2-4f6c-9ab2-0702756fdbbe" />
   </component>
 </project>

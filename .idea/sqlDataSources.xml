@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="DdlMappings">
+    <mapping uuid="ca2662ed-da4d-44ac-b32f-15c6230207bb" name="cineshow@localhost Mapping">
+      <data-sources db="30d9691b-9528-49f1-a626-4349f7ddbe63" ddl="bcb4c536-c0c1-4f4a-9f53-020a4053228a" />
+      <scope>
+        <node kind="schema" qname="cineshow" />
+      </scope>
+    </mapping>
+  </component>
+</project>

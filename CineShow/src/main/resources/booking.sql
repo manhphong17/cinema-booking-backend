@@ -989,6 +989,8 @@ VALUES
 (100, 2),
 (100, 9);
 
+
+
 -- Insert sample data for accounts and users (20 additional accounts)
 -- Accounts table
 INSERT INTO accounts (email, password, status, is_deleted, created_at, updated_at)
@@ -1144,131 +1146,218 @@ VALUES ('VI', 'Tiếng Việt', NOW(), NOW()),
        ('ZH', 'Chinese', NOW(), NOW());
 
 -- Room Types
-<<<<<<< HEAD
-INSERT INTO room_types (name, description, created_at, updated_at,active)
-VALUES ('Standard', 'Phòng chiếu tiêu chuẩn', NOW(), NOW(),1),
-       ('VIP', 'Phòng chiếu VIP cao cấp', NOW(), NOW(),1),
-       ('IMAX', 'Phòng chiếu IMAX', NOW(), NOW(),1),
-       ('4DX', 'Phòng chiếu 4DX', NOW(), NOW(),1),
-       ('Gold Class', 'Phòng chiếu Gold Class', NOW(), NOW(),1);
+INSERT INTO room_types (name, description, created_at, updated_at, active)
+VALUES ('2D', 'Phòng chiếu tiêu chuẩn', NOW(), NOW(), true),
+       ('3D', 'Phòng chiếu VIP cao cấp', NOW(), NOW(), true),
+       ('IMAX', 'Phòng chiếu IMAX', NOW(), NOW(), true);
 
 -- Seat Types
-INSERT INTO seat_types (name, description, created_at, updated_at,active)
-VALUES ('Standard', 'Ghế tiêu chuẩn', NOW(), NOW(),1),
-       ('VIP', 'Ghế VIP', NOW(), NOW(),1);
-
+INSERT INTO seat_types (name, description, created_at, updated_at, active)
+VALUES ('Standard', 'Ghế tiêu chuẩn', NOW(), NOW(), true),
+       ('VIP', 'Ghế VIP', NOW(), NOW(), true);
 
 -- Rooms
-INSERT INTO rooms (name, room_type_id, status, created_at, updated_at,rows_count, columns_count)
-VALUES ('Phòng 1', 1, 'ACTIVE', NOW(), NOW(),10,12),
-       ('Phòng 2', 1, 'ACTIVE', NOW(), NOW(),10,12),
-       ('Phòng 3', 2, 'ACTIVE', NOW(), NOW(),10,12),
-       ('Phòng 4', 3, 'ACTIVE', NOW(), NOW(),10,12),
-       ('Phòng 5', 1, 'ACTIVE', NOW(), NOW(),10,12),
-       ('Phòng VIP 1', 2, 'ACTIVE', NOW(), NOW(),10,12),
-       ('Phòng IMAX 1', 3, 'ACTIVE', NOW(), NOW(),10,12),
-       ('Phòng 4DX 1', 1, 'ACTIVE', NOW(), NOW(),10,12);
+INSERT INTO rooms (name, room_type_id, status, created_at, updated_at, rows_count, columns_count)
+VALUES ('Phòng 1', 1, 'ACTIVE', NOW(), NOW(), 10, 12),
+       ('Phòng 2', 1, 'ACTIVE', NOW(), NOW(), 10, 12),
+       ('Phòng 3', 2, 'ACTIVE', NOW(), NOW(), 10, 12),
+       ('Phòng 4', 3, 'ACTIVE', NOW(), NOW(), 10, 12),
+       ('Phòng 5', 1, 'ACTIVE', NOW(), NOW(), 10, 12),
+       ('Phòng VIP 1', 2, 'ACTIVE', NOW(), NOW(), 10, 12),
+       ('Phòng IMAX 1', 3, 'ACTIVE', NOW(), NOW(), 10, 12),
+       ('Phòng 4DX 1', 1, 'ACTIVE', NOW(), NOW(), 10, 12);
 
-
--- Seats for Room 1 (Standard - 10x8 = 80 seats)
-INSERT INTO seats ( seat_row, seat_column, status,  room_id, seat_type_id, created_at, updated_at)
+-- Ghế cho Phòng 1 (2D - 10x8 = 80 ghế)
+INSERT INTO seats (seat_row, seat_column, status, room_id, seat_type_id, created_at, updated_at)
 VALUES
 -- Row A (1-10)
 ('A', '1', 'AVAILABLE', 1, 1, NOW(), NOW()),
-( 'A', '2', 'AVAILABLE',  1, 1, NOW(), NOW()),
-( 'A', '3', 'AVAILABLE',  1, 1, NOW(), NOW()),
-( 'A', '4', 'AVAILABLE',  1, 1, NOW(), NOW()),
-( 'A', '5', 'AVAILABLE',  1, 1, NOW(), NOW()),
-( 'A', '6', 'AVAILABLE', 1, 1, NOW(), NOW()),
-( 'A', '7', 'AVAILABLE',  1, 1, NOW(), NOW()),
-( 'A', '8', 'AVAILABLE',  1, 1, NOW(), NOW()),
+('A', '2', 'AVAILABLE', 1, 1, NOW(), NOW()),
+('A', '3', 'AVAILABLE', 1, 1, NOW(), NOW()),
+('A', '4', 'AVAILABLE', 1, 1, NOW(), NOW()),
+('A', '5', 'AVAILABLE', 1, 1, NOW(), NOW()),
+('A', '6', 'AVAILABLE', 1, 1, NOW(), NOW()),
+('A', '7', 'AVAILABLE', 1, 1, NOW(), NOW()),
+('A', '8', 'AVAILABLE', 1, 1, NOW(), NOW()),
 ('A', '9', 'AVAILABLE', 1, 1, NOW(), NOW()),
-('A', '10', 'AVAILABLE',  1, 1, NOW(), NOW()),
+('A', '10', 'AVAILABLE', 1, 1, NOW(), NOW()),
 -- Row B (1-10)
-('B', '1', 'AVAILABLE',  1, 1, NOW(), NOW()),
+('B', '1', 'AVAILABLE', 1, 1, NOW(), NOW()),
 ('B', '2', 'AVAILABLE', 1, 1, NOW(), NOW()),
 ('B', '3', 'AVAILABLE', 1, 1, NOW(), NOW()),
 ('B', '4', 'AVAILABLE', 1, 1, NOW(), NOW()),
-( 'B', '5', 'AVAILABLE', 1, 1, NOW(), NOW()),
-( 'B', '6', 'AVAILABLE', 1, 1, NOW(), NOW()),
-( 'B', '7', 'AVAILABLE', 1, 1, NOW(), NOW()),
-( 'B', '8', 'AVAILABLE', 1, 1, NOW(), NOW()),
-( 'B', '9', 'AVAILABLE', 1, 1, NOW(), NOW()),
+('B', '5', 'AVAILABLE', 1, 1, NOW(), NOW()),
+('B', '6', 'AVAILABLE', 1, 1, NOW(), NOW()),
+('B', '7', 'AVAILABLE', 1, 1, NOW(), NOW()),
+('B', '8', 'AVAILABLE', 1, 1, NOW(), NOW()),
+('B', '9', 'AVAILABLE', 1, 1, NOW(), NOW()),
 ('B', '10', 'AVAILABLE', 1, 1, NOW(), NOW()),
--- Row C (1-10) - Some seats booked for testing
-( 'C', '1', 'BLOCKED', 1, 1, NOW(), NOW()),
-('C', '2', 'BLOCKED', 1, 1, NOW(), NOW()),
-('C', '3', 'AVAILABLE',  1, 1, NOW(), NOW()),
-( 'C', '4', 'AVAILABLE', 1, 1, NOW(), NOW()),
-( 'C', '5', 'AVAILABLE', 1, 1, NOW(), NOW()),
-( 'C', '6', 'AVAILABLE',  1, 1, NOW(), NOW()),
-( 'C', '7', 'AVAILABLE', 1, 1, NOW(), NOW()),
+-- Row C (1-10) - Một số ghế đã đặt để test
+('C', '1', 'AVAILABLE', 1, 1, NOW(), NOW()),
+('C', '2', 'AVAILABLE', 1, 1, NOW(), NOW()),
+('C', '3', 'AVAILABLE', 1, 1, NOW(), NOW()),
+('C', '4', 'AVAILABLE', 1, 1, NOW(), NOW()),
+('C', '5', 'AVAILABLE', 1, 1, NOW(), NOW()),
+('C', '6', 'AVAILABLE', 1, 1, NOW(), NOW()),
+('C', '7', 'AVAILABLE', 1, 1, NOW(), NOW()),
 ('C', '8', 'AVAILABLE', 1, 1, NOW(), NOW()),
-( 'C', '9', 'AVAILABLE',  1, 1, NOW(), NOW()),
-( 'C', '10', 'AVAILABLE', 1, 1, NOW(), NOW()),
+('C', '9', 'AVAILABLE', 1, 1, NOW(), NOW()),
+('C', '10', 'AVAILABLE', 1, 1, NOW(), NOW()),
 -- Row D (1-10)
-( 'D', '1', 'AVAILABLE',  1, 1, NOW(), NOW()),
+('D', '1', 'AVAILABLE', 1, 1, NOW(), NOW()),
 ('D', '2', 'AVAILABLE', 1, 1, NOW(), NOW()),
-( 'D', '3', 'AVAILABLE', 1, 1, NOW(), NOW()),
-('D', '4', 'AVAILABLE',  1, 1, NOW(), NOW()),
-('D', '5', 'AVAILABLE',  1, 1, NOW(), NOW()),
-( 'D', '6', 'AVAILABLE',  1, 1, NOW(), NOW()),
-( 'D', '7', 'AVAILABLE',  1, 1, NOW(), NOW()),
-('D', '8', 'AVAILABLE',  1, 1, NOW(), NOW()),
-( 'D', '9', 'AVAILABLE',  1, 1, NOW(), NOW()),
-( 'D', '10', 'AVAILABLE', 1, 1, NOW(), NOW()),
--- Row E (1-10) - VIP seats
+('D', '3', 'AVAILABLE', 1, 1, NOW(), NOW()),
+('D', '4', 'AVAILABLE', 1, 1, NOW(), NOW()),
+('D', '5', 'AVAILABLE', 1, 1, NOW(), NOW()),
+('D', '6', 'AVAILABLE', 1, 1, NOW(), NOW()),
+('D', '7', 'AVAILABLE', 1, 1, NOW(), NOW()),
+('D', '8', 'AVAILABLE', 1, 1, NOW(), NOW()),
+('D', '9', 'AVAILABLE', 1, 1, NOW(), NOW()),
+('D', '10', 'AVAILABLE', 1, 1, NOW(), NOW()),
+-- Row E (1-10) - Ghế VIP
 ('E', '1', 'AVAILABLE', 1, 2, NOW(), NOW()),
-( 'E', '2', 'AVAILABLE',  1, 2, NOW(), NOW()),
-('E', '3', 'AVAILABLE',  1, 2, NOW(), NOW()),
-('E', '4', 'AVAILABLE',  1, 2, NOW(), NOW()),
-( 'E', '5', 'AVAILABLE', 1, 2, NOW(), NOW()),
-( 'E', '6', 'AVAILABLE',  1, 2, NOW(), NOW()),
-('E', '7', 'AVAILABLE',  1, 2, NOW(), NOW()),
-('E', '8', 'AVAILABLE',  1, 2, NOW(), NOW()),
+('E', '2', 'AVAILABLE', 1, 2, NOW(), NOW()),
+('E', '3', 'AVAILABLE', 1, 2, NOW(), NOW()),
+('E', '4', 'AVAILABLE', 1, 2, NOW(), NOW()),
+('E', '5', 'AVAILABLE', 1, 2, NOW(), NOW()),
+('E', '6', 'AVAILABLE', 1, 2, NOW(), NOW()),
+('E', '7', 'AVAILABLE', 1, 2, NOW(), NOW()),
+('E', '8', 'AVAILABLE', 1, 2, NOW(), NOW()),
 ('E', '9', 'AVAILABLE', 1, 2, NOW(), NOW()),
-( 'E', '10', 'AVAILABLE',  1, 2, NOW(), NOW()),
+('E', '10', 'AVAILABLE', 1, 2, NOW(), NOW()),
 -- Row F (1-10)
 ('F', '1', 'AVAILABLE', 1, 1, NOW(), NOW()),
-('F', '2', 'AVAILABLE',  1, 1, NOW(), NOW()),
+('F', '2', 'AVAILABLE', 1, 1, NOW(), NOW()),
 ('F', '3', 'AVAILABLE', 1, 1, NOW(), NOW()),
 ('F', '4', 'AVAILABLE', 1, 1, NOW(), NOW()),
 ('F', '5', 'AVAILABLE', 1, 1, NOW(), NOW()),
-('F', '6', 'AVAILABLE',  1, 1, NOW(), NOW()),
-( 'F', '7', 'AVAILABLE',  1, 1, NOW(), NOW()),
-('F', '8', 'AVAILABLE',  1, 1, NOW(), NOW()),
+('F', '6', 'AVAILABLE', 1, 1, NOW(), NOW()),
+('F', '7', 'AVAILABLE', 1, 1, NOW(), NOW()),
+('F', '8', 'AVAILABLE', 1, 1, NOW(), NOW()),
 ('F', '9', 'AVAILABLE', 1, 1, NOW(), NOW()),
 ('F', '10', 'AVAILABLE', 1, 1, NOW(), NOW()),
 -- Row G (1-10)
-( 'G', '1', 'AVAILABLE',  1, 1, NOW(), NOW()),
+('G', '1', 'AVAILABLE', 1, 1, NOW(), NOW()),
 ('G', '2', 'AVAILABLE', 1, 1, NOW(), NOW()),
 ('G', '3', 'AVAILABLE', 1, 1, NOW(), NOW()),
-('G', '4', 'AVAILABLE',  1, 1, NOW(), NOW()),
-( 'G', '5', 'AVAILABLE', 1, 1, NOW(), NOW()),
-( 'G', '6', 'AVAILABLE', 1, 1, NOW(), NOW()),
-( 'G', '7', 'AVAILABLE',  1, 1, NOW(), NOW()),
-( 'G', '8', 'AVAILABLE',  1, 1, NOW(), NOW()),
-('G', '9', 'AVAILABLE',  1, 1, NOW(), NOW()),
-
+('G', '4', 'AVAILABLE', 1, 1, NOW(), NOW()),
+('G', '5', 'AVAILABLE', 1, 1, NOW(), NOW()),
+('G', '6', 'AVAILABLE', 1, 1, NOW(), NOW()),
+('G', '7', 'AVAILABLE', 1, 1, NOW(), NOW()),
+('G', '8', 'AVAILABLE', 1, 1, NOW(), NOW()),
+('G', '9', 'AVAILABLE', 1, 1, NOW(), NOW()),
 ('G', '10', 'AVAILABLE', 1, 1, NOW(), NOW()),
 -- Row H (1-10)
 ('H', '1', 'AVAILABLE', 1, 1, NOW(), NOW()),
 ('H', '2', 'AVAILABLE', 1, 1, NOW(), NOW()),
 ('H', '3', 'AVAILABLE', 1, 1, NOW(), NOW()),
+('H', '4', 'AVAILABLE', 1, 1, NOW(), NOW()),
+('H', '5', 'AVAILABLE', 1, 1, NOW(), NOW()),
+('H', '6', 'AVAILABLE', 1, 1, NOW(), NOW()),
+('H', '7', 'AVAILABLE', 1, 1, NOW(), NOW()),
+('H', '8', 'AVAILABLE', 1, 1, NOW(), NOW()),
+('H', '9', 'AVAILABLE', 1, 1, NOW(), NOW()),
+('H', '10', 'AVAILABLE', 1, 1, NOW(), NOW());
 
-( 'H', '4', 'AVAILABLE',  1, 1, NOW(), NOW()),
-( 'H', '5', 'AVAILABLE',  1, 1, NOW(), NOW()),
-( 'H', '6', 'AVAILABLE', 1, 1, NOW(), NOW()),
-( 'H', '7', 'AVAILABLE',  1, 1, NOW(), NOW()),
-('H', '8', 'AVAILABLE',  1, 1, NOW(), NOW()),
-('H', '9', 'AVAILABLE',  1, 1, NOW(), NOW()),
-('H', '10', 'AVAILABLE',  1, 1, NOW(), NOW());
+-- Ghế cho Phòng 2 (3D - 10x8 = 80 ghế)
+INSERT INTO seats (seat_row, seat_column, status, room_id, seat_type_id, created_at, updated_at)
+VALUES
+-- Row A (1-10)
+('A', '1', 'AVAILABLE', 2, 1, NOW(), NOW()),
+('A', '2', 'AVAILABLE', 2, 1, NOW(), NOW()),
+('A', '3', 'AVAILABLE', 2, 1, NOW(), NOW()),
+('A', '4', 'AVAILABLE', 2, 1, NOW(), NOW()),
+('A', '5', 'AVAILABLE', 2, 1, NOW(), NOW()),
+('A', '6', 'AVAILABLE', 2, 1, NOW(), NOW()),
+('A', '7', 'AVAILABLE', 2, 1, NOW(), NOW()),
+('A', '8', 'AVAILABLE', 2, 1, NOW(), NOW()),
+('A', '9', 'AVAILABLE', 2, 1, NOW(), NOW()),
+('A', '10', 'AVAILABLE', 2, 1, NOW(), NOW()),
+-- Row B (1-10)
+('B', '1', 'AVAILABLE', 2, 1, NOW(), NOW()),
+('B', '2', 'AVAILABLE', 2, 1, NOW(), NOW()),
+('B', '3', 'AVAILABLE', 2, 1, NOW(), NOW()),
+('B', '4', 'AVAILABLE', 2, 1, NOW(), NOW()),
+('B', '5', 'AVAILABLE', 2, 1, NOW(), NOW()),
+('B', '6', 'AVAILABLE', 2, 1, NOW(), NOW()),
+('B', '7', 'AVAILABLE', 2, 1, NOW(), NOW()),
+('B', '8', 'AVAILABLE', 2, 1, NOW(), NOW()),
+('B', '9', 'AVAILABLE', 2, 1, NOW(), NOW()),
+('B', '10', 'AVAILABLE', 2, 1, NOW(), NOW()),
+-- Row C (1-10) - Một số ghế đã đặt để test
+('C', '1', 'BOOKED', 2, 1, NOW(), NOW()),
+('C', '2', 'BOOKED', 2, 1, NOW(), NOW()),
+('C', '3', 'AVAILABLE', 2, 1, NOW(), NOW()),
+('C', '4', 'AVAILABLE', 2, 1, NOW(), NOW()),
+('C', '5', 'AVAILABLE', 2, 1, NOW(), NOW()),
+('C', '6', 'AVAILABLE', 2, 1, NOW(), NOW()),
+('C', '7', 'AVAILABLE', 2, 1, NOW(), NOW()),
+('C', '8', 'AVAILABLE', 2, 1, NOW(), NOW()),
+('C', '9', 'AVAILABLE', 2, 1, NOW(), NOW()),
+('C', '10', 'AVAILABLE', 2, 1, NOW(), NOW()),
+-- Row D (1-10)
+('D', '1', 'AVAILABLE', 2, 1, NOW(), NOW()),
+('D', '2', 'AVAILABLE', 2, 1, NOW(), NOW()),
+('D', '3', 'AVAILABLE', 2, 1, NOW(), NOW()),
+('D', '4', 'AVAILABLE', 2, 1, NOW(), NOW()),
+('D', '5', 'AVAILABLE', 2, 1, NOW(), NOW()),
+('D', '6', 'AVAILABLE', 2, 1, NOW(), NOW()),
+('D', '7', 'AVAILABLE', 2, 1, NOW(), NOW()),
+('D', '8', 'AVAILABLE', 2, 1, NOW(), NOW()),
+('D', '9', 'AVAILABLE', 2, 1, NOW(), NOW()),
+('D', '10', 'AVAILABLE', 2, 1, NOW(), NOW()),
+-- Row E (1-10) - Ghế VIP
+('E', '1', 'AVAILABLE', 2, 2, NOW(), NOW()),
+('E', '2', 'AVAILABLE', 2, 2, NOW(), NOW()),
+('E', '3', 'AVAILABLE', 2, 2, NOW(), NOW()),
+('E', '4', 'AVAILABLE', 2, 2, NOW(), NOW()),
+('E', '5', 'AVAILABLE', 2, 2, NOW(), NOW()),
+('E', '6', 'AVAILABLE', 2, 2, NOW(), NOW()),
+('E', '7', 'AVAILABLE', 2, 2, NOW(), NOW()),
+('E', '8', 'AVAILABLE', 2, 2, NOW(), NOW()),
+('E', '9', 'AVAILABLE', 2, 2, NOW(), NOW()),
+('E', '10', 'AVAILABLE', 2, 2, NOW(), NOW()),
+-- Row F (1-10)
+('F', '1', 'AVAILABLE', 2, 1, NOW(), NOW()),
+('F', '2', 'AVAILABLE', 2, 1, NOW(), NOW()),
+('F', '3', 'AVAILABLE', 2, 1, NOW(), NOW()),
+('F', '4', 'AVAILABLE', 2, 1, NOW(), NOW()),
+('F', '5', 'AVAILABLE', 2, 1, NOW(), NOW()),
+('F', '6', 'AVAILABLE', 2, 1, NOW(), NOW()),
+('F', '7', 'AVAILABLE', 2, 1, NOW(), NOW()),
+('F', '8', 'AVAILABLE', 2, 1, NOW(), NOW()),
+('F', '9', 'AVAILABLE', 2, 1, NOW(), NOW()),
+('F', '10', 'AVAILABLE', 2, 1, NOW(), NOW()),
+-- Row G (1-10)
+('G', '1', 'AVAILABLE', 2, 1, NOW(), NOW()),
+('G', '2', 'AVAILABLE', 2, 1, NOW(), NOW()),
+('G', '3', 'AVAILABLE', 2, 1, NOW(), NOW()),
+('G', '4', 'AVAILABLE', 2, 1, NOW(), NOW()),
+('G', '5', 'AVAILABLE', 2, 1, NOW(), NOW()),
+('G', '6', 'AVAILABLE', 2, 1, NOW(), NOW()),
+('G', '7', 'AVAILABLE', 2, 1, NOW(), NOW()),
+('G', '8', 'AVAILABLE', 2, 1, NOW(), NOW()),
+('G', '9', 'AVAILABLE', 2, 1, NOW(), NOW()),
+('G', '10', 'AVAILABLE', 2, 1, NOW(), NOW()),
+-- Row H (1-10)
+('H', '1', 'AVAILABLE', 2, 1, NOW(), NOW()),
+('H', '2', 'AVAILABLE', 2, 1, NOW(), NOW()),
+('H', '3', 'AVAILABLE', 2, 1, NOW(), NOW()),
+('H', '4', 'AVAILABLE', 2, 1, NOW(), NOW()),
+('H', '5', 'AVAILABLE', 2, 1, NOW(), NOW()),
+('H', '6', 'AVAILABLE', 2, 1, NOW(), NOW()),
+('H', '7', 'AVAILABLE', 2, 1, NOW(), NOW()),
+('H', '8', 'AVAILABLE', 2, 1, NOW(), NOW()),
+('H', '9', 'AVAILABLE', 2, 1, NOW(), NOW()),
+('H', '10', 'AVAILABLE', 2, 1, NOW(), NOW());
 
 -- ShowTimes
 INSERT INTO showtimes (start_time, end_time, room_id, movie_id, subtitle_id, created_at, updated_at)
 VALUES
 -- Today's shows
 ('2024-12-19 09:00:00', '2024-12-19 12:00:00', 1, 1, 1, NOW(), NOW()), -- Avatar: The Way of Water
+('2024-12-19 09:00:00', '2024-12-19 12:00:00', 2, 1, 1, NOW(), NOW()),
+('2024-12-19 09:00:00', '2024-12-19 12:00:00', 3, 1, 1, NOW(), NOW()),
 ('2024-12-19 13:00:00', '2024-12-19 15:30:00', 1, 2, 1, NOW(), NOW()), -- Top Gun: Maverick
 ('2024-12-19 16:00:00', '2024-12-19 18:40:00', 1, 3, 1, NOW(), NOW()), -- Black Panther: Wakanda Forever
 ('2024-12-19 19:00:00', '2024-12-19 21:30:00', 1, 4, 1, NOW(), NOW()), -- Spider-Man: No Way Home
@@ -1287,52 +1376,30 @@ VALUES
 ('2024-12-20 14:00:00', '2024-12-20 17:00:00', 4, 2, 1, NOW(), NOW());
 
 
--- Payment Methods
-INSERT INTO payment_methods (method_code, method_name, is_active, created_at, updated_at)
-VALUES ('CASH', 'Tiền mặt', true, NOW(), NOW()),
-       ('BANK_TRANSFER', 'Chuyển khoản ngân hàng', true, NOW(), NOW()),
-       ('CREDIT_CARD', 'Thẻ tín dụng', true, NOW(), NOW()),
-       ('DEBIT_CARD', 'Thẻ ghi nợ', true, NOW(), NOW()),
-       ('E_WALLET', 'Ví điện tử', true, NOW(), NOW()),
-       ('MOMO', 'Ví MoMo', true, NOW(), NOW()),
-       ('ZALOPAY', 'Ví ZaloPay', true, NOW(), NOW()),
-       ('VNPAY', 'VNPay', true, NOW(), NOW());
-
--- Sample Orders
-INSERT INTO orders (user_id, total_price, order_status, created_at, updated_at)
-VALUES (6, 160000, 'COMPLETED', NOW(), NOW()), -- Customer 1
-       (7, 240000, 'PENDING', NOW(), NOW()),   -- Customer 2
-       (8, 320000, 'COMPLETED', NOW(), NOW()), -- Customer 3
-       (9, 80000, 'CANCELED', NOW(), NOW()),   -- Customer 4
-       (10, 400000, 'COMPLETED', NOW(), NOW());
--- Customer 5
-
--- Sample Payments
-INSERT INTO payments (order_id, method_id, amount, transaction_no, payment_status, payment_date, created_at, updated_at)
-VALUES (1, 1, 160000, 'TXN001', 'COMPLETED', NOW(), NOW(), NOW()),
-       (2, 1, 240000, 'TXN002', 'PENDING', NOW(), NOW(), NOW()),
-       (3, 1, 320000, 'TXN003', 'COMPLETED', NOW(), NOW(), NOW()),
-       (5, 1, 400000, 'TXN005', 'COMPLETED', NOW(), NOW(), NOW());
-
--- Sample Tickets
-INSERT INTO tickets (order_id, seat_id, showtime_id, ticket_price, qr_code, created_at, updated_at)
+-- ShowTimes
+INSERT INTO showtimes (start_time, end_time, room_id, movie_id, subtitle_id, created_at, updated_at)
 VALUES
--- Order 1 (Customer 1) - 2 tickets
-(1, 1, 1, 80000, 'QR001', NOW(), NOW()),
-(1, 2, 1, 80000, 'QR002', NOW(), NOW()),
--- Order 2 (Customer 2) - 3 tickets
-(2, 11, 2, 80000, 'QR003', NOW(), NOW()),
-(2, 12, 2, 80000, 'QR004', NOW(), NOW()),
-(2, 13, 2, 80000, 'QR005', NOW(), NOW()),
--- Order 3 (Customer 3) - 4 tickets
-(3, 21, 3, 80000, 'QR006', NOW(), NOW()),
-(3, 22, 3, 80000, 'QR007', NOW(), NOW()),
-(3, 23, 3, 80000, 'QR008', NOW(), NOW()),
-(3, 24, 3, 80000, 'QR009', NOW(), NOW()),
--- Order 5 (Customer 5) - 5 tickets
-(5, 31, 4, 80000, 'QR010', NOW(), NOW()),
-(5, 32, 4, 80000, 'QR011', NOW(), NOW()),
-(5, 33, 4, 80000, 'QR012', NOW(), NOW()),
-(5, 34, 4, 80000, 'QR013', NOW(), NOW()),
-(5, 35, 4, 80000, 'QR014', NOW(), NOW());
+-- Today's shows
+('2025-10-23 09:00:00', '2025-10-23 12:00:00', 1, 1, 1, NOW(), NOW()), -- Avatar: The Way of Water
+('2025-10-23 09:00:00', '2025-10-23 12:00:00', 2, 1, 1, NOW(), NOW()),
+('2025-10-19 09:00:00', '2025-10-23 12:00:00', 3, 1, 1, NOW(), NOW()),
+('2025-10-23 13:00:00', '2025-10-23 15:30:00', 1, 2, 1, NOW(), NOW()), -- Top Gun: Maverick
+('2025-10-23 16:00:00', '2025-10-23 18:40:00', 1, 3, 1, NOW(), NOW()), -- Black Panther: Wakanda Forever
+('2025-10-23 19:00:00', '2025-10-23 21:30:00', 1, 4, 1, NOW(), NOW()), -- Spider-Man: No Way Home
+('2025-10-23 22:00:00', '2025-10-23 00:30:00', 1, 5, 1, NOW(), NOW()), -- Dune
+-- Tomorrow's shows
+('2025-10-23 09:00:00', '2025-10-23 12:00:00', 2, 1, 1, NOW(), NOW()),
+('2025-10-23 13:00:00', '2025-10-23 15:30:00', 2, 2, 1, NOW(), NOW()),
+('2025-10-23 16:00:00', '2025-12-23 18:40:00', 2, 3, 1, NOW(), NOW()),
+('2025-10-23 19:00:00', '2025-10-23 21:30:00', 2, 4, 1, NOW(), NOW()),
+('2025-10-23 22:00:00', '2025-10-23 00:30:00', 2, 5, 1, NOW(), NOW()),
+-- VIP Room shows
+('2025-10-23 20:00:00', '2025-10-23 23:00:00', 3, 1, 1, NOW(), NOW()),
+('2025-10-23 20:00:00', '2025-10-23 23:00:00', 3, 2, 1, NOW(), NOW()),
+-- IMAX shows
+('2025-10-23 14:00:00', '2025-10-23 17:00:00', 4, 1, 1, NOW(), NOW()),
+('2025-10-23 14:00:00', '2025-10-23 17:00:00', 4, 2, 1, NOW(), NOW());
 
+INSERT INTO showtimes (start_time, end_time, room_id, movie_id, subtitle_id, created_at, updated_at)
+VALUES ('2025-10-23 14:00:00', '2025-10-23 17:00:00', 1, 1, 1, NOW(), NOW()),
+       ('2025-10-23 14:00:00', '2025-10-23 17:00:00', 2, 1, 1, NOW(), NOW());

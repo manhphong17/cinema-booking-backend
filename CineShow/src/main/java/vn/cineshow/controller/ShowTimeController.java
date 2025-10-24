@@ -3,6 +3,7 @@ package vn.cineshow.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -29,6 +30,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 
+@Slf4j
 @RestController
 @RequestMapping("/api/showtimes")
 @RequiredArgsConstructor
@@ -81,10 +83,12 @@ public class ShowTimeController {
     @GetMapping("/lookup/subtitles")
     public List<IdNameDTO> lookupSubtitles(@RequestParam(required = false) Long subTitleId) {
         Sort sort = Sort.by("name").ascending();
+        log.info("before call get subtitle api:");
         var subtitles = (subTitleId == null)
                 ? subTitleRepository.findAll(sort)
                 : subTitleRepository.findSubTitleBy(subTitleId, sort);
 
+        log.info("after call API");
         return subtitles.stream()
                 .map(s -> IdNameDTO.of(s.getId(), s.getName()))
                 .toList();

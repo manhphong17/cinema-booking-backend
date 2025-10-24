@@ -1,11 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="DataSourceManagerImpl" format="xml" multifile-model="true">
-    <data-source source="LOCAL" name="cineshow@localhost" uuid="ffbeb62b-717b-46df-8325-a92acaf345d6">
+    <data-source source="LOCAL" name="cineshow@localhost" uuid="79725c24-38f2-4f6c-9ab2-0702756fdbbe">
       <driver-ref>mysql.8</driver-ref>
       <synchronize>true</synchronize>
+      <imported>true</imported>
+      <remarks>$PROJECT_DIR$/CineShow/src/main/resources/application-dev.yaml</remarks>
       <jdbc-driver>com.mysql.cj.jdbc.Driver</jdbc-driver>
-      <jdbc-url>jdbc:mysql://localhost:3306/cineshow</jdbc-url>
+      <jdbc-url>jdbc:mysql://localhost:3306/cineshow?useUnicode=true&amp;characterEncoding=UTF-8&amp;createDatabaseIfNotExist=true&amp;useSSL=false&amp;allowPublicKeyRetrieval=true&amp;serverTimezone=Asia/Ho_Chi_Minh</jdbc-url>
       <jdbc-additional-properties>
         <property name="com.intellij.clouds.kubernetes.db.host.port" />
         <property name="com.intellij.clouds.kubernetes.db.enabled" value="false" />
