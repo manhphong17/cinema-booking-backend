@@ -17,18 +17,11 @@ import vn.cineshow.dto.response.IdNameDTO;
 import vn.cineshow.dto.response.ResponseData;
 import vn.cineshow.dto.response.showtime.ShowTimeListDTO;
 import vn.cineshow.dto.response.showtime.ShowTimeResponse;
-import vn.cineshow.enums.MovieStatus;
-import vn.cineshow.repository.MovieRepository;
-import vn.cineshow.repository.RoomRepository;
-import vn.cineshow.repository.RoomTypeRepository;
-import vn.cineshow.repository.SubTitleRepository;
-import vn.cineshow.service.MovieService;
 import vn.cineshow.service.ShowTimeService;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.stream.Collectors;
 
 
 @RestController
@@ -107,7 +100,6 @@ public class ShowTimeController {
     }
 
 
-
     // LookupController.java (hoặc controller hiện tại của bạn)
     @GetMapping("/subtitles/lookup/id-name")
     @Operation(summary = "Get all subtitles as id-name pairs",
@@ -133,12 +125,11 @@ public class ShowTimeController {
     }
 
 
-
-
     @GetMapping("/showtimeBy/{id}")
     public ResponseEntity<ShowTimeListDTO> getShowtimeById(@PathVariable Long id) {
         return ResponseEntity.ok(showTimeService.getShowTimeById(id));
     }
+
     @PutMapping("/{id}")
     public ResponseEntity<ShowTimeResponse> updatePut(@PathVariable Long id,
                                                       @RequestBody @Valid UpdateShowTimeRequest req) {
