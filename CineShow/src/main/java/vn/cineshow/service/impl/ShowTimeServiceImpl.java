@@ -2,7 +2,6 @@ package vn.cineshow.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
@@ -25,24 +24,40 @@ import vn.cineshow.model.SubTitle;
 import vn.cineshow.repository.*;
 import vn.cineshow.service.ShowTimeService;
 
-
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.time.temporal.ChronoField;
-import java.util.*;
+import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class ShowTimeServiceImpl implements ShowTimeService {
 
+    // Chấp nhận: "yyyy-MM-dd", "yyyy-MM-ddTHH:mm", "yyyy-MM-dd HH:mm:ss.SSSSSS", v.v.
+    private static final DateTimeFormatter FLEX = new DateTimeFormatterBuilder()
+            .appendPattern("yyyy-MM-dd")
+            .optionalStart().appendLiteral('T').optionalEnd()
+            .optionalStart().appendLiteral(' ').optionalEnd()
+            .optionalStart().appendPattern("HH:mm[:ss]").optionalEnd()
+            .optionalStart().appendFraction(ChronoField.NANO_OF_SECOND, 0, 6, true).optionalEnd()
+            .toFormatter();
     private final ShowTimeRepository showTimeRepository;
     private final MovieRepository movieRepo;
     private final RoomRepository roomRepo;
     private final SubTitleRepository subTitleRepo;
     private final RoomTypeRepository roomTypeRepo;
+
+    private static LocalDateTime parseFlexible(String s, boolean endOfDayIfDateOnly) {
+        if (s == null || s.isBlank()) return null;
+        if (s.trim().length() == "yyyy-MM-dd".length()) {
+            LocalDate d = LocalDate.parse(s.trim(), DateTimeFormatter.ISO_LOCAL_DATE);
+            return endOfDayIfDateOnly ? d.plusDays(1).atStartOfDay() : d.atStartOfDay();
+        }
+        return LocalDateTime.parse(s.trim(), FLEX);
+    }
 
     @Override
     @Transactional(readOnly = true)
@@ -58,8 +73,6 @@ public class ShowTimeServiceImpl implements ShowTimeService {
         return list.stream().map(ShowTimeListDTO::from).collect(Collectors.toList());
     }
 
-
-
     @Override
     public List<ShowTimeListDTO> findShowtimes(Long movieId, LocalDate date, Long roomId, Long roomTypeId, LocalDateTime startTime, LocalDateTime endTime) {
         return showTimeRepository.findShowtimes(
@@ -73,26 +86,25 @@ public class ShowTimeServiceImpl implements ShowTimeService {
                 .stream()
                 .map(ShowTimeListDTO::from)
                 .distinct()
-                .collect(Collectors.toList());    }
-
-
+                .collect(Collectors.toList());
+    }
 
     @Override
     @Transactional
     public ShowTimeResponse createShowTime(CreateShowTimeRequest req) {
         // 1) Load entities
         Movie movie = movieRepo.findById(req.getMovieId())
-                .orElseThrow(() ->  new AppException(ErrorCode.MOVIE_NOT_FOUND));
+                .orElseThrow(() -> new AppException(ErrorCode.MOVIE_NOT_FOUND));
         Room room = roomRepo.findById(req.getRoomId())
-                .orElseThrow(() -> new AppException(ErrorCode.ROOM_NOT_FOUND));
+                .orElseThrow(() -> new AppException(ErrorCode.ROOM_TYPE_NOT_FOUND));
         SubTitle subtitle = subTitleRepo.findById(req.getSubtitleId())
                 .orElseThrow(() -> new AppException(ErrorCode.SUBTITLE_NOT_FOUND));
 
         LocalDateTime start = req.getStartTime();
-        LocalDateTime end   = req.getEndTime();
+        LocalDateTime end = req.getEndTime();
 
         // 2) Validate room status
-        if (room.getStatus() == RoomStatus.INACTIVE || room.getStatus() == RoomStatus.MAINTENANCE ) {
+        if (room.getStatus() == RoomStatus.INACTIVE || room.getStatus() == RoomStatus.MAINTENANCE) {
             throw new AppException(ErrorCode.ROOM_INACTIVE);
         }
 
@@ -141,9 +153,6 @@ public class ShowTimeServiceImpl implements ShowTimeService {
                 .build();
     }
 
-
-
-
     @Override
     public ShowTimeListDTO getShowTimeById(Long id) {
         if (id == null || id <= 0) {
@@ -154,7 +163,7 @@ public class ShowTimeServiceImpl implements ShowTimeService {
 
         ShowTime st = showTimeRepository.findByIdFetchAll(id)
                 .orElseThrow(() ->
-                        new AppException(ErrorCode.SHOWTIME_NOT_FOUND));
+                        new AppException(ErrorCode.SHOW_TIME_NOT_FOUND));
 
         return ShowTimeListDTO.from(st);
     }
@@ -167,7 +176,7 @@ public class ShowTimeServiceImpl implements ShowTimeService {
 
         // Lấy showtime hiện hữu (kèm fetch associations nếu có sẵn)
         ShowTime st = showTimeRepository.findByIdFetchAll(id)
-                .orElseThrow(() -> new AppException(ErrorCode.SHOWTIME_NOT_FOUND));
+                .orElseThrow(() -> new AppException(ErrorCode.SHOW_TIME_NOT_FOUND));
 
         // Merge giá trị mới (nếu null thì giữ nguyên)
         Movie movie = (req.getMovieId() != null)
@@ -183,7 +192,7 @@ public class ShowTimeServiceImpl implements ShowTimeService {
                 : st.getSubtitle();
 
         LocalDateTime start = (req.getStartTime() != null) ? req.getStartTime() : st.getStartTime();
-        LocalDateTime end   = (req.getEndTime()   != null) ? req.getEndTime()   : st.getEndTime();
+        LocalDateTime end = (req.getEndTime() != null) ? req.getEndTime() : st.getEndTime();
 
         // Validate đủ cặp thời gian
         if (start == null || end == null) {
@@ -235,7 +244,7 @@ public class ShowTimeServiceImpl implements ShowTimeService {
     @Override
     public void softDelete(Long id) {
         ShowTime st = showTimeRepository.findById(id)
-                .orElseThrow(() -> new AppException(ErrorCode.SHOWTIME_NOT_FOUND));
+                .orElseThrow(() -> new AppException(ErrorCode.SHOW_TIME_NOT_FOUND));
         st.setIsDeleted(true);
         showTimeRepository.save(st);
         // có thể đã xoá mềm trước đó hoặc race condition
@@ -246,7 +255,7 @@ public class ShowTimeServiceImpl implements ShowTimeService {
     public void restore(Long id) {
         int n = showTimeRepository.restore(id);
         if (n == 0) {
-            throw new AppException(ErrorCode.SHOWTIME_NOT_FOUND);
+            throw new AppException(ErrorCode.SHOW_TIME_NOT_FOUND);
         }
     }
 
@@ -286,6 +295,16 @@ public class ShowTimeServiceImpl implements ShowTimeService {
                 .collect(Collectors.toList());
     }
 
+//    @Override
+//    public Page<ShowTimeListDTO> findShowtimesPaged(Long movieId, LocalDate date, Long roomId,
+//                                                    Long roomTypeId, LocalDateTime startTime, LocalDateTime endTime,
+//                                                    int page, int size) {
+//        Pageable pageable = PageRequest.of(page, size, Sort.by("startTime").ascending());
+//
+//        return showTimeRepository.findShowtimesPaged(
+//                movieId, date, roomId, roomTypeId, startTime, endTime, pageable
+//        ).map(ShowTimeListDTO::from);
+//    }
 
     @Override
     public List<IdNameDTO> getAllRoomTypesIdName() {
@@ -299,35 +318,6 @@ public class ShowTimeServiceImpl implements ShowTimeService {
         return movieRepo.findAllIdNameByStatuses(
                 List.of(MovieStatus.PLAYING, MovieStatus.UPCOMING)
         );
-    }
-
-//    @Override
-//    public Page<ShowTimeListDTO> findShowtimesPaged(Long movieId, LocalDate date, Long roomId,
-//                                                    Long roomTypeId, LocalDateTime startTime, LocalDateTime endTime,
-//                                                    int page, int size) {
-//        Pageable pageable = PageRequest.of(page, size, Sort.by("startTime").ascending());
-//
-//        return showTimeRepository.findShowtimesPaged(
-//                movieId, date, roomId, roomTypeId, startTime, endTime, pageable
-//        ).map(ShowTimeListDTO::from);
-//    }
-
-    // Chấp nhận: "yyyy-MM-dd", "yyyy-MM-ddTHH:mm", "yyyy-MM-dd HH:mm:ss.SSSSSS", v.v.
-    private static final DateTimeFormatter FLEX = new DateTimeFormatterBuilder()
-            .appendPattern("yyyy-MM-dd")
-            .optionalStart().appendLiteral('T').optionalEnd()
-            .optionalStart().appendLiteral(' ').optionalEnd()
-            .optionalStart().appendPattern("HH:mm[:ss]").optionalEnd()
-            .optionalStart().appendFraction(ChronoField.NANO_OF_SECOND, 0, 6, true).optionalEnd()
-            .toFormatter();
-
-    private static LocalDateTime parseFlexible(String s, boolean endOfDayIfDateOnly) {
-        if (s == null || s.isBlank()) return null;
-        if (s.trim().length() == "yyyy-MM-dd".length()) {
-            LocalDate d = LocalDate.parse(s.trim(), DateTimeFormatter.ISO_LOCAL_DATE);
-            return endOfDayIfDateOnly ? d.plusDays(1).atStartOfDay() : d.atStartOfDay();
-        }
-        return LocalDateTime.parse(s.trim(), FLEX);
     }
 
     private ResponseStatusException notFound(String what, Object id) {

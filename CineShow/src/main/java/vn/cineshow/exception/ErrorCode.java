@@ -31,7 +31,24 @@ public enum ErrorCode {
     ROOM_TYPE_NOT_FOUND(1031, "Room type not found"),
 
     SHOW_TIME_NOT_FOUND(3001, "Show time not found"),
-    MOVIE_BANNER_NOT_FOUND(3002, "Movie Banner not found");
+    MOVIE_BANNER_NOT_FOUND(3001, "Movie banner not found"),
+
+
+    //ShowTime error
+    ROOM_NOT_FOUND(2003, "Room not found"),
+    SUBTITLE_NOT_FOUND(2002, "Subtitle not found"),
+
+    ROOM_INACTIVE(2033, "Room is inactive"),
+    START_AFTER_END(2034, "startTime must be before endTime"),
+    END_TOO_EARLY(2035, "endTime must be greater than startTime + movie.duration"),
+    SHOWTIME_CONFLICT(2036, "Showtime conflicts with an existing show in the same room"),
+
+
+    INTERNAL_ERROR(2037, "Unexpected error"),
+    SHOWTIME_NOT_FOUND(2038, "Showtime not found"),
+    ALREADY_DELETED(2039, "Showtime isdeleted"),
+    CANNOT_DELETE_STARTED(2040, "Can not deleted"),
+    INVALID_ENDTIME(2024, "End time must be greater than start time + movie duration");
 
 
     private final int code;

@@ -18,6 +18,7 @@ import java.util.List;
 public interface MovieRepository extends JpaRepository<Movie, Long> {
 
     boolean existsByNameAndReleaseDate(String name, LocalDate releaseDate);
+
     List<Movie> findByStatusIn(Collection<MovieStatus> statuses, Sort sort);
 
 
@@ -26,10 +27,12 @@ public interface MovieRepository extends JpaRepository<Movie, Long> {
 
     @Query("select m from Movie m where m.status =:status ORDER BY m.releaseDate desc")
     List<Movie> findTopNMovieByStatus(@Param("status") MovieStatus status, Pageable pageable);
+
     @Query("select new vn.cineshow.dto.response.IdNameDTO(m.id, m.name) " +
             "from Movie m " +
             "where m.status in :statuses and m.isDeleted = false " +
             "order by m.name asc")
     List<IdNameDTO> findAllIdNameByStatuses(@Param("statuses") List<MovieStatus> statuses);
 
+    boolean existsByNameAndReleaseDateAndIdNot(String name, LocalDate releaseDate, Long id);
 }
