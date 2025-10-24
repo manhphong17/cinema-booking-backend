@@ -11,7 +11,6 @@ import vn.cineshow.exception.AppException;
 import vn.cineshow.exception.ErrorCode;
 import vn.cineshow.model.Movie;
 import vn.cineshow.model.Room;
-import vn.cineshow.model.ShowTime;
 import vn.cineshow.repository.MovieRepository;
 import vn.cineshow.repository.ShowTimeRepository;
 import vn.cineshow.service.BookingService;
@@ -24,7 +23,7 @@ import java.util.List;
 @Service
 @Slf4j(topic = "BOOKING-SERVICE")
 @RequiredArgsConstructor
-@FieldDefaults(level = AccessLevel.PRIVATE , makeFinal = true)
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class BookingServiceImpl implements BookingService {
     MovieRepository movieRepository;
     ShowTimeRepository showTimeRepository;
@@ -47,7 +46,7 @@ public class BookingServiceImpl implements BookingService {
     @Override
     public List<ShowTimeResponse> getShowTimesByMovieAndStartTime(Long movieId, LocalDateTime startTime) {
         return showTimeRepository.findByMovie_IdAndStartTime(movieId, startTime).stream()
-                .filter(showTime -> countTotalSeatAvailable(showTime.getRoom()) >0)
+                .filter(showTime -> countTotalSeatAvailable(showTime.getRoom()) > 0)
                 .map(s -> ShowTimeResponse.builder()
                         .startTime(s.getStartTime())
                         .endTime(s.getEndTime())
@@ -61,7 +60,7 @@ public class BookingServiceImpl implements BookingService {
     }
 
 
-    private int countTotalSeatAvailable(Room room){
-        return room.getSeats().stream().filter(seat -> !seat.getStatus().equals(SeatStatus.BOOKED) && !seat.getStatus().equals(SeatStatus.BLOCKED)).toList().size();
+    private int countTotalSeatAvailable(Room room) {
+        return room.getSeats().stream().filter(seat -> seat.getStatus().equals(SeatStatus.AVAILABLE)).toList().size();
     }
 }

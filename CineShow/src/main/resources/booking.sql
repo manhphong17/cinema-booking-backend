@@ -991,7 +991,6 @@ VALUES
 
 
 
-
 -- Insert sample data for accounts and users (20 additional accounts)
 -- Accounts table
 INSERT INTO accounts (email, password, status, is_deleted, created_at, updated_at)
@@ -1150,23 +1149,23 @@ VALUES ('VI', 'Tiếng Việt', NOW(), NOW()),
 INSERT INTO room_types (name, description, created_at, updated_at, active)
 VALUES ('2D', 'Phòng chiếu tiêu chuẩn', NOW(), NOW(), true),
        ('3D', 'Phòng chiếu VIP cao cấp', NOW(), NOW(), true),
-       ('IMAX', 'Phòng chiếu IMAX', NOW(), NOW(),true);
+       ('IMAX', 'Phòng chiếu IMAX', NOW(), NOW(), true);
 
 -- Seat Types
 INSERT INTO seat_types (name, description, created_at, updated_at, active)
 VALUES ('Standard', 'Ghế tiêu chuẩn', NOW(), NOW(), true),
-       ('VIP', 'Ghế VIP', NOW(), NOW(),true);
+       ('VIP', 'Ghế VIP', NOW(), NOW(), true);
 
 -- Rooms
-INSERT INTO rooms (name, room_type_id, status, created_at, updated_at,rows_count, columns_count)
-VALUES ('Phòng 1', 1, 'ACTIVE', NOW(), NOW(),10,12),
-       ('Phòng 2', 1, 'ACTIVE', NOW(), NOW(),10,12),
-       ('Phòng 3', 2, 'ACTIVE', NOW(), NOW(),10,12),
-       ('Phòng 4', 3, 'ACTIVE', NOW(), NOW(),10,12),
-       ('Phòng 5', 1, 'ACTIVE', NOW(), NOW(),10,12),
-       ('Phòng VIP 1', 2, 'ACTIVE', NOW(), NOW(),10,12),
-       ('Phòng IMAX 1', 3, 'ACTIVE', NOW(), NOW(),10,12),
-       ('Phòng 4DX 1', 1, 'ACTIVE', NOW(), NOW(),10,12);
+INSERT INTO rooms (name, room_type_id, status, created_at, updated_at, rows_count, columns_count)
+VALUES ('Phòng 1', 1, 'ACTIVE', NOW(), NOW(), 10, 12),
+       ('Phòng 2', 1, 'ACTIVE', NOW(), NOW(), 10, 12),
+       ('Phòng 3', 2, 'ACTIVE', NOW(), NOW(), 10, 12),
+       ('Phòng 4', 3, 'ACTIVE', NOW(), NOW(), 10, 12),
+       ('Phòng 5', 1, 'ACTIVE', NOW(), NOW(), 10, 12),
+       ('Phòng VIP 1', 2, 'ACTIVE', NOW(), NOW(), 10, 12),
+       ('Phòng IMAX 1', 3, 'ACTIVE', NOW(), NOW(), 10, 12),
+       ('Phòng 4DX 1', 1, 'ACTIVE', NOW(), NOW(), 10, 12);
 
 -- Ghế cho Phòng 1 (2D - 10x8 = 80 ghế)
 INSERT INTO seats (seat_row, seat_column, status, room_id, seat_type_id, created_at, updated_at)
@@ -1194,8 +1193,8 @@ VALUES
 ('B', '9', 'AVAILABLE', 1, 1, NOW(), NOW()),
 ('B', '10', 'AVAILABLE', 1, 1, NOW(), NOW()),
 -- Row C (1-10) - Một số ghế đã đặt để test
-('C', '1', 'BOOKED', 1, 1, NOW(), NOW()),
-('C', '2', 'BOOKED', 1, 1, NOW(), NOW()),
+('C', '1', 'AVAILABLE', 1, 1, NOW(), NOW()),
+('C', '2', 'AVAILABLE', 1, 1, NOW(), NOW()),
 ('C', '3', 'AVAILABLE', 1, 1, NOW(), NOW()),
 ('C', '4', 'AVAILABLE', 1, 1, NOW(), NOW()),
 ('C', '5', 'AVAILABLE', 1, 1, NOW(), NOW()),
@@ -1377,8 +1376,6 @@ VALUES
 ('2024-12-20 14:00:00', '2024-12-20 17:00:00', 4, 2, 1, NOW(), NOW());
 
 
-
-
 -- ShowTimes
 INSERT INTO showtimes (start_time, end_time, room_id, movie_id, subtitle_id, created_at, updated_at)
 VALUES
@@ -1404,6 +1401,5 @@ VALUES
 ('2025-10-23 14:00:00', '2025-10-23 17:00:00', 4, 2, 1, NOW(), NOW());
 
 INSERT INTO showtimes (start_time, end_time, room_id, movie_id, subtitle_id, created_at, updated_at)
-VALUES
-('2025-10-23 14:00:00', '2025-10-23 17:00:00', 1, 1, 1, NOW(), NOW()),
-('2025-10-23 14:00:00', '2025-10-23 17:00:00', 2, 1, 1, NOW(), NOW());
+VALUES ('2025-10-23 14:00:00', '2025-10-23 17:00:00', 1, 1, 1, NOW(), NOW()),
+       ('2025-10-23 14:00:00', '2025-10-23 17:00:00', 2, 1, 1, NOW(), NOW());
