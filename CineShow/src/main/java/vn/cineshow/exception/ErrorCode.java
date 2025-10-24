@@ -30,7 +30,8 @@ public enum ErrorCode {
     SEAT_TYPE_NOT_FOUND(1030, "Seat type not found"),
     ROOM_TYPE_NOT_FOUND(1031, "Room type not found"),
 
-    SHOW_TIME_NOT_FOUND(3001,"Show time not found");
+    SHOW_TIME_NOT_FOUND(3001, "Show time not found"),
+    MOVIE_BANNER_NOT_FOUND(3002, "Movie Banner not found");
 
 
     private final int code;

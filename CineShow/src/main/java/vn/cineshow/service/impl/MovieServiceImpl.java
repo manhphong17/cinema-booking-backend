@@ -303,6 +303,9 @@ public class MovieServiceImpl implements MovieService {
     @Override
     public void updateFeatureMovie(long id, boolean isFeatured) {
         Movie movie = findById(id);
+        if (movie.getBannerUrl() == null) {
+            throw new AppException(ErrorCode.MOVIE_BANNER_NOT_FOUND);
+        }
         movie.setFeatured(isFeatured);
         movieRepository.save(movie);
         log.info("Movie updated successfully, id: {}", movie.getId());
