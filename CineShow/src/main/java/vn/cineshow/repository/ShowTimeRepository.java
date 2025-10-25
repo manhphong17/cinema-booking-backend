@@ -7,6 +7,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import vn.cineshow.model.Room;
+import vn.cineshow.model.Seat;
 import vn.cineshow.model.ShowTime;
 
 import java.time.LocalDate;
@@ -178,12 +180,16 @@ public interface ShowTimeRepository extends JpaRepository<ShowTime, Long> {
             SELECT DISTINCT s.startTime, s.endTime 
             FROM ShowTime s 
             JOIN s.room r
-            JOIN r.seats sa
+            JOIN s.seatShowTimes ss
             WHERE FUNCTION('DATE', s.startTime) = :targetDate 
             AND s.movie.id = :movieId 
-            AND sa.status = 'AVAILABLE' 
-            ORDER BY s.startTime ASC """)
+            AND ss.status = 'AVAILABLE' 
+            AND r.status ='ACTIVE' 
+            ORDER BY s.startTime ASC 
+            """)
     List<Object[]> findDistinctStartAndEndTimesByDate(@Param("targetDate") LocalDate targetDate, @Param("movieId") Long movieId);
 
     List<ShowTime> findByMovie_IdAndStartTime(Long movieId, LocalDateTime startTime);
+
+    List<Seat> findByRoom(Room room);
 }

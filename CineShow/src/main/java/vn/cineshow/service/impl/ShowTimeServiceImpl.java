@@ -15,14 +15,14 @@ import vn.cineshow.dto.response.showtime.ShowTimeListDTO;
 import vn.cineshow.dto.response.showtime.ShowTimeResponse;
 import vn.cineshow.enums.MovieStatus;
 import vn.cineshow.enums.RoomStatus;
+import vn.cineshow.enums.SeatShowTimeStatus;
+import vn.cineshow.enums.SeatStatus;
 import vn.cineshow.exception.AppException;
 import vn.cineshow.exception.ErrorCode;
-import vn.cineshow.model.Movie;
-import vn.cineshow.model.Room;
-import vn.cineshow.model.ShowTime;
-import vn.cineshow.model.SubTitle;
+import vn.cineshow.model.*;
 import vn.cineshow.repository.*;
 import vn.cineshow.service.ShowTimeService;
+import vn.cineshow.service.TicketPriceService;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -49,6 +49,9 @@ public class ShowTimeServiceImpl implements ShowTimeService {
     private final RoomRepository roomRepo;
     private final SubTitleRepository subTitleRepo;
     private final RoomTypeRepository roomTypeRepo;
+    private final TicketPriceService ticketPriceService;
+    private final SeatShowtimeRepository seatShowTimeRepository;
+    private final SeatRepository seatRepository;
 
     private static LocalDateTime parseFlexible(String s, boolean endOfDayIfDateOnly) {
         if (s == null || s.isBlank()) return null;
@@ -142,6 +145,9 @@ public class ShowTimeServiceImpl implements ShowTimeService {
         // st.setIsDeleted(false);
 
         ShowTime saved = showTimeRepository.save(st);
+
+        // 6) create seat-showtime
+        createSeatForShowTime(st);
 
         return ShowTimeResponse.builder()
                 .id(saved.getId())
@@ -323,6 +329,40 @@ public class ShowTimeServiceImpl implements ShowTimeService {
     private ResponseStatusException notFound(String what, Object id) {
         return new ResponseStatusException(HttpStatus.NOT_FOUND, what + " not found: " + id);
     }
+
+
+    /**
+     * Initializes all seats for a specific showtime.
+     * <p>
+     * This method retrieves all seats belonging to the showtime's room,
+     * calculates the ticket price for each seat based on current pricing policy,
+     * determines the seat status (AVAILABLE or BLOCKED),
+     * and persists all generated SeatShowTime records into the database.
+     * </p>
+     *
+     * @param showTime the showtime for which seat entries should be created
+     */
+    private void createSeatForShowTime(ShowTime showTime) {
+        //add seat
+        List<Seat> seats = seatRepository.findByRoom(showTime.getRoom());
+
+        for (Seat seat : seats) {
+            double price = ticketPriceService.calculatePrice(seat.getId(), showTime.getId());
+            SeatShowTime seatShowTime = SeatShowTime.builder()
+                    .seat(seat)
+                    .seatPrice(price)
+                    .showTime(showTime)
+                    .build();
+
+            seatShowTime.setStatus(
+                    seat.getStatus() == SeatStatus.AVAILABLE ? SeatShowTimeStatus.AVAILABLE : SeatShowTimeStatus.BLOCKED
+            );
+
+            //save
+            seatShowTimeRepository.save(seatShowTime);
+        }
+    }
+
 }
 
 
