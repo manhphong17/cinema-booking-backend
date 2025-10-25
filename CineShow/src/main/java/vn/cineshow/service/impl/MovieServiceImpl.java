@@ -211,32 +211,37 @@ public class MovieServiceImpl implements MovieService {
                 .build()).toList();
     }
 
-    @Transactional
     @Override
     public void updatebyId(long id, MovieUpdateBasicRequest request) {
-        Movie movie = findById(id);
 
-        // Check for duplicate movie name (excluding current movie)
-        if (isMovieExistForUpdate(request.getName(), request.getReleaseDate(), id)) {
-            log.warn("Movie with name {} already exists", request.getName());
-            throw new DuplicateResourceException("Movie already exists");
-        }
-
-        Set<MovieGenre> movieGenres = new HashSet<>();
-        for (Long genreId : request.getGenreIds()) {
-            movieGenres.add(findMovieGenreById(genreId));
-        }
-
-        movie.setName(request.getName().trim());
-        movie.setLanguage(findLanguageById(request.getLanguageId()));
-        movie.setCountry(findCountryById(request.getCountryId()));
-        movie.setMovieGenres(movieGenres);
-        movie.setStatus(MovieStatus.valueOf(request.getStatus()));
-        movie.setReleaseDate(request.getReleaseDate());
-
-        movieRepository.save(movie);
-        log.info("Movie updated successfully, id: {}", movie.getId());
     }
+
+//    @Transactional
+//    @Override
+//    public void updatebyId(long id, MovieUpdateBasicRequest request) {
+//        Movie movie = findById(id);
+//
+//        // Check for duplicate movie name (excluding current movie)
+//        if (isMovieExistForUpdate(request.getName(), request.getReleaseDate(), id)) {
+//            log.warn("Movie with name {} already exists", request.getName());
+//            throw new DuplicateResourceException("Movie already exists");
+//        }
+//
+//        Set<MovieGenre> movieGenres = new HashSet<>();
+//        for (Long genreId : request.getGenreIds()) {
+//            movieGenres.add(findMovieGenreById(genreId));
+//        }
+//
+//        movie.setName(request.getName().trim());
+//        movie.setLanguage(findLanguageById(request.getLanguageId()));
+//        movie.setCountry(findCountryById(request.getCountryId()));
+//        movie.setMovieGenres(movieGenres);
+//        movie.setStatus(MovieStatus.valueOf(request.getStatus()));
+//        movie.setReleaseDate(request.getReleaseDate());
+//
+//        movieRepository.save(movie);
+//        log.info("Movie updated successfully, id: {}", movie.getId());
+//    }
 
     @Transactional
     @Override
@@ -379,9 +384,9 @@ public class MovieServiceImpl implements MovieService {
         return movieRepository.existsByNameAndReleaseDate(name, releaseDate);
     }
 
-    private boolean isMovieExistForUpdate(String name, LocalDate releaseDate, Long excludeId) {
-        return movieRepository.existsByNameAndReleaseDateAndIdNot(name, releaseDate, excludeId);
-    }
+//    private boolean isMovieExistForUpdate(String name, LocalDate releaseDate, Long excludeId) {
+//        return movieRepository.existsByNameAndReleaseDateAndIdNot(name, releaseDate, excludeId);
+//    }
 
     private List<MovieGenreResponse> getMovieGenresByMovie(Movie movie) {
         List<MovieGenre> movieGenres = movie.getMovieGenres().stream().toList();
