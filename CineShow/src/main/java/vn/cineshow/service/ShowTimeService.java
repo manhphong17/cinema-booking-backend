@@ -5,6 +5,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import vn.cineshow.dto.request.showtime.CreateShowTimeRequest;
 import vn.cineshow.dto.request.showtime.UpdateShowTimeRequest;
+import vn.cineshow.dto.response.IdNameDTO;
 import vn.cineshow.dto.response.showtime.ShowTimeListDTO;
 import vn.cineshow.dto.response.showtime.ShowTimeResponse;
 import vn.cineshow.model.ShowTime;
@@ -19,12 +20,7 @@ import java.util.List;
 public interface ShowTimeService {
     Page<ShowTimeListDTO> getAll(Pageable pageable);
     List<ShowTimeListDTO> getAllPlain();                 // không sort/paging
-    List<ShowTimeListDTO> getByMovieId(Long movieId, LocalDate date);
-    List<ShowTimeListDTO> searchShowtimes(Long movieId, LocalDate date);
-    List<ShowTime> searchByRange(String startStr, String endStr, Long roomTypeId, Long movieId);
-    List<ShowTime> searchByDate(LocalDate date, Long roomTypeId, Long movieId);
-    List<ShowTimeListDTO> getShowtimesByMovieAndDateAndRoomType(Long movieId, LocalDate date, Long roomTypeId);
-    List<ShowTimeListDTO> findShowtimes(Long movieId, LocalDate date, Long roomId);
+
     List<ShowTimeListDTO> findShowtimes(
             Long movieId,
             LocalDate date,
@@ -36,6 +32,25 @@ public interface ShowTimeService {
     ShowTimeResponse createShowTime(CreateShowTimeRequest req);
     ShowTimeListDTO getShowTimeById(Long id);
     ShowTimeResponse updateShowTime(Long id, UpdateShowTimeRequest req);
+    void softDelete(Long id);
+    void restore(Long id); // optional
+
+
+    /** Danh sách phim có suất chiếu sắp tới (chưa bắt đầu, chưa xoá mềm) */
+    List<IdNameDTO> lookupMovieIdNameForUpcoming(LocalDateTime from);
+
+    /** Danh sách phim theo các trạng thái chỉ định (vd: PLAYING) */
+    List<IdNameDTO> lookupMovieIdNameByStatuses();
+    List<IdNameDTO> getAllRoomsIdName();
+
+    List<IdNameDTO> getAllSubTitlesIdName();
+    List<IdNameDTO> getAllRoomTypesIdName();
+
+    List<IdNameDTO> getIdNameMoviesPlayingAndUpcoming();
+//    Page<ShowTimeListDTO> findShowtimesPaged(Long movieId, LocalDate date, Long roomId,
+//                                             Long roomTypeId, LocalDateTime startTime, LocalDateTime endTime,
+//                                             int page, int size);
+
 
 
 }

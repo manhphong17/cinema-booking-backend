@@ -11,7 +11,6 @@ import vn.cineshow.exception.ErrorCode;
 import vn.cineshow.model.*;
 import vn.cineshow.repository.*;
 import vn.cineshow.service.HolidayService;
-import vn.cineshow.service.ShowTimeService;
 import vn.cineshow.service.TicketPriceService;
 
 import java.time.DayOfWeek;
@@ -30,7 +29,6 @@ public class TicketPriceServiceImpl implements TicketPriceService {
     private final RoomTypeRepository roomTypeRepository;
     private final SeatRepository seatRepository;
     private final ShowTimeRepository showTimeRepository;
-    private final ShowTimeService showTimeService;
     private final HolidayService holidayService;
 
     @Transactional
@@ -82,36 +80,36 @@ public class TicketPriceServiceImpl implements TicketPriceService {
     }
 
 
-        @Transactional
-        @Override
-        public Double calculatePrice(Long seatId, Long showTimeId) {
-            // 1. Lấy seatType
-            Seat seat = seatRepository.findById(seatId)
-                    .orElseThrow(() -> new AppException(ErrorCode.SEAT_TYPE_NOT_FOUND));
-            Long seatTypeId = seat.getSeatType().getId();
+    @Transactional
+    @Override
+    public Double calculatePrice(Long seatId, Long showTimeId) {
+        // 1. Lấy seatType
+        Seat seat = seatRepository.findById(seatId)
+                .orElseThrow(() -> new AppException(ErrorCode.SEAT_TYPE_NOT_FOUND));
+        Long seatTypeId = seat.getSeatType().getId();
 
-            // 2. Lấy roomType + showDate
-            ShowTime showTime = showTimeRepository.findById(showTimeId)
-                    .orElseThrow(() -> new RuntimeException("ShowTime not found"));
-            Long roomTypeId = showTime.getRoom().getRoomType().getId();
-            LocalDate showDate = LocalDate.from(showTime.getStartTime());
+        // 2. Lấy roomType + showDate
+        ShowTime showTime = showTimeRepository.findById(showTimeId)
+                .orElseThrow(() -> new RuntimeException("ShowTime not found"));
+        Long roomTypeId = showTime.getRoom().getRoomType().getId();
+        LocalDate showDate = LocalDate.from(showTime.getStartTime());
 
-            // 3. Tính dayType
-            DayType dayType = getDayType(showDate);
+        // 3. Tính dayType
+        DayType dayType = getDayType(showDate);
 
-            // 4. Truy vấn giá
-            return ticketPriceRepository.findPrice(roomTypeId, seatTypeId, dayType)
-                    .orElseThrow(() -> new RuntimeException("Ticket price not found"));
-        }
+        // 4. Truy vấn giá
+        return ticketPriceRepository.findPrice(roomTypeId, seatTypeId, dayType)
+                .orElseThrow(() -> new RuntimeException("Ticket price not found"));
+    }
 
-        private DayType getDayType(LocalDate date) {
-            if (holidayService.isHoliday(date)) return DayType.HOLIDAY;
+    private DayType getDayType(LocalDate date) {
+        if (holidayService.isHoliday(date)) return DayType.HOLIDAY;
 
-            DayOfWeek dow = date.getDayOfWeek();
-            if (dow == DayOfWeek.SATURDAY || dow == DayOfWeek.SUNDAY)
-                return DayType.HOLIDAY;
+        DayOfWeek dow = date.getDayOfWeek();
+        if (dow == DayOfWeek.SATURDAY || dow == DayOfWeek.SUNDAY)
+            return DayType.HOLIDAY;
 
-            return DayType.NORMAL;
-        }
+        return DayType.NORMAL;
+    }
 }
 

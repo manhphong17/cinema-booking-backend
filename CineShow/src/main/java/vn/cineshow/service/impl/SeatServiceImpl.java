@@ -276,6 +276,7 @@ public class SeatServiceImpl implements SeatService {
                         toSave.add(seat);
                     });
         }
+
         if (!toSave.isEmpty()) seatRepository.saveAll(toSave);
         return toSave.size();
     }

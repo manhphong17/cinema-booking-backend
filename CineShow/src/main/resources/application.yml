@@ -3,7 +3,7 @@ server:
 
 spring:
   application:
-    name: VN SocialNet
+    name: PHT Cinema VN
   profiles:
     active: @spring.profiles.active@
   jackson:
