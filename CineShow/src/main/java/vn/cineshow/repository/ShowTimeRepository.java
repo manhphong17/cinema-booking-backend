@@ -180,10 +180,10 @@ public interface ShowTimeRepository extends JpaRepository<ShowTime, Long> {
             SELECT DISTINCT s.startTime, s.endTime 
             FROM ShowTime s 
             JOIN s.room r
-            JOIN s.seatShowTimes ss
+            JOIN s.tickets t
             WHERE FUNCTION('DATE', s.startTime) = :targetDate 
             AND s.movie.id = :movieId 
-            AND ss.status = 'AVAILABLE' 
+            AND t.status = 'AVAILABLE' 
             AND r.status ='ACTIVE' 
             ORDER BY s.startTime ASC 
             """)

@@ -50,7 +50,7 @@ public class ShowTimeServiceImpl implements ShowTimeService {
     private final SubTitleRepository subTitleRepo;
     private final RoomTypeRepository roomTypeRepo;
     private final TicketPriceService ticketPriceService;
-    private final SeatShowtimeRepository seatShowTimeRepository;
+    private final TicketRepository ticketRepository;
     private final SeatRepository seatRepository;
 
     private static LocalDateTime parseFlexible(String s, boolean endOfDayIfDateOnly) {
@@ -348,18 +348,18 @@ public class ShowTimeServiceImpl implements ShowTimeService {
 
         for (Seat seat : seats) {
             double price = ticketPriceService.calculatePrice(seat.getId(), showTime.getId());
-            SeatShowTime seatShowTime = SeatShowTime.builder()
+            Ticket ticket = Ticket.builder()
                     .seat(seat)
-                    .seatPrice(price)
+                    .price(price)
                     .showTime(showTime)
                     .build();
 
-            seatShowTime.setStatus(
+            ticket.setStatus(
                     seat.getStatus() == SeatStatus.AVAILABLE ? SeatShowTimeStatus.AVAILABLE : SeatShowTimeStatus.BLOCKED
             );
 
             //save
-            seatShowTimeRepository.save(seatShowTime);
+            ticketRepository.save(ticket);
         }
     }
 

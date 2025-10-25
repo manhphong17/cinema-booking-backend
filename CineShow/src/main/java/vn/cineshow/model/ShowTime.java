@@ -29,7 +29,7 @@ public class ShowTime extends AbstractEntity implements Serializable {
     Room room;
 
     @OneToMany(mappedBy = "showTime", fetch = FetchType.LAZY)
-    private List<SeatShowTime> seatShowTimes;
+    private List<Ticket> tickets;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "movie_id", nullable = false)
