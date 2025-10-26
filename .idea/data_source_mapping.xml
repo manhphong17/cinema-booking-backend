@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="DataSourcePerFileMappings">
-    <file url="file://$APPLICATION_CONFIG_DIR$/consoles/db/79725c24-38f2-4f6c-9ab2-0702756fdbbe/console_2.sql" value="79725c24-38f2-4f6c-9ab2-0702756fdbbe" />
+    <file url="file://$PROJECT_DIR$/CineShow/src/main/resources/booking.sql" value="58c3026f-56e5-471b-ad38-8e2aa5963bdc" />
   </component>
 </project>

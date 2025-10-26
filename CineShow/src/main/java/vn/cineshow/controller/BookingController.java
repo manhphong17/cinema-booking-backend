@@ -8,8 +8,12 @@ import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 import vn.cineshow.dto.response.ResponseData;
+import vn.cineshow.dto.response.booking.BookingSeatsResponse;
 import vn.cineshow.dto.response.booking.ShowTimeResponse;
 import vn.cineshow.service.BookingService;
 
@@ -31,7 +35,7 @@ public class BookingController {
             description = "Send a request via this API to get list show times by date and a movie")
     @GetMapping("/movies/{movieId}/show-times/{date}")
     public ResponseData<?> getShowTimesListByDay(@PathVariable Long movieId,
-                                                     @PathVariable @DateTimeFormat(pattern = "yyyy-MM-dd")LocalDate date){
+                                                 @PathVariable @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate date) {
 
         List<ShowTimeResponse> showTimesResponses = bookingService.getShowTimesByMovieAndDay(movieId, date);
 
@@ -43,11 +47,23 @@ public class BookingController {
             description = "Send a request via this API to get list show times by start time and a movie")
     @GetMapping("/movies/{movieId}/show-times/start-time/{startTime}")
     public ResponseData<?> getShowTimesByRoomAndStartTime(@PathVariable Long movieId,
-                                                          @PathVariable @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss") LocalDateTime startTime){
+                                                          @PathVariable @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss") LocalDateTime startTime) {
 
         List<ShowTimeResponse> showTimesResponses = bookingService.getShowTimesByMovieAndStartTime(movieId, startTime);
 
         return new ResponseData<>(HttpStatus.OK.value(), "Get showtime and room by movie and start time successfully", showTimesResponses);
+
+    }
+
+    @Operation(summary = "Get seats for booking by showtimeId",
+            description = "Send a request via this API to get list seat for booking by showtimeId")
+    @GetMapping("/show-times/{showTimeId}/seats")
+    public ResponseData<?> getSeatsForBooking(@PathVariable Long showTimeId) {
+
+        log.info("Request get seats for booking by showtimeId: {}", showTimeId);
+        List<BookingSeatsResponse> seatResponses = bookingService.getSeatsByShowTimeId(showTimeId);
+        log.info("Response get seats for booking by showtimeId: {}", seatResponses);
+        return new ResponseData<>(HttpStatus.OK.value(), "Get showtime and room by movie and start time successfully", seatResponses);
 
     }
 

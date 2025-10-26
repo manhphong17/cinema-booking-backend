@@ -6,4 +6,5 @@ import vn.cineshow.model.Ticket;
 
 @Repository
 public interface TicketRepository extends JpaRepository<Ticket, Long> {
+
 }

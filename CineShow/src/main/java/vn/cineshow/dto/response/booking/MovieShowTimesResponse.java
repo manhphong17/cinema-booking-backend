@@ -2,7 +2,6 @@ package vn.cineshow.dto.response.booking;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.*;
-import vn.cineshow.dto.response.movie.MovieDetailResponse;
 import vn.cineshow.dto.response.showtime.ShowTimeResponse;
 
 import java.util.List;
