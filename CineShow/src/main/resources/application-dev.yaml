@@ -134,8 +134,13 @@ logging:
     org.springframework.transaction: DEBUG
     org.hibernate.engine.jdbc.spi.SqlExceptionHelper: WARN
 
-
-
+#
+#vnpay:
+#  tmn-code: ME5W6VFG
+#  hash-secret: ${VNPAY_HASH_SECRET}
+#  pay-url: https://sandbox.vnpayment.vn/paymentv2/vpcpay.html
+#  return-url: https://yourdomain.com/api/payment/return
+#  timeout: 6
 
 
 

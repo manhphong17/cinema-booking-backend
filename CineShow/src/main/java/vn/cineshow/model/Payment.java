@@ -46,6 +46,6 @@ public class Payment extends AbstractEntity implements Serializable {
     @Enumerated(EnumType.STRING)
     PaymentStatus paymentStatus;
 
-    LocalDateTime paymentDate;
+//    LocalDateTime paymentDate;
 
 }
