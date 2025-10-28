@@ -7,8 +7,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-import vn.cineshow.model.Room;
-import vn.cineshow.model.Seat;
 import vn.cineshow.model.ShowTime;
 
 import java.time.LocalDate;
@@ -191,5 +189,4 @@ public interface ShowTimeRepository extends JpaRepository<ShowTime, Long> {
 
     List<ShowTime> findByMovie_IdAndStartTime(Long movieId, LocalDateTime startTime);
 
-    List<Seat> findByRoom(Room room);
 }

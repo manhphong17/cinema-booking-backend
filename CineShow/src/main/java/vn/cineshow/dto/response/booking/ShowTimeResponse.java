@@ -10,6 +10,7 @@ import java.time.LocalDateTime;
 @Builder
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ShowTimeResponse {
+    Long showTimeId;
     private LocalDateTime startTime;
     private LocalDateTime endTime;
     private Long roomId;
