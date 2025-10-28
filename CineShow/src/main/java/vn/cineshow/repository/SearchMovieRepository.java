@@ -1,26 +1,36 @@
 package vn.cineshow.repository;
 
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
-import jakarta.persistence.Query;
-import jakarta.persistence.TypedQuery;
-import jakarta.persistence.criteria.*;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Component;
-import org.springframework.util.StringUtils;
-import vn.cineshow.dto.request.movie.MovieFilterRequest;
-import vn.cineshow.dto.request.movie.UserSearchMovieRequest;
-import vn.cineshow.dto.response.PageResponse;
-import vn.cineshow.dto.response.movie.*;
-import vn.cineshow.exception.AppException;
-import vn.cineshow.exception.ErrorCode;
-import vn.cineshow.model.Movie;
-import vn.cineshow.model.MovieGenre;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
+
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.Query;
+import jakarta.persistence.TypedQuery;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Join;
+import jakarta.persistence.criteria.JoinType;
+import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
+import lombok.extern.slf4j.Slf4j;
+import vn.cineshow.dto.request.movie.MovieFilterRequest;
+import vn.cineshow.dto.request.movie.UserSearchMovieRequest;
+import vn.cineshow.dto.response.PageResponse;
+import vn.cineshow.dto.response.movie.CountryResponse;
+import vn.cineshow.dto.response.movie.LanguageResponse;
+import vn.cineshow.dto.response.movie.MovieGenreResponse;
+import vn.cineshow.dto.response.movie.OperatorMovieOverviewResponse;
+import vn.cineshow.dto.response.movie.UserMovieBookingListResponse;
+import vn.cineshow.exception.AppException;
+import vn.cineshow.exception.ErrorCode;
+import vn.cineshow.model.Movie;
+import vn.cineshow.model.MovieGenre;
 
 @Component
 @Slf4j(topic = "SEARCH_REPOSITORY")
@@ -122,7 +132,7 @@ public class SearchMovieRepository implements SearchMovieRepositoryCustom {
         }
 
         // 3. Filter by status (convert to uppercase for consistency)
-        if (StringUtils.hasText(req.getStatus().name())) {
+        if (req.getStatus() != null && StringUtils.hasText(req.getStatus().name())) {
             predicates.add(cb.equal(movieRoot.get("status"), req.getStatus().name().toUpperCase()));
         }
 
@@ -157,7 +167,7 @@ public class SearchMovieRepository implements SearchMovieRepositoryCustom {
             Join<Movie, MovieGenre> countGenreJoin = countRoot.join("movieGenres", JoinType.INNER);
             countPredicates.add(cb.equal(countGenreJoin.get("id"), req.getGenreId()));
         }
-        if (StringUtils.hasText(req.getStatus().name())) {
+        if (req.getStatus() != null && StringUtils.hasText(req.getStatus().name())) {
             countPredicates.add(cb.equal(countRoot.get("status"), req.getStatus().name()));
         }
         countPredicates.add(cb.isFalse(countRoot.get("isDeleted")));
@@ -184,9 +194,9 @@ public class SearchMovieRepository implements SearchMovieRepositoryCustom {
     private StringBuilder baseQueryForGetMoviesListWithFilterByManyColumnAndSortBy(MovieFilterRequest request, boolean count) {
         StringBuilder sql = new StringBuilder();
         if (count)
-            sql.append("select count(distinct m) from Movie m join m.movieGenres mg where m.isDeleted = false ");
+            sql.append("select count(distinct m) from Movie m left join m.movieGenres mg where m.isDeleted = false ");
         else
-            sql.append("select distinct m from Movie m join m.movieGenres mg where m.isDeleted = false ");
+            sql.append("select distinct m from Movie m left join m.movieGenres mg where m.isDeleted = false ");
 
         if (StringUtils.hasLength(request.getKeyword()))
             sql.append(" and (lower(m.name) like lower(:name) or lower(m.country.name) like lower(:country))");

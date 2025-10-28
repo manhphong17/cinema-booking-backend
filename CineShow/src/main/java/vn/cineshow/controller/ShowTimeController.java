@@ -3,7 +3,6 @@ package vn.cineshow.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -18,37 +17,26 @@ import vn.cineshow.dto.response.IdNameDTO;
 import vn.cineshow.dto.response.ResponseData;
 import vn.cineshow.dto.response.showtime.ShowTimeListDTO;
 import vn.cineshow.dto.response.showtime.ShowTimeResponse;
-import vn.cineshow.repository.MovieRepository;
-import vn.cineshow.repository.RoomRepository;
-import vn.cineshow.repository.RoomTypeRepository;
-import vn.cineshow.repository.SubTitleRepository;
 import vn.cineshow.service.ShowTimeService;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.stream.Collectors;
 
 
-@Slf4j
 @RestController
 @RequestMapping("/api/showtimes")
 @RequiredArgsConstructor
 public class ShowTimeController {
-    // thêm repo để lookup
-    private final RoomTypeRepository roomTypeRepository;
-    private final RoomRepository roomRepository;
-    private final ShowTimeService showTimeService;
-    private final MovieRepository movieRepository;
-    private final SubTitleRepository subTitleRepository;
 
-    @Operation(summary = "Lookup movies (id + name)")
+    private final ShowTimeService showTimeService;
+
     @GetMapping("/lookup/id-name-movies")
-    public List<IdNameDTO> lookupMovieIdName() {
-        return movieRepository.findAll(Sort.by(Sort.Direction.ASC, "name"))
-                .stream()
-                .map(m -> new IdNameDTO(m.getId(), m.getName()))
-                .toList();
+    @Operation(summary = "Lookup movies (PLAYING & UPCOMING)",
+            description = "Return id-name list of movies whose status is PLAYING or UPCOMING")
+    public ResponseData<List<IdNameDTO>> lookupIdNameMoviesForShowtime() {
+        List<IdNameDTO> movies = showTimeService.getIdNameMoviesPlayingAndUpcoming();
+        return new ResponseData<>(HttpStatus.OK.value(), "Movies retrieved successfully", movies);
     }
 
     @GetMapping("/all")
@@ -69,29 +57,6 @@ public class ShowTimeController {
     @GetMapping
     public ResponseEntity<List<ShowTimeListDTO>> getAllPlain() {
         return ResponseEntity.ok(showTimeService.getAllPlain());
-    }
-    @GetMapping("/lookup/room-types")
-    public List<IdNameDTO> lookupRoomTypes() {
-        return roomTypeRepository.findAll(Sort.by("name").ascending())
-                .stream()
-                .map(rt -> IdNameDTO.of(rt.getId(), rt.getName()))
-                .toList();
-    }
-
-
-
-    @GetMapping("/lookup/subtitles")
-    public List<IdNameDTO> lookupSubtitles(@RequestParam(required = false) Long subTitleId) {
-        Sort sort = Sort.by("name").ascending();
-        log.info("before call get subtitle api:");
-        var subtitles = (subTitleId == null)
-                ? subTitleRepository.findAll(sort)
-                : subTitleRepository.findSubTitleBy(subTitleId, sort);
-
-        log.info("after call API");
-        return subtitles.stream()
-                .map(s -> IdNameDTO.of(s.getId(), s.getName()))
-                .toList();
     }
 
 
@@ -126,10 +91,7 @@ public class ShowTimeController {
     @Operation(summary = "Get all rooms as id-name pairs",
             description = "Retrieve a list of all rooms with only id and name fields")
     public ResponseData<List<IdNameDTO>> getAllRoomsIdName() {
-        List<IdNameDTO> rooms = roomRepository.findAll().stream()
-                .map(room -> IdNameDTO.of(room.getId(), room.getName()))
-                .collect(Collectors.toList());
-
+        List<IdNameDTO> rooms = showTimeService.getAllRoomsIdName();
         return new ResponseData<>(
                 HttpStatus.OK.value(),
                 "Rooms retrieved successfully",
@@ -137,47 +99,37 @@ public class ShowTimeController {
         );
     }
 
-//
-//    @GetMapping("/subtitles/lookup/id-name")
-//    @Operation(summary = "Get all rooms as id-name pairs",
-//            description = "Retrieve a list of all rooms with only id and name fields")
-//    public ResponseData<List<IdNameDTO>> getAllSubTitlesIdName() {
-//        List<IdNameDTO> subtitles = subTitleRepository.findAll().stream()
-//                .map(subTitle -> IdNameDTO.of(subTitle.getId(), subTitle.getName()))
-//                .collect(Collectors.toList());
-//
-//        return new ResponseData<>(
-//                HttpStatus.OK.value(),
-//                "Subtitles retrieved successfully",
-//                subtitles
-//        );
-//    }
+
+    // LookupController.java (hoặc controller hiện tại của bạn)
+    @GetMapping("/subtitles/lookup/id-name")
+    @Operation(summary = "Get all subtitles as id-name pairs",
+            description = "Retrieve a list of all subtitles with only id and name fields")
+    public ResponseData<List<IdNameDTO>> getAllSubTitlesIdName() {
+        List<IdNameDTO> subtitles = showTimeService.getAllSubTitlesIdName();
+        return new ResponseData<>(HttpStatus.OK.value(), "Subtitles retrieved successfully", subtitles);
+    }
+
     @GetMapping("/room-types/lookup/id-name")
     @Operation(summary = "Get all room types as id-name pairs",
             description = "Retrieve a list of all room types with only id and name fields")
     public ResponseData<List<IdNameDTO>> getAllRoomTypesIdName() {
-        List<IdNameDTO> roomTypes = roomTypeRepository.findAll().stream()
-                .map(roomType -> IdNameDTO.of(roomType.getId(), roomType.getName()))
-                .collect(Collectors.toList());
-
-        return new ResponseData<>(
-                HttpStatus.OK.value(),
-                "Room types retrieved successfully",
-                roomTypes
-        );
+        List<IdNameDTO> roomTypes = showTimeService.getAllRoomTypesIdName();
+        return new ResponseData<>(HttpStatus.OK.value(), "Room types retrieved successfully", roomTypes);
     }
 
     // Luồng: /createShowtime
     @PostMapping("/createShowtime")
-    public ResponseEntity<ShowTimeResponse> create(@Valid @RequestBody CreateShowTimeRequest req) {
+    public ResponseData<ShowTimeResponse> create(@Valid @RequestBody CreateShowTimeRequest req) {
         ShowTimeResponse res = showTimeService.createShowTime(req);
-        return ResponseEntity.status(HttpStatus.CREATED).body(res);
+        return new ResponseData<>(HttpStatus.OK.value(), "Create sucess", res);
     }
+
 
     @GetMapping("/showtimeBy/{id}")
     public ResponseEntity<ShowTimeListDTO> getShowtimeById(@PathVariable Long id) {
         return ResponseEntity.ok(showTimeService.getShowTimeById(id));
     }
+
     @PutMapping("/{id}")
     public ResponseEntity<ShowTimeResponse> updatePut(@PathVariable Long id,
                                                       @RequestBody @Valid UpdateShowTimeRequest req) {
@@ -193,5 +145,23 @@ public class ShowTimeController {
         return ResponseEntity.ok(res);
     }
 
+    @DeleteMapping("/{id}")
+    public ResponseData<Void> softDelete(@PathVariable Long id) {
+        showTimeService.softDelete(id);
+        return new ResponseData<>(
+                HttpStatus.OK.value(),
+                "Delete successfully"
+        );
+    }
+
+    // Tuỳ chọn: khôi phục
+    @PostMapping("/{id}/restore")
+    public ResponseData<Void> restore(@PathVariable Long id) {
+        showTimeService.restore(id);
+        return new ResponseData<>(
+                HttpStatus.OK.value(),
+                "Restored successfully"
+        );
+    }
 
 }

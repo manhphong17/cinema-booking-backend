@@ -1,28 +1,5 @@
 package vn.cineshow.service.impl;
 
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
-import vn.cineshow.dto.request.movie.*;
-import vn.cineshow.dto.response.PageResponse;
-import vn.cineshow.dto.response.movie.*;
-import vn.cineshow.enums.MovieStatus;
-import vn.cineshow.exception.AppException;
-import vn.cineshow.exception.DuplicateResourceException;
-import vn.cineshow.exception.ErrorCode;
-import vn.cineshow.model.Country;
-import vn.cineshow.model.Language;
-import vn.cineshow.model.Movie;
-import vn.cineshow.model.MovieGenre;
-import vn.cineshow.repository.*;
-import vn.cineshow.service.MovieService;
-
 import java.io.IOException;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -31,6 +8,42 @@ import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import vn.cineshow.dto.request.movie.MovieCreationRequest;
+import vn.cineshow.dto.request.movie.MovieFilterRequest;
+import vn.cineshow.dto.request.movie.MovieUpdateBasicRequest;
+import vn.cineshow.dto.request.movie.MovieUpdateFullRequest;
+import vn.cineshow.dto.request.movie.UserSearchMovieRequest;
+import vn.cineshow.dto.response.PageResponse;
+import vn.cineshow.dto.response.movie.BannerResponse;
+import vn.cineshow.dto.response.movie.CountryResponse;
+import vn.cineshow.dto.response.movie.LanguageResponse;
+import vn.cineshow.dto.response.movie.MovieGenreResponse;
+import vn.cineshow.dto.response.movie.OperatorMovieOverviewResponse;
+import vn.cineshow.enums.MovieStatus;
+import vn.cineshow.exception.AppException;
+import vn.cineshow.exception.DuplicateResourceException;
+import vn.cineshow.exception.ErrorCode;
+import vn.cineshow.model.Country;
+import vn.cineshow.model.Language;
+import vn.cineshow.model.Movie;
+import vn.cineshow.model.MovieGenre;
+import vn.cineshow.repository.CountryRepository;
+import vn.cineshow.repository.LanguageRepository;
+import vn.cineshow.repository.MovieGenresRepository;
+import vn.cineshow.repository.MovieRepository;
+import vn.cineshow.repository.SearchMovieRepository;
+import vn.cineshow.service.MovieService;
 
 @Service
 @RequiredArgsConstructor
@@ -303,6 +316,9 @@ public class MovieServiceImpl implements MovieService {
     @Override
     public void updateFeatureMovie(long id, boolean isFeatured) {
         Movie movie = findById(id);
+        if (movie.getBannerUrl() == null) {
+            throw new AppException(ErrorCode.MOVIE_BANNER_NOT_FOUND);
+        }
         movie.setFeatured(isFeatured);
         movieRepository.save(movie);
         log.info("Movie updated successfully, id: {}", movie.getId());

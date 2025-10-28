@@ -2,6 +2,7 @@ package vn.cineshow.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
+import vn.cineshow.model.Room;
 import vn.cineshow.model.Seat;
 
 import java.util.List;
@@ -15,7 +16,10 @@ public interface SeatRepository extends JpaRepository<Seat, Long> {
     void deleteByRoom_Id(Long roomId);
 
     List<Seat> findByRoom_IdOrderByRowAscColumnAsc(Long roomId);
+
     Optional<Seat> findByRoom_IdAndRowAndColumn(Long roomId, String row, String column);
 
+
+    List<Seat> findByRoom(Room room);
 
 }
