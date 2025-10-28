@@ -357,7 +357,6 @@ public class ShowTimeServiceImpl implements ShowTimeService {
             ticket.setStatus(
                     seat.getStatus() == SeatStatus.AVAILABLE ? SeatShowTimeStatus.AVAILABLE : SeatShowTimeStatus.BLOCKED
             );
-
             //save
             ticketRepository.save(ticket);
         }

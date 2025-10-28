@@ -75,6 +75,7 @@ public class BookingServiceImpl implements BookingService {
                 .ticketResponses(showTime.getTickets().stream()
                         .map(ticket -> TicketResponse.builder()
                                 .seatId(ticket.getSeat().getId())
+                                .ticketId(ticket.getId())
                                 .seatStatus(ticket.getStatus().name())
                                 .seatType(ticket.getSeat().getSeatType().getName())
                                 .rowIdx(Integer.parseInt(ticket.getSeat().getRow()) - 1)

@@ -10,6 +10,7 @@ import java.io.Serializable;
 @Setter
 @Builder
 public class TicketResponse implements Serializable {
+    private Long ticketId;
     private Long seatId;
     private int rowIdx;
     private int columnInx;
