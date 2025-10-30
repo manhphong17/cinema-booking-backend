@@ -62,7 +62,8 @@ public class SecurityConfig {
                                 "/v3/api-docs/**",
                                 "/public/**",
                                 "/actuator/**",
-                                "/ws/**"     // Cho phép handshake WebSocket
+                                "/ws/**",// Cho phép handshake WebSocket
+                                "/ws-native/**"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )

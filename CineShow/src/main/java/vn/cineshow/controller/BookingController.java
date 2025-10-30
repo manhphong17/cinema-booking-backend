@@ -11,11 +11,14 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import vn.cineshow.dto.response.ResponseData;
 import vn.cineshow.dto.response.booking.BookingSeatsResponse;
+import vn.cineshow.dto.response.booking.SeatHold;
 import vn.cineshow.dto.response.booking.ShowTimeResponse;
 import vn.cineshow.service.BookingService;
+import vn.cineshow.service.SeatHoldService;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -30,6 +33,7 @@ import java.util.List;
 public class BookingController {
 
     BookingService bookingService;
+    SeatHoldService seatHoldService;
 
     @Operation(summary = "Get list show times by date and a movie",
             description = "Send a request via this API to get list show times by date and a movie")
@@ -65,6 +69,23 @@ public class BookingController {
         log.info("Response get seats for booking by showtimeId: {}", seatResponses);
         return new ResponseData<>(HttpStatus.OK.value(), "Get showtime and room by movie and start time successfully", seatResponses);
 
+    }
+
+    @Operation(summary = "Get held seats by user",
+            description = "Get list of seats currently held by a specific user for a showtime")
+    @GetMapping("/show-times/{showTimeId}/held-seats")
+    public ResponseData<?> getHeldSeatsByUser(
+            @PathVariable Long showTimeId,
+            @RequestParam Long userId) {
+
+        log.info("Request get held seats for user {} at showtime {}", userId, showTimeId);
+        SeatHold heldSeats = seatHoldService.getHeldSeatsByUser(showTimeId, userId);
+        
+        if (heldSeats == null) {
+            return new ResponseData<>(HttpStatus.OK.value(), "No seats currently held", null);
+        }
+        
+        return new ResponseData<>(HttpStatus.OK.value(), "Get held seats successfully", heldSeats);
     }
 
 

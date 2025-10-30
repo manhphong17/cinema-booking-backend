@@ -56,4 +56,19 @@ public class CustomizeRequestFilter extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
     }
 
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        String uri = request.getRequestURI();
+        // Bỏ qua preflight và handshake WebSocket
+        if ("OPTIONS".equalsIgnoreCase(request.getMethod())) return true;
+        if ("websocket".equalsIgnoreCase(request.getHeader("Upgrade"))) return true; // native WS
+        // Bỏ qua các endpoint WS/STOMP
+        return uri.startsWith("/ws-native")
+                || uri.startsWith("/ws")
+                || uri.startsWith("/sockjs")
+                || uri.startsWith("/stomp")
+                || uri.startsWith("/websocket"); // đường dẫn nội bộ của SockJS
+    }
+
+
 }

@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
-import vn.cineshow.dto.response.booking.SeatHold;
 import vn.cineshow.service.RedisService;
 
 import java.util.Set;
@@ -14,66 +13,65 @@ import java.util.concurrent.TimeUnit;
 @Service
 @RequiredArgsConstructor
 public class RedisServiceImpl implements RedisService {
-    private final RedisTemplate<String, SeatHold> redisTemplate;
+
+    private final RedisTemplate<String, Object> redisTemplate;
 
     /**
-     * save seat hold to redis
+     * Luu bat ky du lieu nao vao Redis voi TTL (time to live)
      *
-     * @param key        exp:seatHold:showtime:15:user:7
-     * @param hold       seat hold
-     * @param ttlSeconds time to live in seconds
+     * @param key        khoa Redis
+     * @param value      doi tuong bat ky
+     * @param ttlSeconds thoi gian ton tai (giay)
      *                   <p>
      *                   Co che:
-     *                   - Luu value voi ttl (het han -> Redis tu xoa)
-     *                   - TTL dam bao neu nguoi dung roi trang, ghe tu giai phong
-     *                   </p>
+     *                   - Redis tu dong xoa key khi het TTL
+     *                   - Dung cho cache tam thoi hoac du lieu real-time (vi du seatInfo, seatHold, OTP, token, ...)
      */
     @Override
-    public void saveSeatHold(String key, SeatHold hold, long ttlSeconds) {
-        if (key == null || hold == null) {
+    public <T> void save(String key, T value, long ttlSeconds) {
+        if (key == null || value == null) {
             log.warn("Cannot save null key or value to Redis");
             return;
         }
-        redisTemplate.opsForValue().set(key, hold, ttlSeconds, TimeUnit.SECONDS);
-        log.info("Save seat successfully, key: {}", key);
+        redisTemplate.opsForValue().set(key, value, ttlSeconds, TimeUnit.SECONDS);
+        log.debug("Saved key={} TTL={}s", key, ttlSeconds);
     }
 
     /**
-     * get seat hold from redis
+     * Lay du lieu bat ky tu Redis
      *
-     * @param key exp:seatHold:showtime:15:user:7
-     * @return seat hold or null if not found
-     * <p>
-     * Ung dung:
-     * <ul>
-     * <li>dung de kiem tra user hien tai dang giu ghe nao</li>
-     * <li>phuc vu merge voi DB khi FE load lai trang</li>
-     * </ul>
+     * @param key   khoa Redis
+     * @param clazz kieu du lieu mong muon tra ve
+     * @return doi tuong neu co, hoac null neu khong ton tai
      */
-
     @Override
-    public SeatHold getSeatHold(String key) {
+    @SuppressWarnings("unchecked")
+    public <T> T get(String key, Class<T> clazz) {
         if (key == null) return null;
-        SeatHold hold = redisTemplate.opsForValue().get(key);
-        if (hold == null)
-            log.debug("SeatHold not found in Redis key={}", key);
-        return hold;
+        Object value = redisTemplate.opsForValue().get(key);
+        if (value == null) {
+            log.trace("Redis miss key={}", key);
+            return null;
+        }
+        if (!clazz.isInstance(value)) {
+            log.error("Type mismatch for key={}, expected={}, actual={}",
+                    key, clazz.getSimpleName(), value.getClass().getSimpleName());
+            return null;
+        }
+        return (T) value;
     }
 
-
     /**
-     * Xoa key Redis khi user thanh toan hoac bo tat ca ghe
+     * Xoa key khoi Redis
      *
-     * @param key khoa Redis can xoa
-     *            <p>
-     *            Redis tra ve true neu xoa thanh cong
+     * @param key khoa Redis
      */
     @Override
     public void delete(String key) {
         if (key == null) return;
         Boolean result = redisTemplate.delete(key);
         if (result)
-            log.debug("Deleted SeatHold key={}", key);
+            log.debug("Deleted Redis key={}", key);
     }
 
     /**
@@ -81,8 +79,6 @@ public class RedisServiceImpl implements RedisService {
      *
      * @param key khoa Redis
      * @return true neu ton tai, false neu khong
-     * <p>
-     * Dung de xac dinh user da co phien giu ghe chua
      */
     @Override
     public boolean exists(String key) {
@@ -90,13 +86,14 @@ public class RedisServiceImpl implements RedisService {
     }
 
     /**
-     * Tim tat ca cac key theo pattern
+     * Tim tat ca cac key theo mau pattern
      *
-     * @param pattern chuoi pattern, vi du: seatHold:showtime:15:*
+     * @param pattern vi du: seatInfo:showtime:*
      * @return tap hop cac key phu hop
      * <p>
-     * Chu y: ham keys() duyet toan bo Redis (O(n))
-     * chi nen dung trong admin hoac debug, khong dung trong luong realtime
+     * Luu y:
+     * - Ham keys() co do phuc tap O(n)
+     * - Chi nen dung cho muc dich admin hoac debug, khong dung trong luong realtime
      */
     @Override
     public Set<String> findKeys(String pattern) {

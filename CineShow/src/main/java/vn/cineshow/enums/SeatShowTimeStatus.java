@@ -4,5 +4,5 @@ public enum SeatShowTimeStatus {
     BOOKED,
     AVAILABLE,
     BLOCKED,
-    HELD
+    HELD, RELEASED
 }
