@@ -33,4 +33,7 @@ public class OrderConcession implements Serializable {
 
     @Column(columnDefinition = "decimal(10,2)")
     private Double unitPrice = 0.00;
+
+    @Column(columnDefinition = "DECIMAL(10,2)")
+    Double priceSnapshot;
 }

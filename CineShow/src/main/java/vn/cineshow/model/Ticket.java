@@ -20,7 +20,12 @@ public class Ticket extends AbstractEntity implements Serializable {
     @JoinColumn(name = "seat_id", nullable = false)
     Seat seat;
 
-    Double price;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "ticket_price_id", nullable = false)
+    TicketPrice ticketPrice;
+
+    @Column(columnDefinition = "DECIMAL(10,2)")
+    Double priceSnapshot;
 
     @Enumerated(EnumType.STRING)
     SeatShowTimeStatus status;
@@ -32,6 +37,5 @@ public class Ticket extends AbstractEntity implements Serializable {
     @ManyToOne
     @JoinColumn(name = "order_id")
     private Order order;
-
 
 }

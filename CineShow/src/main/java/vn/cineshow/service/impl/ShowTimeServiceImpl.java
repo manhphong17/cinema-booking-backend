@@ -347,10 +347,10 @@ public class ShowTimeServiceImpl implements ShowTimeService {
         List<Seat> seats = seatRepository.findByRoom(showTime.getRoom());
 
         for (Seat seat : seats) {
-            double price = ticketPriceService.calculatePrice(seat.getId(), showTime.getId());
+            TicketPrice ticketPrice = ticketPriceService.findTicketPrice(seat.getId(), showTime.getId());
             Ticket ticket = Ticket.builder()
                     .seat(seat)
-                    .price(price)
+                    .ticketPrice(ticketPrice)
                     .showTime(showTime)
                     .build();
 

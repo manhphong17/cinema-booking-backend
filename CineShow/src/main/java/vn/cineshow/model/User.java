@@ -1,6 +1,7 @@
 package vn.cineshow.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Past;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 import vn.cineshow.enums.Gender;
@@ -26,6 +27,7 @@ public class User extends AbstractEntity implements Serializable {
 
     int loyalPoint;
 
+    @Past
     LocalDate dateOfBirth;
 
     @Enumerated(EnumType.STRING)
