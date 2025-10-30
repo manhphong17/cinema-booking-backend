@@ -8,10 +8,8 @@ import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import vn.cineshow.dto.request.booking.CheckoutRequest;
 import vn.cineshow.dto.response.ResponseData;
 import vn.cineshow.dto.response.booking.BookingSeatsResponse;
 import vn.cineshow.dto.response.booking.ShowTimeResponse;
@@ -65,6 +63,14 @@ public class BookingController {
         log.info("Response get seats for booking by showtimeId: {}", seatResponses);
         return new ResponseData<>(HttpStatus.OK.value(), "Get showtime and room by movie and start time successfully", seatResponses);
 
+    }
+
+    @PostMapping("/checkout")
+    public ResponseData<?> checkout( @RequestBody CheckoutRequest request) {
+
+        CheckoutResponse response = bookingService.checkout(email, request);
+
+        return new ResponseData<>(200, "Redirect to payment", response);
     }
 
 

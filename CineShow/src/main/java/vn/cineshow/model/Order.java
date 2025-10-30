@@ -46,7 +46,7 @@ public class Order extends AbstractEntity implements Serializable {
     public void prePersist() {
         if (code == null) {
             long timestampPart = System.currentTimeMillis() % 1_000_000_000L;
-            code = String.format("ORD%09d", timestampPart);
+            code = String.format("PHT%09d", timestampPart);
         }
     }
 

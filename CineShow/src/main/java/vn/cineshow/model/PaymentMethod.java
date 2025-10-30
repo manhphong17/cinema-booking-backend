@@ -20,9 +20,6 @@ import java.util.List;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class PaymentMethod extends AbstractEntity implements Serializable {
 
-//    @Column(length = 50, nullable = false, unique = true)
-//    String methodCode;
-
     @Column(length = 50, nullable = false, unique = true)
     String methodName;
 

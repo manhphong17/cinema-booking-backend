@@ -80,7 +80,7 @@ public class BookingServiceImpl implements BookingService {
                                 .seatType(ticket.getSeat().getSeatType().getName())
                                 .rowIdx(Integer.parseInt(ticket.getSeat().getRow()) - 1)
                                 .columnInx(Integer.parseInt(ticket.getSeat().getColumn()) - 1)
-                                .ticketPrice(ticket.getPrice())
+                                .ticketPrice(ticket.getTicketPrice().getPrice())
                                 .build())
                         .toList())
                 .build());
