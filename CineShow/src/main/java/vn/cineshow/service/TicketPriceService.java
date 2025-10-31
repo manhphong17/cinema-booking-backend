@@ -12,4 +12,5 @@ public interface TicketPriceService {
     TicketPrice createOrUpdatePrice(TicketPriceRequest req);
     List<TicketPriceResponse> getAllPrices();
      Double calculatePrice(Long seatId, Long showTimeId);
+     TicketPrice findTicketPrice(Long seatId, Long showTimeId);
 }

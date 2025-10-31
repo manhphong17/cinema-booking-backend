@@ -29,6 +29,7 @@ public enum ErrorCode {
     HOLIDAY_NOT_FOUND(1029, "Holiday not found"),
     SEAT_TYPE_NOT_FOUND(1030, "Seat type not found"),
     ROOM_TYPE_NOT_FOUND(1031, "Room type not found"),
+    TICKET_PRICE_NOT_FOUND(1032, "Ticket price not found"),
 
     SHOW_TIME_NOT_FOUND(3001, "Show time not found"),
     MOVIE_BANNER_NOT_FOUND(3001, "Movie banner not found"),

@@ -99,7 +99,7 @@ public class TicketPriceServiceImpl implements TicketPriceService {
 
         // 4. Truy vấn giá
         return ticketPriceRepository.findPrice(roomTypeId, seatTypeId, dayType)
-                .orElseThrow(() -> new RuntimeException("Ticket price not found"));
+                .orElseThrow(() -> new AppException(ErrorCode.TICKET_PRICE_NOT_FOUND));
     }
 
     private DayType getDayType(LocalDate date) {
@@ -111,5 +111,29 @@ public class TicketPriceServiceImpl implements TicketPriceService {
 
         return DayType.NORMAL;
     }
+
+    @Transactional
+    @Override
+    public TicketPrice findTicketPrice(Long seatId, Long showTimeId) {
+        // 1. Lấy seatType
+        Seat seat = seatRepository.findById(seatId)
+                .orElseThrow(() -> new AppException(ErrorCode.SEAT_TYPE_NOT_FOUND));
+        Long seatTypeId = seat.getSeatType().getId();
+
+        // 2. Lấy roomType + showDate
+        ShowTime showTime = showTimeRepository.findById(showTimeId)
+                .orElseThrow(() -> new RuntimeException("ShowTime not found"));
+        Long roomTypeId = showTime.getRoom().getRoomType().getId();
+        LocalDate showDate = LocalDate.from(showTime.getStartTime());
+
+        // 3. Tính dayType
+        DayType dayType = getDayType(showDate);
+
+        // 4. Truy vấn giá
+        return ticketPriceRepository.findBySeatTypeIdAndRoomTypeIdAndDayType(seatTypeId, roomTypeId, dayType)
+                .orElseThrow(() -> new AppException(ErrorCode.TICKET_PRICE_NOT_FOUND));
+    }
+
+
 }
 

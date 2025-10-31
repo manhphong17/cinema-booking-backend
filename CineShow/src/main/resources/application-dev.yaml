@@ -66,7 +66,7 @@ spring:
   jpa:
     hibernate:
       ddl-auto: update
-    show-sql: true
+    show-sql: false
     properties:
       hibernate:
         format_sql: true
@@ -125,17 +125,22 @@ spring.servlet.multipart.max-file-size: 5MB
 spring.servlet.multipart.max-request-size: 10MB
 
 
-logging:
-  level:
-    root: INFO
-    org.hibernate.SQL: DEBUG
-    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
-    org.springframework.orm.jpa: DEBUG
-    org.springframework.transaction: DEBUG
-    org.hibernate.engine.jdbc.spi.SqlExceptionHelper: WARN
+#logging:
+#  level:
+#    root: INFO
+#    org.hibernate.SQL: DEBUG
+#    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+#    org.springframework.orm.jpa: DEBUG
+#    org.springframework.transaction: DEBUG
+#    org.hibernate.engine.jdbc.spi.SqlExceptionHelper: WARN
 
-
-
+#
+#vnpay:
+#  tmn-code: ME5W6VFG
+#  hash-secret: ${VNPAY_HASH_SECRET}
+#  pay-url: https://sandbox.vnpayment.vn/paymentv2/vpcpay.html
+#  return-url: https://yourdomain.com/api/payment/return
+#  timeout: 6
 
 
 

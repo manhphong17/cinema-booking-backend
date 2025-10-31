@@ -147,7 +147,7 @@ public class ShowTimeServiceImpl implements ShowTimeService {
         ShowTime saved = showTimeRepository.save(st);
 
         // 6) create seat-showtime
-        createSeatForShowTime(st);
+        createSeatForShowTime(saved);
 
         return ShowTimeResponse.builder()
                 .id(saved.getId())
@@ -325,17 +325,16 @@ public class ShowTimeServiceImpl implements ShowTimeService {
         List<Seat> seats = seatRepository.findByRoom(showTime.getRoom());
 
         for (Seat seat : seats) {
-            double price = ticketPriceService.calculatePrice(seat.getId(), showTime.getId());
+            TicketPrice ticketPrice = ticketPriceService.findTicketPrice(seat.getId(), showTime.getId());
             Ticket ticket = Ticket.builder()
                     .seat(seat)
-                    .price(price)
+                    .ticketPrice(ticketPrice)
                     .showTime(showTime)
                     .build();
 
             ticket.setStatus(
                     seat.getStatus() == SeatStatus.AVAILABLE ? SeatShowTimeStatus.AVAILABLE : SeatShowTimeStatus.BLOCKED
             );
-
             //save
             ticketRepository.save(ticket);
         }

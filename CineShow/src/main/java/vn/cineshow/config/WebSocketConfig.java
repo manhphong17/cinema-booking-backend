@@ -14,6 +14,11 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
         registry.addEndpoint("/ws")              // endpoint de client connect
                 .setAllowedOriginPatterns("http://localhost:3000", "http://localhost:3001")   // allows CORS
                 .withSockJS();                   // fallback SockJS- tuỳ chọn dự phòng cho  các trình duyệt không hỗ trợ websocket
+
+        registry.addEndpoint("/ws-native")
+                .setAllowedOriginPatterns("*")
+                .setAllowedOrigins("https://websocketking.com", "http://localhost:3000", "*");
+
     }
 
     @Override

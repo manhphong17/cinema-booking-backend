@@ -79,71 +79,71 @@ public class OrderController {
                 .build();
     }
 
-    @GetMapping("/{id}")
-    @Transactional(readOnly = true)
-    public OrderDetailResponse getOne(@PathVariable("id") Long id) {
-        Order o = orderRepository.findOneById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found"));
-
-        String movie = safeMovieName(o);
-        LocalDateTime start = resolveShowtimeStart(o);
-        LocalDateTime end = resolveShowtimeEnd(o);
-        String room = safeRoomName(o);
-        List<String> seats = (o.getTickets() == null)
-                ? List.of()
-                : o.getTickets().stream().map(this::safeSeatLabel).toList();
-
-        String reservationCode = null;
-        if (o.getTickets() != null && !o.getTickets().isEmpty()) {
-            Ticket t = pickPrimaryTicket(o);
-            reservationCode = (t != null) ? t.getCode() : null;
-        }
-        if ((reservationCode == null || reservationCode.isBlank())
-                && o.getPayments() != null && !o.getPayments().isEmpty()) {
-            reservationCode = o.getPayments().stream()
-                    .map(p -> p.getTransactionNo() != null ? p.getTransactionNo() : p.getTxnRef())
-                    .filter(s -> s != null && !s.isBlank())
-                    .findFirst()
-                    .orElse(null);
-        }
-
-        List<String> paymentMethods = (o.getPayments() == null) ? List.of()
-                : o.getPayments().stream()
-                .map(p -> p.getMethod() != null
-                        ? (p.getMethod().getMethodName() != null
-                        ? p.getMethod().getMethodName()
-                        : p.getMethod().getMethodCode())
-                        : null)
-                .filter(s -> s != null && !s.isBlank())
-                .distinct()
-                .toList();
-
-        return OrderDetailResponse.builder()
-                .orderId(o.getId())
-                .createdAt(o.getCreatedAt())
-                .userName(o.getUser() != null ? o.getUser().getName() : null)
-
-                // NEW: trả về mã đơn hàng
-                .orderCode(o.getCode())
-
-                .bookingCode(reservationCode)
-                .movieName(movie)
-                .roomName(room)
-                .showtimeStart(start)
-                .showtimeEnd(end)
-                .seats(seats)
-                .totalPrice(o.getTotalPrice())
-                .orderStatus(o.getOrderStatus() != null ? o.getOrderStatus().name() : null)
-                .reservationCode(reservationCode)
-                .paymentMethods(paymentMethods)
-                .qrAvailable(true)
-                .qrExpired(false)
-                .regenerateAllowed(false)
-                .qrJwt(null)
-                .qrImageUrl(null)
-                .graceMinutes(null)
-                .build();
-    }
+//    @GetMapping("/{id}")
+//    @Transactional(readOnly = true)
+//    public OrderDetailResponse getOne(@PathVariable("id") Long id) {
+//        Order o = orderRepository.findOneById(id)
+//                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found"));
+//
+//        String movie = safeMovieName(o);
+//        LocalDateTime start = resolveShowtimeStart(o);
+//        LocalDateTime end = resolveShowtimeEnd(o);
+//        String room = safeRoomName(o);
+//        List<String> seats = (o.getTickets() == null)
+//                ? List.of()
+//                : o.getTickets().stream().map(this::safeSeatLabel).toList();
+//
+//        String reservationCode = null;
+//        if (o.getTickets() != null && !o.getTickets().isEmpty()) {
+//            Ticket t = pickPrimaryTicket(o);
+//            reservationCode = (t != null) ? t.getCode() : null;
+//        }
+//        if ((reservationCode == null || reservationCode.isBlank())
+//                && o.getPayments() != null && !o.getPayments().isEmpty()) {
+//            reservationCode = o.getPayments().stream()
+//                    .map(p -> p.getTransactionNo() != null ? p.getTransactionNo() : p.getTxnRef())
+//                    .filter(s -> s != null && !s.isBlank())
+//                    .findFirst()
+//                    .orElse(null);
+//        }
+//
+//        List<String> paymentMethods = (o.getPayments() == null) ? List.of()
+//                : o.getPayments().stream()
+//                .map(p -> p.getMethod() != null
+//                        ? (p.getMethod().getMethodName() != null
+//                        ? p.getMethod().getMethodName()
+//                        : p.getMethod().getMethodCode())
+//                        : null)
+//                .filter(s -> s != null && !s.isBlank())
+//                .distinct()
+//                .toList();
+//
+//        return OrderDetailResponse.builder()
+//                .orderId(o.getId())
+//                .createdAt(o.getCreatedAt())
+//                .userName(o.getUser() != null ? o.getUser().getName() : null)
+//
+//                // NEW: trả về mã đơn hàng
+//                .orderCode(o.getCode())
+//
+//                .bookingCode(reservationCode)
+//                .movieName(movie)
+//                .roomName(room)
+//                .showtimeStart(start)
+//                .showtimeEnd(end)
+//                .seats(seats)
+//                .totalPrice(o.getTotalPrice())
+//                .orderStatus(o.getOrderStatus() != null ? o.getOrderStatus().name() : null)
+//                .reservationCode(reservationCode)
+//                .paymentMethods(paymentMethods)
+//                .qrAvailable(true)
+//                .qrExpired(false)
+//                .regenerateAllowed(false)
+//                .qrJwt(null)
+//                .qrImageUrl(null)
+//                .graceMinutes(null)
+//                .build();
+//    }
 
     @PostMapping("/{id}/resend-email")
     @Transactional
@@ -157,36 +157,36 @@ public class OrderController {
         return orderQueryService.resendETicket(id, toEmail, language, auth);
     }
 
-    @GetMapping("/{id}/qr-payload")
-    @Transactional(readOnly = true)
-    public OrderQrPayloadResponse getQrPayload(@PathVariable("id") Long id) {
-        Order o = orderRepository.findOneById(id)
-                .orElseThrow(() -> new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.NOT_FOUND, "Order not found"));
-
-        String movie = safeMovieName(o);
-        LocalDateTime start = resolveShowtimeStart(o);
-        String room = safeRoomName(o);
-        List<String> seats = o.getTickets() == null ? List.of()
-                : o.getTickets().stream().map(this::safeSeatLabel).toList();
-        List<String> ticketCodes = o.getTickets() == null ? List.of()
-                : o.getTickets().stream().map(t -> t.getCode()).toList();
-
-        Long userId = o.getUser() != null ? o.getUser().getId() : null;
-
-        return OrderQrPayloadResponse.builder()
-                .orderId(o.getId())
-                .userId(userId)
-                .createdAt(o.getCreatedAt())
-                .totalPrice(o.getTotalPrice())
-                .status(o.getOrderStatus() != null ? o.getOrderStatus().name() : null)
-                .orderCode(o.getCode())
-                .movieName(movie)
-                .showtimeStart(start)
-                .roomName(room)
-                .seats(seats)
-                .ticketCodes(ticketCodes)
-                .build();
-    }
+//    @GetMapping("/{id}/qr-payload")
+//    @Transactional(readOnly = true)
+//    public OrderQrPayloadResponse getQrPayload(@PathVariable("id") Long id) {
+//        Order o = orderRepository.findOneById(id)
+//                .orElseThrow(() -> new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.NOT_FOUND, "Order not found"));
+//
+//        String movie = safeMovieName(o);
+//        LocalDateTime start = resolveShowtimeStart(o);
+//        String room = safeRoomName(o);
+//        List<String> seats = o.getTickets() == null ? List.of()
+//                : o.getTickets().stream().map(this::safeSeatLabel).toList();
+//        List<String> ticketCodes = o.getTickets() == null ? List.of()
+//                : o.getTickets().stream().map(t -> t.getCode()).toList();
+//
+//        Long userId = o.getUser() != null ? o.getUser().getId() : null;
+//
+//        return OrderQrPayloadResponse.builder()
+//                .orderId(o.getId())
+//                .userId(userId)
+//                .createdAt(o.getCreatedAt())
+//                .totalPrice(o.getTotalPrice())
+//                .status(o.getOrderStatus() != null ? o.getOrderStatus().name() : null)
+//                .orderCode(o.getCode())
+//                .movieName(movie)
+//                .showtimeStart(start)
+//                .roomName(room)
+//                .seats(seats)
+//                .ticketCodes(ticketCodes)
+//                .build();
+//    }
     @PostMapping("/search")
     @Transactional(readOnly = true)
     public OrderListResponse search(@RequestBody OrderListRequest req) {
