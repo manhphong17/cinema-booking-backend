@@ -29,4 +29,3 @@ logging:
   level:
     root: INFO
     web: INFO
-

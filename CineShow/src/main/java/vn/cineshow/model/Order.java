@@ -3,15 +3,7 @@ package vn.cineshow.model;
 import java.io.Serializable;
 import java.util.List;
 
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -40,6 +32,9 @@ public class Order extends AbstractEntity implements Serializable {
     @Enumerated(EnumType.STRING)
     OrderStatus orderStatus; //PENDING, COMPLETED, CANCELED
 
+    @Column(nullable = false, unique = true)
+    String code;
+
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "order")
     private List<Payment> payments;
 
@@ -51,4 +46,12 @@ public class Order extends AbstractEntity implements Serializable {
 
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "order")
     private List<Ticket> tickets;
+
+    @PrePersist
+    public void prePersist() {
+        if (code == null) {
+            long timestampPart = System.currentTimeMillis() % 1_000_000_000L;
+            code = String.format("ORD%09d", timestampPart);
+        }
+    }
 }
