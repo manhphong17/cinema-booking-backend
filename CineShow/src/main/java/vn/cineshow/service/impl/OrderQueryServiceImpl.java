@@ -2,34 +2,18 @@ package vn.cineshow.service.impl;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
-import vn.cineshow.dto.request.order.QrRegenerateRequest;
-import vn.cineshow.dto.response.order.OrderDetailResponse;
-import vn.cineshow.dto.response.order.OrderListItemResponse;
-import vn.cineshow.dto.response.order.OrderListResponse;
-import vn.cineshow.dto.response.order.ResendEmailResponse;
-import vn.cineshow.enums.OrderStatus;
-import vn.cineshow.exception.AppException;
-import vn.cineshow.exception.ErrorCode;
 import vn.cineshow.config.SecurityAuditor;
-import vn.cineshow.model.Order;
-import vn.cineshow.model.Room;
-import vn.cineshow.model.Seat;
-import vn.cineshow.model.ShowTime;
-import vn.cineshow.model.Ticket;
-import vn.cineshow.model.Account;
+import vn.cineshow.model.*;
 import vn.cineshow.repository.OrderRepository;
 import vn.cineshow.service.OrderQueryService;
 import vn.cineshow.service.QrTokenService;
 import vn.cineshow.utils.validator.OwnershipValidator;
 import vn.cineshow.utils.validator.QrPolicy;
 
-import java.time.LocalDateTime;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
@@ -42,18 +26,17 @@ import java.util.stream.Collectors;
 @Slf4j(topic = "ORDER-QUERY-SERVICE")
 public class OrderQueryServiceImpl implements OrderQueryService {
 
+    private static final Duration RESEND_DEBOUNCE = Duration.ofSeconds(60);
     private final OrderRepository orderRepository;       // <- đúng là 'private final'
     private final OwnershipValidator ownershipValidator;
     private final QrPolicy qrPolicy;
     private final QrTokenService qrTokenService;
     private final EmailServiceImpl emailService;
     private final SecurityAuditor securityAuditor;
-
-    private static final Duration RESEND_DEBOUNCE = Duration.ofSeconds(60);
     private final ConcurrentHashMap<String, Instant> resendDebounceMap = new ConcurrentHashMap<>();
 
 
-    @Override
+   /* @Override
     public OrderListResponse myOrders(Long currentUserId, Pageable pageable) {
         Page<Order> page = orderRepository.findByUser_IdOrderByCreatedAtDesc(currentUserId, pageable);
         List<OrderListItemResponse> items = page.getContent().stream().map(o -> {
@@ -83,9 +66,9 @@ public class OrderQueryServiceImpl implements OrderQueryService {
                 .totalPages(page.getTotalPages())
                 .build();
     }
+*/
 
-
-    @Override
+/*    @Override
     public OrderDetailResponse getOrderDetail(Long orderId, Long currentUserId) {
         ownershipValidator.mustOwnOrder(orderId, currentUserId);
         Order order = orderRepository.findById(orderId)
@@ -123,55 +106,55 @@ public class OrderQueryServiceImpl implements OrderQueryService {
     @Override
     public OrderDetailResponse regenerateQr(Long orderId, Long currentUserId, QrRegenerateRequest req) {
         ownershipValidator.mustOwnOrder(orderId, currentUserId);
-        Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_FOUND));
+    Order order = orderRepository.findById(orderId)
+            .orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_FOUND));
 
         if (order.getOrderStatus() == OrderStatus.CANCELED) {
-            throw new AppException(ErrorCode.ORDER_CANCELED);
-        }
+        throw new AppException(ErrorCode.ORDER_CANCELED);
+    }
         if (order.getOrderStatus() != OrderStatus.COMPLETED) {
-            throw new AppException(ErrorCode.ORDER_NOT_PAID);
-        }
+        throw new AppException(ErrorCode.ORDER_NOT_PAID);
+    }
 
-        Ticket primary = pickPrimaryTicket(order);
-        LocalDateTime start = primary != null && primary.getShowTime() != null ? primary.getShowTime().getStartTime() : null;
+    Ticket primary = pickPrimaryTicket(order);
+    LocalDateTime start = primary != null && primary.getShowTime() != null ? primary.getShowTime().getStartTime() : null;
         if (start == null) {
-            throw new AppException(ErrorCode.SHOWTIME_NOT_FOUND);
-        }
+        throw new AppException(ErrorCode.SHOWTIME_NOT_FOUND);
+    }
 
-        LocalDateTime now = LocalDateTime.now();
+    LocalDateTime now = LocalDateTime.now();
         if (now.isAfter(start)) {
-            throw new AppException(ErrorCode.SHOWTIME_PASSED);
-        }
-        boolean expired = isQrExpired(start, now);
+        throw new AppException(ErrorCode.SHOWTIME_PASSED);
+    }
+    boolean expired = isQrExpired(start, now);
         if (expired) {
-            // within expired window but before show start+grace → still allow regeneration
-            if (qrPolicy.isExpired(start, now)) {
-                throw new AppException(ErrorCode.QR_EXPIRED);
-            }
+        // within expired window but before show start+grace → still allow regeneration
+        if (qrPolicy.isExpired(start, now)) {
+            throw new AppException(ErrorCode.QR_EXPIRED);
         }
+    }
 
-        String token = generateQrToken(order);
+    String token = generateQrToken(order);
 
         return OrderDetailResponse.builder()
                 .orderId(order.getId())
-                .bookingCode(primary != null ? primary.getCode() : null)
-                .movieName(safeMovieName(order))
-                .roomName(safeRoomName(order))
-                .showtimeStart(start)
+            .bookingCode(primary != null ? primary.getCode() : null)
+            .movieName(safeMovieName(order))
+            .roomName(safeRoomName(order))
+            .showtimeStart(start)
                 .seats(safeSeatLabels(order))
-                .totalPrice(order.getTotalPrice())
-                .orderStatus(order.getOrderStatus() != null ? order.getOrderStatus().name() : null)
-                .qrAvailable(true)
+            .totalPrice(order.getTotalPrice())
+            .orderStatus(order.getOrderStatus() != null ? order.getOrderStatus().name() : null)
+            .qrAvailable(true)
                 .qrExpired(false)
                 .regenerateAllowed(true)
                 .qrJwt(token)
                 .qrImageUrl(null)
                 .graceMinutes(qrPolicy.graceMinutes())
-                .build();
-    }
+            .build();
+}*/
 
-    @Override
+   /* @Override
     public byte[] buildEticketPdf(Long orderId, Long currentUserId) {
         ownershipValidator.mustOwnOrder(orderId, currentUserId);
         Order order = orderRepository.findById(orderId)
@@ -193,7 +176,8 @@ public class OrderQueryServiceImpl implements OrderQueryService {
         }
         // No-op placeholder. Integrate with email service if available.
     }
-
+*/
+/*
     @Override
     public ResendEmailResponse resendETicket(Long orderId, String toEmail, String lang, Authentication auth) {
         Long currentUserId = null;
@@ -259,6 +243,7 @@ public class OrderQueryServiceImpl implements OrderQueryService {
     }
 
     // region helpers
+*/
 
     private String safeMovieName(Order order) {
         Ticket t = pickPrimaryTicket(order);

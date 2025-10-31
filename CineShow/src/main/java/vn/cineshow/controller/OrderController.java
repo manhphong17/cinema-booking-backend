@@ -1,35 +1,22 @@
 package vn.cineshow.controller;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.web.PageableDefault;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RestController;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
+import org.springframework.web.bind.annotation.*;
+import vn.cineshow.dto.request.order.OrderCreatedAtSearchRequest;
+import vn.cineshow.dto.request.order.OrderListRequest;
 import vn.cineshow.dto.response.order.OrderListItemResponse;
 import vn.cineshow.dto.response.order.OrderListResponse;
-import vn.cineshow.dto.request.order.OrderListRequest;
-import vn.cineshow.dto.response.order.OrderQrPayloadResponse;
-import vn.cineshow.dto.request.order.OrderCreatedAtSearchRequest;
-import vn.cineshow.dto.response.order.OrderDetailResponse;
-import vn.cineshow.dto.request.order.ResendEmailRequest;
-import vn.cineshow.dto.response.order.ResendEmailResponse;
 import vn.cineshow.model.Order;
 import vn.cineshow.model.Seat;
 import vn.cineshow.model.Ticket;
 import vn.cineshow.repository.OrderRepository;
 import vn.cineshow.service.OrderQueryService;
-
-import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.Authentication;
 
 import java.time.LocalDateTime;
 import java.util.Comparator;
@@ -145,7 +132,7 @@ public class OrderController {
 //                .build();
 //    }
 
-    @PostMapping("/{id}/resend-email")
+   /* @PostMapping("/{id}/resend-email")
     @Transactional
     public ResendEmailResponse resendEmail(
             @PathVariable("id") Long id,
@@ -155,9 +142,9 @@ public class OrderController {
         String toEmail = (req != null) ? req.getToEmail() : null;
         String language = (req != null) ? req.getLanguage() : null;
         return orderQueryService.resendETicket(id, toEmail, language, auth);
-    }
+    }*/
 
-//    @GetMapping("/{id}/qr-payload")
+    //    @GetMapping("/{id}/qr-payload")
 //    @Transactional(readOnly = true)
 //    public OrderQrPayloadResponse getQrPayload(@PathVariable("id") Long id) {
 //        Order o = orderRepository.findOneById(id)
