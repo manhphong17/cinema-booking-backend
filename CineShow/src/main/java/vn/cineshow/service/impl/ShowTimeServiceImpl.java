@@ -147,7 +147,7 @@ public class ShowTimeServiceImpl implements ShowTimeService {
         ShowTime saved = showTimeRepository.save(st);
 
         // 6) create seat-showtime
-        createSeatForShowTime(st);
+        createSeatForShowTime(saved);
 
         return ShowTimeResponse.builder()
                 .id(saved.getId())
