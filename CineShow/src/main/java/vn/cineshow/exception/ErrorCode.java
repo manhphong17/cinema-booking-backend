@@ -49,9 +49,17 @@ public enum ErrorCode {
     SHOWTIME_NOT_FOUND(2038, "Showtime not found"),
     ALREADY_DELETED(2039, "Showtime isdeleted"),
     CANNOT_DELETE_STARTED(2040, "Can not deleted"),
-    INVALID_ENDTIME(2024, "End time must be greater than start time + movie duration");
+    INVALID_ENDTIME(2024, "End time must be greater than start time + movie duration"),
 
 
+    //Order
+    ORDER_NOT_FOUND( 3101, "Order không tồn tại"),
+    NOT_ORDER_OWNER( 3102, "Bạn không có quyền xem đơn này"),
+    ORDER_NOT_PAID(3103, "Đơn hàng chưa được thanh toán"),
+    ORDER_CANCELED( 3104, "Đơn hàng đã bị huỷ"),
+    QR_EXPIRED( 3105, "Mã QR đã hết hạn"),
+    QR_REGENERATE_LIMIT(3106, "Tạo lại QR quá giới hạn"),
+    SHOWTIME_PASSED( 3107, "Suất chiếu đã diễn ra");
     private final int code;
     private final String message;
 

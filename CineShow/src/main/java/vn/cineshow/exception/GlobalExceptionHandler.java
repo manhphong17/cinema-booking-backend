@@ -8,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -22,7 +23,9 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 
 import java.nio.file.AccessDeniedException;
 import java.security.InvalidParameterException;
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.util.Map;
 
 @RestControllerAdvice
 @Slf4j
@@ -423,4 +426,21 @@ public class GlobalExceptionHandler {
         errorResponse.setMessage((reason == null || reason.isBlank()) ? fallback : reason);
         return errorResponse;
     }
+
+
+
+    //hungnthe
+    // (Tuỳ chọn) fallback cho lỗi runtime không bắt riêng
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<Map<String, Object>> handleUnhandled(RuntimeException ex) {
+        HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
+        Map<String, Object> body = Map.of(
+                "timestamp", Instant.now().toString(),
+                "status", status.value(),
+                "code", 9999,
+                "message", "Unexpected error"
+        );
+        return ResponseEntity.status(status).body(body);
+    }
+
 }

@@ -36,21 +36,12 @@ public interface ShowTimeService {
     void restore(Long id); // optional
 
 
-    /** Danh sách phim có suất chiếu sắp tới (chưa bắt đầu, chưa xoá mềm) */
-    List<IdNameDTO> lookupMovieIdNameForUpcoming(LocalDateTime from);
 
-    /** Danh sách phim theo các trạng thái chỉ định (vd: PLAYING) */
-    List<IdNameDTO> lookupMovieIdNameByStatuses();
     List<IdNameDTO> getAllRoomsIdName();
 
     List<IdNameDTO> getAllSubTitlesIdName();
     List<IdNameDTO> getAllRoomTypesIdName();
 
     List<IdNameDTO> getIdNameMoviesPlayingAndUpcoming();
-//    Page<ShowTimeListDTO> findShowtimesPaged(Long movieId, LocalDate date, Long roomId,
-//                                             Long roomTypeId, LocalDateTime startTime, LocalDateTime endTime,
-//                                             int page, int size);
-
-
 
 }
