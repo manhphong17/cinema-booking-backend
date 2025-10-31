@@ -1144,13 +1144,10 @@ VALUES ('VI', 'Tiếng Việt', NOW(), NOW()),
        ('ZH', 'Chinese', NOW(), NOW());
 
 -- Room Types
-<<<<<<< HEAD
 INSERT INTO room_types (name, description, created_at, updated_at,active)
 VALUES ('Standard', 'Phòng chiếu tiêu chuẩn', NOW(), NOW(),1),
        ('VIP', 'Phòng chiếu VIP cao cấp', NOW(), NOW(),1),
        ('IMAX', 'Phòng chiếu IMAX', NOW(), NOW(),1),
-       ('4DX', 'Phòng chiếu 4DX', NOW(), NOW(),1),
-       ('Gold Class', 'Phòng chiếu Gold Class', NOW(), NOW(),1);
 
 -- Seat Types
 INSERT INTO seat_types (name, description, created_at, updated_at,active)
@@ -1167,7 +1164,6 @@ VALUES ('Phòng 1', 1, 'ACTIVE', NOW(), NOW(),10,12),
        ('Phòng 5', 1, 'ACTIVE', NOW(), NOW(),10,12),
        ('Phòng VIP 1', 2, 'ACTIVE', NOW(), NOW(),10,12),
        ('Phòng IMAX 1', 3, 'ACTIVE', NOW(), NOW(),10,12),
-       ('Phòng 4DX 1', 1, 'ACTIVE', NOW(), NOW(),10,12);
 
 
 -- Seats for Room 1 (Standard - 10x8 = 80 seats)

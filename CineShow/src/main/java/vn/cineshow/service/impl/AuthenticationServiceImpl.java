@@ -75,7 +75,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         Account account = accountRepository.findAccountByEmail(req.getEmail())
                 .orElseThrow(() -> new UsernameNotFoundException("Account not found"));
 
-        String accessToken = jwtService.generateAccessToken(req.getEmail(), authorities);
+        String accessToken = jwtService.generateAccessToken(req.getEmail(), authorities, account.getId());
         String refreshToken = jwtService.generateRefreshToken(req.getEmail(), authorities);
         log.info("refresh token: " + refreshToken);
 
@@ -113,7 +113,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
         String newAccessToken = jwtService.generateAccessToken(
                 account.getEmail(),
-                roleNames);
+                roleNames,
+                account.getId());
 
         return SignInResponse.builder()
                 .accessToken(newAccessToken)

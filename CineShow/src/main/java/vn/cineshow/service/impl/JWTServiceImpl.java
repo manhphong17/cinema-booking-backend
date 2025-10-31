@@ -44,10 +44,11 @@ public class JWTServiceImpl implements JWTService {
     long expiration_refresh_token;
 
     @Override
-    public String generateAccessToken(String email, List<String> authorities) {
+    public String generateAccessToken(String email, List<String> authorities, Long userId) {
         log.info("Generate access token for  and email {}", email);
         Map<String, Object> claims = new HashMap<>();
         claims.put("roles", authorities);
+        claims.put("userId", userId);
         return generateToken(claims, email);
     }
 

@@ -480,51 +480,7 @@ VALUES ('Avatar: The Way of Water',
        ('Mission: Impossible - The Final Reckoning', 'Ethan Hunt đối mặt với mối đe dọa cuối cùng từ The Entity.', 130,
         '2025-05-23', 'https://example.com/posters/missionimpossible8.jpg',
         'https://example.com/banners/missionimpossible8_banner.jpg', 'https://youtube.com/watch?v=8s4z0k8z0k8', 13,
-        'Christopher McQuarrie', 'Tom Cruise, Hayley Atwell, Ving Rhames', 'ENDED', 1, 1, false, NOW(), NOW(), false),
-       ('Captain America: Brave New World', 'Sam Wilson đối mặt với những mối đe dọa toàn cầu mới.', 120, '2025-02-14',
-        'https://example.com/posters/captainamerica4.jpg', 'https://example.com/banners/captainamerica4_banner.jpg',
-        'https://youtube.com/watch?v=9s4z0k8z0k8', 13, 'Julius Onah', 'Anthony Mackie, Danny Ramirez, Shira Haas',
-        'ENDED', 1, 1, false, NOW(), NOW(), false),
-       ('Thunderbolts*', 'Nhóm phản anh hùng của Marvel thực hiện nhiệm vụ bí mật.', 121, '2025-07-25',
-        'https://example.com/posters/thunderbolts.jpg', 'https://example.com/banners/thunderbolts_banner.jpg',
-        'https://youtube.com/watch?v=0s4z0k8z0k8', 13, 'Jake Schreier', 'Florence Pugh, Sebastian Stan, David Harbour',
-        'ENDED', 1, 1, false, NOW(), NOW(), false),
-       ('Blade', 'Blade chiến đấu chống lại các vampire trong thế giới hiện đại.', 110, '2025-11-07',
-        'https://example.com/posters/blade.jpg', 'https://example.com/banners/blade_banner.jpg',
-        'https://youtube.com/watch?v=1s4z0k8z0k8', 17, 'Yann Demange', 'Mahershala Ali, Mia Goth, Delroy Lindo',
-        'ENDED', 1, 1, false, NOW(), NOW(), false),
-       ('Fantastic Four: The First Steps', 'Gia đình Fantastic Four khám phá không gian và nhận sức mạnh.', 120,
-        '2025-05-02', 'https://example.com/posters/fantasticfour.jpg',
-        'https://example.com/banners/fantasticfour_banner.jpg', 'https://youtube.com/watch?v=2s4z0k8z0k8', 13,
-        'Matt Shakman', 'Pedro Pascal, Vanessa Kirby, Joseph Quinn', 'ENDED', 1, 1, false, NOW(), NOW(), false),
-       ('Snow White', 'Bản làm lại live-action của Bạch Tuyết và bảy chú lùn.', 105, '2025-03-21',
-        'https://example.com/posters/snowwhite.jpg', 'https://example.com/banners/snowwhite_banner.jpg',
-        'https://youtube.com/watch?v=3s4z0k8z0k8', 0, 'Marc Webb', 'Rachel Zegler, Gal Gadot, Andrew Burnap', 'ENDED',
-        1, 1, false, NOW(), NOW(), false),
-       ('Mickey 17', 'Một nhân viên thay thế trên sứ mệnh thuộc địa hóa sao Hỏa chết đi sống lại nhiều lần.', 137,
-        '2025-03-07', 'https://example.com/posters/mickey17.jpg', 'https://example.com/banners/mickey17_banner.jpg',
-        'https://youtube.com/watch?v=4s4z0k8z0k8', 13, 'Bong Joon-ho', 'Robert Pattinson, Naomi Ackie, Steven Yeun',
-        'ENDED', 1, 1, false, NOW(), NOW(), false),
-       ('The Smurfs Movie', 'Nhóm Smurf phiêu lưu để cứu làng của họ khỏi Gargamel.', 90, '2025-02-14',
-        'https://example.com/posters/smurfs.jpg', 'https://example.com/banners/smurfs_banner.jpg',
-        'https://youtube.com/watch?v=5s4z0k8z0k8', 0, 'Rihanna', 'Rihanna, Nick Offerman, Natasha Lyonne', 'ENDED', 1,
-        1, false, NOW(), NOW(), false),
-       ('How to Train Your Dragon', 'Bản live-action của cậu bé Viking và rồng của cậu.', 130, '2025-06-13',
-        'https://example.com/posters/howtotrainyourdragon.jpg',
-        'https://example.com/banners/howtotrainyourdragon_banner.jpg', 'https://youtube.com/watch?v=6s4z0k8z0k8', 0,
-        'Dean DeBlois', 'Mason Thames, Nico Parker, Gerard Butler', 'ENDED', 1, 1, false, NOW(), NOW(), false),
-       ('28 Years Later', 'Tiếp nối loạt phim zombie với một nhóm sống sót mới.', 115, '2025-06-20',
-        'https://example.com/posters/28years.jpg', 'https://example.com/banners/28years_banner.jpg',
-        'https://youtube.com/watch?v=7s4z0k8z0k8', 17, 'Danny Boyle',
-        'Cillian Murphy, Jodie Comer, Aaron Taylor-Johnson', 'ENDED', 1, 1, false, NOW(), NOW(), false),
-       ('The SpongeBob Movie: Search for SquarePants', 'SpongeBob bị buộc tội giết người và phải trốn thoát.', 90,
-        '2025-12-19', 'https://example.com/posters/spongebob3.jpg', 'https://example.com/banners/spongebob3_banner.jpg',
-        'https://youtube.com/watch?v=8s4z0k8z0k8', 0, 'Derek Drymon', 'Tom Kenny, Bill Fagerbakke, Rodger Bumpass',
-        'ENDED', 1, 1, false, NOW(), NOW(), false),
-       ('The War of the Rohirrim', 'Một phim hoạt hình tiền truyện về Eowyn trong Trung Địa.', 120, '2024-12-13',
-        'https://example.com/posters/warofrohirrim.jpg', 'https://example.com/banners/warofrohirrim_banner.jpg',
-        'https://youtube.com/watch?v=9s4z0k8z0k8', 13, 'Kenji Kamiyama', 'Brian Cox, Gaia Wise, Luke Pasqualino',
-        'ENDED', 1, 1, false, NOW(), NOW(), false);
+        'Christopher McQuarrie', 'Tom Cruise, Hayley Atwell, Ving Rhames', 'ENDED', 1, 1, false, NOW(), NOW(), false);
 
 -- Insert movie-genre relationships
 INSERT INTO movie_movie_genres (movie_id, movie_genres_id)
@@ -989,8 +945,6 @@ VALUES
 (100, 2),
 (100, 9);
 
-
-
 -- Insert sample data for ticket booking flow
 -- SubTitles
 INSERT INTO subtitles (code, name, created_at, updated_at)
@@ -1011,250 +965,75 @@ INSERT INTO seat_types (name, description, created_at, updated_at, active)
 VALUES ('Standard', 'Ghế tiêu chuẩn', NOW(), NOW(), true),
        ('VIP', 'Ghế VIP', NOW(), NOW(), true);
 
--- Rooms
-INSERT INTO rooms (name, room_type_id, status, created_at, updated_at, rows_count, columns_count)
-VALUES ('Phòng 1', 1, 'ACTIVE', NOW(), NOW(), 10, 12),
-       ('Phòng 2', 1, 'ACTIVE', NOW(), NOW(), 10, 12),
-       ('Phòng 3', 2, 'ACTIVE', NOW(), NOW(), 10, 12),
-       ('Phòng 4', 3, 'ACTIVE', NOW(), NOW(), 10, 12),
-       ('Phòng 5', 1, 'ACTIVE', NOW(), NOW(), 10, 12),
-       ('Phòng VIP 1', 2, 'ACTIVE', NOW(), NOW(), 10, 12),
-       ('Phòng IMAX 1', 3, 'ACTIVE', NOW(), NOW(), 10, 12),
-       ('Phòng 4DX 1', 1, 'ACTIVE', NOW(), NOW(), 10, 12);
 
--- Ghế cho Phòng 1 (2D - 10x8 = 80 ghế)
-INSERT INTO seats (seat_row, seat_column, status, room_id, seat_type_id, created_at, updated_at)
-VALUES
--- Row A (1-10)
-('A', '1', 'AVAILABLE', 1, 1, NOW(), NOW()),
-('A', '2', 'AVAILABLE', 1, 1, NOW(), NOW()),
-('A', '3', 'AVAILABLE', 1, 1, NOW(), NOW()),
-('A', '4', 'AVAILABLE', 1, 1, NOW(), NOW()),
-('A', '5', 'AVAILABLE', 1, 1, NOW(), NOW()),
-('A', '6', 'AVAILABLE', 1, 1, NOW(), NOW()),
-('A', '7', 'AVAILABLE', 1, 1, NOW(), NOW()),
-('A', '8', 'AVAILABLE', 1, 1, NOW(), NOW()),
-('A', '9', 'AVAILABLE', 1, 1, NOW(), NOW()),
-('A', '10', 'AVAILABLE', 1, 1, NOW(), NOW()),
--- Row B (1-10)
-('B', '1', 'AVAILABLE', 1, 1, NOW(), NOW()),
-('B', '2', 'AVAILABLE', 1, 1, NOW(), NOW()),
-('B', '3', 'AVAILABLE', 1, 1, NOW(), NOW()),
-('B', '4', 'AVAILABLE', 1, 1, NOW(), NOW()),
-('B', '5', 'AVAILABLE', 1, 1, NOW(), NOW()),
-('B', '6', 'AVAILABLE', 1, 1, NOW(), NOW()),
-('B', '7', 'AVAILABLE', 1, 1, NOW(), NOW()),
-('B', '8', 'AVAILABLE', 1, 1, NOW(), NOW()),
-('B', '9', 'AVAILABLE', 1, 1, NOW(), NOW()),
-('B', '10', 'AVAILABLE', 1, 1, NOW(), NOW()),
--- Row C (1-10) - Một số ghế đã đặt để test
-('C', '1', 'AVAILABLE', 1, 1, NOW(), NOW()),
-('C', '2', 'AVAILABLE', 1, 1, NOW(), NOW()),
-('C', '3', 'AVAILABLE', 1, 1, NOW(), NOW()),
-('C', '4', 'AVAILABLE', 1, 1, NOW(), NOW()),
-('C', '5', 'AVAILABLE', 1, 1, NOW(), NOW()),
-('C', '6', 'AVAILABLE', 1, 1, NOW(), NOW()),
-('C', '7', 'AVAILABLE', 1, 1, NOW(), NOW()),
-('C', '8', 'AVAILABLE', 1, 1, NOW(), NOW()),
-('C', '9', 'AVAILABLE', 1, 1, NOW(), NOW()),
-('C', '10', 'AVAILABLE', 1, 1, NOW(), NOW()),
--- Row D (1-10)
-('D', '1', 'AVAILABLE', 1, 1, NOW(), NOW()),
-('D', '2', 'AVAILABLE', 1, 1, NOW(), NOW()),
-('D', '3', 'AVAILABLE', 1, 1, NOW(), NOW()),
-('D', '4', 'AVAILABLE', 1, 1, NOW(), NOW()),
-('D', '5', 'AVAILABLE', 1, 1, NOW(), NOW()),
-('D', '6', 'AVAILABLE', 1, 1, NOW(), NOW()),
-('D', '7', 'AVAILABLE', 1, 1, NOW(), NOW()),
-('D', '8', 'AVAILABLE', 1, 1, NOW(), NOW()),
-('D', '9', 'AVAILABLE', 1, 1, NOW(), NOW()),
-('D', '10', 'AVAILABLE', 1, 1, NOW(), NOW()),
--- Row E (1-10) - Ghế VIP
-('E', '1', 'AVAILABLE', 1, 2, NOW(), NOW()),
-('E', '2', 'AVAILABLE', 1, 2, NOW(), NOW()),
-('E', '3', 'AVAILABLE', 1, 2, NOW(), NOW()),
-('E', '4', 'AVAILABLE', 1, 2, NOW(), NOW()),
-('E', '5', 'AVAILABLE', 1, 2, NOW(), NOW()),
-('E', '6', 'AVAILABLE', 1, 2, NOW(), NOW()),
-('E', '7', 'AVAILABLE', 1, 2, NOW(), NOW()),
-('E', '8', 'AVAILABLE', 1, 2, NOW(), NOW()),
-('E', '9', 'AVAILABLE', 1, 2, NOW(), NOW()),
-('E', '10', 'AVAILABLE', 1, 2, NOW(), NOW()),
--- Row F (1-10)
-('F', '1', 'AVAILABLE', 1, 1, NOW(), NOW()),
-('F', '2', 'AVAILABLE', 1, 1, NOW(), NOW()),
-('F', '3', 'AVAILABLE', 1, 1, NOW(), NOW()),
-('F', '4', 'AVAILABLE', 1, 1, NOW(), NOW()),
-('F', '5', 'AVAILABLE', 1, 1, NOW(), NOW()),
-('F', '6', 'AVAILABLE', 1, 1, NOW(), NOW()),
-('F', '7', 'AVAILABLE', 1, 1, NOW(), NOW()),
-('F', '8', 'AVAILABLE', 1, 1, NOW(), NOW()),
-('F', '9', 'AVAILABLE', 1, 1, NOW(), NOW()),
-('F', '10', 'AVAILABLE', 1, 1, NOW(), NOW()),
--- Row G (1-10)
-('G', '1', 'AVAILABLE', 1, 1, NOW(), NOW()),
-('G', '2', 'AVAILABLE', 1, 1, NOW(), NOW()),
-('G', '3', 'AVAILABLE', 1, 1, NOW(), NOW()),
-('G', '4', 'AVAILABLE', 1, 1, NOW(), NOW()),
-('G', '5', 'AVAILABLE', 1, 1, NOW(), NOW()),
-('G', '6', 'AVAILABLE', 1, 1, NOW(), NOW()),
-('G', '7', 'AVAILABLE', 1, 1, NOW(), NOW()),
-('G', '8', 'AVAILABLE', 1, 1, NOW(), NOW()),
-('G', '9', 'AVAILABLE', 1, 1, NOW(), NOW()),
-('G', '10', 'AVAILABLE', 1, 1, NOW(), NOW()),
--- Row H (1-10)
-('H', '1', 'AVAILABLE', 1, 1, NOW(), NOW()),
-('H', '2', 'AVAILABLE', 1, 1, NOW(), NOW()),
-('H', '3', 'AVAILABLE', 1, 1, NOW(), NOW()),
-('H', '4', 'AVAILABLE', 1, 1, NOW(), NOW()),
-('H', '5', 'AVAILABLE', 1, 1, NOW(), NOW()),
-('H', '6', 'AVAILABLE', 1, 1, NOW(), NOW()),
-('H', '7', 'AVAILABLE', 1, 1, NOW(), NOW()),
-('H', '8', 'AVAILABLE', 1, 1, NOW(), NOW()),
-('H', '9', 'AVAILABLE', 1, 1, NOW(), NOW()),
-('H', '10', 'AVAILABLE', 1, 1, NOW(), NOW());
-
--- Ghế cho Phòng 2 (3D - 10x8 = 80 ghế)
-INSERT INTO seats (seat_row, seat_column, status, room_id, seat_type_id, created_at, updated_at)
-VALUES
--- Row A (1-10)
-('A', '1', 'AVAILABLE', 2, 1, NOW(), NOW()),
-('A', '2', 'AVAILABLE', 2, 1, NOW(), NOW()),
-('A', '3', 'AVAILABLE', 2, 1, NOW(), NOW()),
-('A', '4', 'AVAILABLE', 2, 1, NOW(), NOW()),
-('A', '5', 'AVAILABLE', 2, 1, NOW(), NOW()),
-('A', '6', 'AVAILABLE', 2, 1, NOW(), NOW()),
-('A', '7', 'AVAILABLE', 2, 1, NOW(), NOW()),
-('A', '8', 'AVAILABLE', 2, 1, NOW(), NOW()),
-('A', '9', 'AVAILABLE', 2, 1, NOW(), NOW()),
-('A', '10', 'AVAILABLE', 2, 1, NOW(), NOW()),
--- Row B (1-10)
-('B', '1', 'AVAILABLE', 2, 1, NOW(), NOW()),
-('B', '2', 'AVAILABLE', 2, 1, NOW(), NOW()),
-('B', '3', 'AVAILABLE', 2, 1, NOW(), NOW()),
-('B', '4', 'AVAILABLE', 2, 1, NOW(), NOW()),
-('B', '5', 'AVAILABLE', 2, 1, NOW(), NOW()),
-('B', '6', 'AVAILABLE', 2, 1, NOW(), NOW()),
-('B', '7', 'AVAILABLE', 2, 1, NOW(), NOW()),
-('B', '8', 'AVAILABLE', 2, 1, NOW(), NOW()),
-('B', '9', 'AVAILABLE', 2, 1, NOW(), NOW()),
-('B', '10', 'AVAILABLE', 2, 1, NOW(), NOW()),
--- Row C (1-10) - Một số ghế đã đặt để test
-('C', '1', 'BOOKED', 2, 1, NOW(), NOW()),
-('C', '2', 'BOOKED', 2, 1, NOW(), NOW()),
-('C', '3', 'AVAILABLE', 2, 1, NOW(), NOW()),
-('C', '4', 'AVAILABLE', 2, 1, NOW(), NOW()),
-('C', '5', 'AVAILABLE', 2, 1, NOW(), NOW()),
-('C', '6', 'AVAILABLE', 2, 1, NOW(), NOW()),
-('C', '7', 'AVAILABLE', 2, 1, NOW(), NOW()),
-('C', '8', 'AVAILABLE', 2, 1, NOW(), NOW()),
-('C', '9', 'AVAILABLE', 2, 1, NOW(), NOW()),
-('C', '10', 'AVAILABLE', 2, 1, NOW(), NOW()),
--- Row D (1-10)
-('D', '1', 'AVAILABLE', 2, 1, NOW(), NOW()),
-('D', '2', 'AVAILABLE', 2, 1, NOW(), NOW()),
-('D', '3', 'AVAILABLE', 2, 1, NOW(), NOW()),
-('D', '4', 'AVAILABLE', 2, 1, NOW(), NOW()),
-('D', '5', 'AVAILABLE', 2, 1, NOW(), NOW()),
-('D', '6', 'AVAILABLE', 2, 1, NOW(), NOW()),
-('D', '7', 'AVAILABLE', 2, 1, NOW(), NOW()),
-('D', '8', 'AVAILABLE', 2, 1, NOW(), NOW()),
-('D', '9', 'AVAILABLE', 2, 1, NOW(), NOW()),
-('D', '10', 'AVAILABLE', 2, 1, NOW(), NOW()),
--- Row E (1-10) - Ghế VIP
-('E', '1', 'AVAILABLE', 2, 2, NOW(), NOW()),
-('E', '2', 'AVAILABLE', 2, 2, NOW(), NOW()),
-('E', '3', 'AVAILABLE', 2, 2, NOW(), NOW()),
-('E', '4', 'AVAILABLE', 2, 2, NOW(), NOW()),
-('E', '5', 'AVAILABLE', 2, 2, NOW(), NOW()),
-('E', '6', 'AVAILABLE', 2, 2, NOW(), NOW()),
-('E', '7', 'AVAILABLE', 2, 2, NOW(), NOW()),
-('E', '8', 'AVAILABLE', 2, 2, NOW(), NOW()),
-('E', '9', 'AVAILABLE', 2, 2, NOW(), NOW()),
-('E', '10', 'AVAILABLE', 2, 2, NOW(), NOW()),
--- Row F (1-10)
-('F', '1', 'AVAILABLE', 2, 1, NOW(), NOW()),
-('F', '2', 'AVAILABLE', 2, 1, NOW(), NOW()),
-('F', '3', 'AVAILABLE', 2, 1, NOW(), NOW()),
-('F', '4', 'AVAILABLE', 2, 1, NOW(), NOW()),
-('F', '5', 'AVAILABLE', 2, 1, NOW(), NOW()),
-('F', '6', 'AVAILABLE', 2, 1, NOW(), NOW()),
-('F', '7', 'AVAILABLE', 2, 1, NOW(), NOW()),
-('F', '8', 'AVAILABLE', 2, 1, NOW(), NOW()),
-('F', '9', 'AVAILABLE', 2, 1, NOW(), NOW()),
-('F', '10', 'AVAILABLE', 2, 1, NOW(), NOW()),
--- Row G (1-10)
-('G', '1', 'AVAILABLE', 2, 1, NOW(), NOW()),
-('G', '2', 'AVAILABLE', 2, 1, NOW(), NOW()),
-('G', '3', 'AVAILABLE', 2, 1, NOW(), NOW()),
-('G', '4', 'AVAILABLE', 2, 1, NOW(), NOW()),
-('G', '5', 'AVAILABLE', 2, 1, NOW(), NOW()),
-('G', '6', 'AVAILABLE', 2, 1, NOW(), NOW()),
-('G', '7', 'AVAILABLE', 2, 1, NOW(), NOW()),
-('G', '8', 'AVAILABLE', 2, 1, NOW(), NOW()),
-('G', '9', 'AVAILABLE', 2, 1, NOW(), NOW()),
-('G', '10', 'AVAILABLE', 2, 1, NOW(), NOW()),
--- Row H (1-10)
-('H', '1', 'AVAILABLE', 2, 1, NOW(), NOW()),
-('H', '2', 'AVAILABLE', 2, 1, NOW(), NOW()),
-('H', '3', 'AVAILABLE', 2, 1, NOW(), NOW()),
-('H', '4', 'AVAILABLE', 2, 1, NOW(), NOW()),
-('H', '5', 'AVAILABLE', 2, 1, NOW(), NOW()),
-('H', '6', 'AVAILABLE', 2, 1, NOW(), NOW()),
-('H', '7', 'AVAILABLE', 2, 1, NOW(), NOW()),
-('H', '8', 'AVAILABLE', 2, 1, NOW(), NOW()),
-('H', '9', 'AVAILABLE', 2, 1, NOW(), NOW()),
-('H', '10', 'AVAILABLE', 2, 1, NOW(), NOW());
-
--- ShowTimes
-INSERT INTO showtimes (start_time, end_time, room_id, movie_id, subtitle_id, created_at, updated_at)
-VALUES
--- Today's shows
-('2024-12-19 09:00:00', '2024-12-19 12:00:00', 1, 1, 1, NOW(), NOW()), -- Avatar: The Way of Water
-('2024-12-19 09:00:00', '2024-12-19 12:00:00', 2, 1, 1, NOW(), NOW()),
-('2024-12-19 09:00:00', '2024-12-19 12:00:00', 3, 1, 1, NOW(), NOW()),
-('2024-12-19 13:00:00', '2024-12-19 15:30:00', 1, 2, 1, NOW(), NOW()), -- Top Gun: Maverick
-('2024-12-19 16:00:00', '2024-12-19 18:40:00', 1, 3, 1, NOW(), NOW()), -- Black Panther: Wakanda Forever
-('2024-12-19 19:00:00', '2024-12-19 21:30:00', 1, 4, 1, NOW(), NOW()), -- Spider-Man: No Way Home
-('2024-12-19 22:00:00', '2024-12-20 00:30:00', 1, 5, 1, NOW(), NOW()), -- Dune
--- Tomorrow's shows
-('2024-12-20 09:00:00', '2024-12-20 12:00:00', 2, 1, 1, NOW(), NOW()),
-('2024-12-20 13:00:00', '2024-12-20 15:30:00', 2, 2, 1, NOW(), NOW()),
-('2024-12-20 16:00:00', '2024-12-20 18:40:00', 2, 3, 1, NOW(), NOW()),
-('2024-12-20 19:00:00', '2024-12-20 21:30:00', 2, 4, 1, NOW(), NOW()),
-('2024-12-20 22:00:00', '2024-12-21 00:30:00', 2, 5, 1, NOW(), NOW()),
--- VIP Room shows
-('2024-12-19 20:00:00', '2024-12-19 23:00:00', 3, 1, 1, NOW(), NOW()),
-('2024-12-20 20:00:00', '2024-12-20 23:00:00', 3, 2, 1, NOW(), NOW()),
--- IMAX shows
-('2024-12-19 14:00:00', '2024-12-19 17:00:00', 4, 1, 1, NOW(), NOW()),
-('2024-12-20 14:00:00', '2024-12-20 17:00:00', 4, 2, 1, NOW(), NOW());
+/*Tạo ticket price*/
 
 
--- ShowTimes
-INSERT INTO showtimes (start_time, end_time, room_id, movie_id, subtitle_id, created_at, updated_at)
-VALUES
--- Today's shows
-('2025-10-23 09:00:00', '2025-10-23 12:00:00', 1, 1, 1, NOW(), NOW()), -- Avatar: The Way of Water
-('2025-10-23 09:00:00', '2025-10-23 12:00:00', 2, 1, 1, NOW(), NOW()),
-('2025-10-19 09:00:00', '2025-10-23 12:00:00', 3, 1, 1, NOW(), NOW()),
-('2025-10-23 13:00:00', '2025-10-23 15:30:00', 1, 2, 1, NOW(), NOW()), -- Top Gun: Maverick
-('2025-10-23 16:00:00', '2025-10-23 18:40:00', 1, 3, 1, NOW(), NOW()), -- Black Panther: Wakanda Forever
-('2025-10-23 19:00:00', '2025-10-23 21:30:00', 1, 4, 1, NOW(), NOW()), -- Spider-Man: No Way Home
-('2025-10-23 22:00:00', '2025-10-23 00:30:00', 1, 5, 1, NOW(), NOW()), -- Dune
--- Tomorrow's shows
-('2025-10-23 09:00:00', '2025-10-23 12:00:00', 2, 1, 1, NOW(), NOW()),
-('2025-10-23 13:00:00', '2025-10-23 15:30:00', 2, 2, 1, NOW(), NOW()),
-('2025-10-23 16:00:00', '2025-12-23 18:40:00', 2, 3, 1, NOW(), NOW()),
-('2025-10-23 19:00:00', '2025-10-23 21:30:00', 2, 4, 1, NOW(), NOW()),
-('2025-10-23 22:00:00', '2025-10-23 00:30:00', 2, 5, 1, NOW(), NOW()),
--- VIP Room shows
-('2025-10-23 20:00:00', '2025-10-23 23:00:00', 3, 1, 1, NOW(), NOW()),
-('2025-10-23 20:00:00', '2025-10-23 23:00:00', 3, 2, 1, NOW(), NOW()),
--- IMAX shows
-('2025-10-23 14:00:00', '2025-10-23 17:00:00', 4, 1, 1, NOW(), NOW()),
-('2025-10-23 14:00:00', '2025-10-23 17:00:00', 4, 2, 1, NOW(), NOW());
+insert into concession_type (name)
+values ('đồ uống'),
+       ('đồ ăn nhẹ'),
+       ('combo');
 
-INSERT INTO showtimes (start_time, end_time, room_id, movie_id, subtitle_id, created_at, updated_at)
-VALUES ('2025-10-23 14:00:00', '2025-10-23 17:00:00', 1, 1, 1, NOW(), NOW()),
-       ('2025-10-23 14:00:00', '2025-10-23 17:00:00', 2, 1, 1, NOW(), NOW());
+
+INSERT INTO concession
+(id, created_at, updated_at, concession_status, description, name, price, stock_status, unit_in_stock, url_image,
+ concession_type_id)
+VALUES (1, '2025-01-01 00:42:14', '2025-01-01 00:07:29', 'DELETED',
+        'Xúc xích phô mai que nóng hổi, nhân phô mai tan chảy thơm béo.', 'Xúc Xích Phô Mai Que', 50000, 'IN_STOCK',
+        150, 'https://d28ic9z7shvx92.cloudfront.net/uploads/97b444d2-30b4-4c77-9d0b-f62835b153bc-image-base64.jpg', 2),
+       (2, '2025-01-01 00:42:57', '2025-01-01 00:33:20', 'DELETED',
+        'Khoai tây chiên giòn rụm, phủ lớp phô mai đậm đà, ăn kèm tương ớt.', 'Khoai Tây Lắc Phô Mai', 49000,
+        'IN_STOCK', 50,
+        'https://d28ic9z7shvx92.cloudfront.net/uploads/7d352d32-b596-49a8-a50c-5b11b35c9c30-image-base64.jpg', 2),
+       (3, '2025-01-01 00:44:40', '2025-01-01 00:37:25', 'INACTIVE',
+        'Bắp nổ phủ phô mai mặn ngọt hòa quyện, mùi thơm hấp dẫn khó cưỡng', 'Bắp Phô Mai', 69000, 'IN_STOCK', 280,
+        'https://d28ic9z7shvx92.cloudfront.net/uploads/82be49a0-5ced-4c2f-995b-8347656578f9-image-base64.jpg', 2),
+       (4, '2025-01-01 00:45:20', '2025-01-01 00:17:33', 'DELETED',
+        'Bắp nổ phủ caramel ngọt dịu, thơm giòn – món ăn biểu tượng khi xem phim.', 'Bắp Caramel', 69000, 'IN_STOCK',
+        260, 'https://d28ic9z7shvx92.cloudfront.net/uploads/a253855c-e596-4adc-8b86-ff6ed99800d2-image-base64.jpg', 2),
+       (5, '2025-01-01 00:45:59', '2025-01-01 00:45:59', 'ACTIVE',
+        'Ly Coca-Cola 700ml mát lạnh, hương vị quen thuộc cho mọi buổi chiếu phim.', 'Coca-Cola Ly Lớn', 49000,
+        'IN_STOCK', 300,
+        'https://d28ic9z7shvx92.cloudfront.net/uploads/7de607f8-e102-4efa-a812-eb90f02adc10-image-base64.jpg', 1),
+       (6, '2025-01-01 00:46:58', '2025-01-01 00:16:03', 'ACTIVE',
+        'Combo lãng mạn cho 2 người: bắp caramel lớn, 2 lon Pepsi, và 1 snack chiên giòn', 'Combo Hẹn Hò', 199000,
+        'IN_STOCK', 300,
+        'https://d28ic9z7shvx92.cloudfront.net/uploads/39193105-45f5-426c-af51-5275c5771b7f-image-base64.jpg', 3),
+       (7, '2025-01-01 00:47:40', '2025-01-01 00:47:40', 'ACTIVE',
+        'Dành cho 2 người: 1 bắp lớn vị phô mai và 2 ly Coca-Cola 700ml.', 'Combo Tình Bạn', 199000, 'IN_STOCK', 329,
+        'https://d28ic9z7shvx92.cloudfront.net/uploads/4de8c9e9-aee4-448b-87b1-4109b273c6c3-image-base64.jpg', 3),
+       (8, '2025-01-01 00:48:35', '2025-01-01 00:43:56', 'ACTIVE',
+        'Thức uống giải nhiệt nhẹ nhàng, vị cam tươi và sả thơm mát.', 'Trà Cam Sả', 59000, 'IN_STOCK', 201,
+        'https://d28ic9z7shvx92.cloudfront.net/uploads/be74b5d3-c5d1-4e5c-95c1-c2dba58d10ec-image-base64.jpg', 1),
+       (9, '2025-01-01 00:49:31', '2025-01-01 00:49:31', 'ACTIVE',
+        'Gồm 1 phần bắp ngọt lớn và 1 lon Pepsi 330ml – lựa chọn lý tưởng cho một mình xem phim', 'Combo Vui Vẻ',
+        149000, 'IN_STOCK', 379,
+        'https://d28ic9z7shvx92.cloudfront.net/uploads/bd12be7e-41b7-4200-9f08-91cbb63847b0-image-base64.jpg', 3),
+       (10, '2025-01-01 00:51:15', '2025-01-01 00:51:15', 'ACTIVE', 'Giòn rụm', 'Snack khoai tây', 29000, 'IN_STOCK',
+        401, 'https://d28ic9z7shvx92.cloudfront.net/uploads/6f1aca92-11cd-4e7e-968c-fb03a51386de-image-base64.jpg', 2),
+       (11, '2025-01-01 00:52:59', '2025-01-01 00:18:05', 'ACTIVE', 'Bắp nổ ngọt hài hòa, món ăn vặt yêu thích.',
+        'Bắp thường', 59000, 'IN_STOCK', 417,
+        'https://d28ic9z7shvx92.cloudfront.net/uploads/7edc3d0f-646c-460e-be0a-8e517e7f05a3-image-base64.jpg', 2),
+       (12, '2025-01-01 00:38:56', '2025-01-01 00:38:56', 'ACTIVE', 'nachos', 'nachos', 78000, 'IN_STOCK', 102,
+        'https://d28ic9z7shvx92.cloudfront.net/uploads/40746e11-28bd-439b-aeb7-b84b95b1850c-image-base64.jpg', 2),
+       (13, '2025-01-01 00:44:51', '2025-01-01 00:22:07', 'INACTIVE', 'mát lạnh', 'Spirte 300ml', 20000, 'IN_STOCK',
+        150, 'https://d28ic9z7shvx92.cloudfront.net/uploads/99747049-dab2-43b3-8170-7e4cec095bf7-image-base64.jpg', 1),
+       (14, '2025-01-01 00:35:51', '2025-01-01 00:35:51', 'ACTIVE', 'test', 'test', 10, 'IN_STOCK', 10,
+        'https://d28ic9z7shvx92.cloudfront.net/uploads/c49e9b89-1a23-4e55-8260-8f5776d05f30-Screenshot 2024-05-28 090323.png',
+        1);
+
+INSERT INTO cineshow.holidays (id, created_at, updated_at, day_of_month, description, holiday_date, is_recurring,
+                               month_of_year)
+VALUES (16, '2025-10-19 11:55:19.014997', '2025-10-19 11:55:19.014997', NULL, 'm1 tết', '2026-01-22', 0, NULL),
+       (17, '2025-10-19 11:55:19.043074', '2025-10-19 11:55:19.043074', NULL, 'm2 tết', '2026-01-23', 0, NULL),
+       (21, '2025-10-19 12:16:08.744589', '2025-10-19 12:16:08.744589', 30, 'thống nhất đất nước', NULL, 1, 4),
+       (22, '2025-10-19 12:19:36.301333', '2025-10-19 12:19:36.301333', 2, 'quốc khánh', NULL, 1, 9),
+       (28, '2025-10-19 13:07:33.952130', '2025-10-19 13:07:33.952130', 1, 'quốc tế lao động', NULL, 1, 5),
+       (29, '2025-10-19 13:17:56.852561', '2025-10-19 13:17:56.852561', 1, 'tết dương lịch', NULL, 1, 1),
+       (30, '2025-10-19 13:20:29.628547', '2025-10-19 13:20:29.628547', NULL, 'm3 tết', '2026-01-24', 0, NULL),
+       (31, '2025-10-19 13:20:29.630933', '2025-10-19 13:20:29.630933', NULL, 'm4 tết', '2026-01-25', 0, NULL),
+       (32, '2025-10-19 13:33:35.861772', '2025-10-19 13:33:35.861772', NULL, 'giỗ tổ hùng vương', '2025-04-07', 0,
+        NULL),
+       (33, '2025-10-19 16:38:13.319874', '2025-10-19 16:38:13.319874', 1, 'tết thiếu nhi', NULL, 1, 6),
+       (35, '2025-10-19 17:49:33.809065', '2025-10-19 17:49:33.809065', 31, 'ko ngày gì', '2025-01-31', 0, NULL);
+

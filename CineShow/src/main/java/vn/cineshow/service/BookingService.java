@@ -1,5 +1,6 @@
 package vn.cineshow.service;
 
+import vn.cineshow.dto.response.booking.BookingSeatsResponse;
 import vn.cineshow.dto.response.booking.ShowTimeResponse;
 
 import java.time.LocalDate;
@@ -10,4 +11,6 @@ public interface BookingService {
     List<ShowTimeResponse> getShowTimesByMovieAndDay(Long movieId, LocalDate date);
 
     List<ShowTimeResponse> getShowTimesByMovieAndStartTime(Long movieId, LocalDateTime startTime);
+
+    List<BookingSeatsResponse> getSeatsByShowTimeId(Long showTimeId);
 }
