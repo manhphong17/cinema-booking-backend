@@ -8,9 +8,14 @@ public interface RedisService {
 
     <T> T get(String key, Class<T> clazz);
 
+    <T> void update(String key, T newValue);
+
     void delete(String key);
 
     boolean exists(String key);
 
     Set<String> findKeys(String pattern);
+
+    long getTTL(String key);
+
 }

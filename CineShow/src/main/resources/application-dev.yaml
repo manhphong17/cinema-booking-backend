@@ -142,5 +142,10 @@ spring.servlet.multipart.max-request-size: 10MB
 #  return-url: https://yourdomain.com/api/payment/return
 #  timeout: 6
 
+booking:
+  ttl:
+    default: 600    # 10 phút - chọn ghế
+    payment: 1200   # 20 phút - thanh toán
+
 
 

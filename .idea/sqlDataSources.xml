@@ -8,19 +8,4 @@
       </scope>
     </mapping>
   </component>
-  <component name="SqlDataSourceStorage">
-    <option name="dataSources">
-      <list>
-        <State>
-          <option name="id" value="2124201b-ce7d-486d-bf3b-aa3d8c2b336e" />
-          <option name="name" value="DDL data source" />
-          <option name="dbmsName" value="UNKNOWN" />
-          <option name="urls">
-            <array />
-          </option>
-          <option name="outLayout" value="File per object by schema.groovy" />
-        </State>
-      </list>
-    </option>
-  </component>
 </project>
