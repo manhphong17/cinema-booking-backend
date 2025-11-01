@@ -1,5 +1,6 @@
 package vn.cineshow.service;
 
+import vn.cineshow.dto.request.booking.SeatSelectRequest;
 import vn.cineshow.dto.response.booking.BookingSeatsResponse;
 import vn.cineshow.dto.response.booking.ShowTimeResponse;
 
@@ -13,4 +14,6 @@ public interface BookingService {
     List<ShowTimeResponse> getShowTimesByMovieAndStartTime(Long movieId, LocalDateTime startTime);
 
     List<BookingSeatsResponse> getSeatsByShowTimeId(Long showTimeId);
+
+    void handleSeatAction(SeatSelectRequest req);
 }

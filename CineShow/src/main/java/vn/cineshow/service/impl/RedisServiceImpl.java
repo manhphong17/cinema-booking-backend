@@ -17,15 +17,15 @@ public class RedisServiceImpl implements RedisService {
     private final RedisTemplate<String, Object> redisTemplate;
 
     /**
-     * Luu bat ky du lieu nao vao Redis voi TTL (time to live)
+     * Save any value to Redis with a specific TTL (time-to-live).
+     * <p>
+     * Behavior:
+     * - Redis will automatically delete the key when TTL expires.
+     * - Used for temporary cache or real-time data (e.g., seat hold, OTP, token, etc.)
      *
-     * @param key        khoa Redis
-     * @param value      doi tuong bat ky
-     * @param ttlSeconds thoi gian ton tai (giay)
-     *                   <p>
-     *                   Co che:
-     *                   - Redis tu dong xoa key khi het TTL
-     *                   - Dung cho cache tam thoi hoac du lieu real-time (vi du seatInfo, seatHold, OTP, token, ...)
+     * @param key        Redis key
+     * @param value      Any serializable object
+     * @param ttlSeconds Expiration time in seconds
      */
     @Override
     public <T> void save(String key, T value, long ttlSeconds) {
@@ -34,15 +34,40 @@ public class RedisServiceImpl implements RedisService {
             return;
         }
         redisTemplate.opsForValue().set(key, value, ttlSeconds, TimeUnit.SECONDS);
-        log.debug("Saved key={} TTL={}s", key, ttlSeconds);
+        log.debug("Saved key={} with TTL={}s", key, ttlSeconds);
+    }
+
+
+    /**
+     * Update an existing key value but keep the current TTL unchanged.
+     * Prevents extending the seat hold time unintentionally.
+     *
+     * @param key      Redis key
+     * @param newValue Updated value
+     */
+    @Override
+    public <T> void update(String key, T newValue) {
+        if (key == null || newValue == null) {
+            log.warn("Cannot update null key or value in Redis");
+            return;
+        }
+
+        Long ttl = redisTemplate.getExpire(key, TimeUnit.SECONDS);
+        if (ttl == null || ttl <= 0) {
+            log.warn("Cannot update key={} because TTL expired or key not found", key);
+            return;
+        }
+
+        redisTemplate.opsForValue().set(key, newValue, ttl, TimeUnit.SECONDS);
+        log.debug("Updated key={} and kept existing TTL={}s", key, ttl);
     }
 
     /**
-     * Lay du lieu bat ky tu Redis
+     * Get value from Redis by key.
      *
-     * @param key   khoa Redis
-     * @param clazz kieu du lieu mong muon tra ve
-     * @return doi tuong neu co, hoac null neu khong ton tai
+     * @param key   Redis key
+     * @param clazz Expected type
+     * @return Value if present, or null
      */
     @Override
     @SuppressWarnings("unchecked")
@@ -50,7 +75,7 @@ public class RedisServiceImpl implements RedisService {
         if (key == null) return null;
         Object value = redisTemplate.opsForValue().get(key);
         if (value == null) {
-            log.trace("Redis miss key={}", key);
+            log.trace("Redis miss for key={}", key);
             return null;
         }
         if (!clazz.isInstance(value)) {
@@ -62,9 +87,9 @@ public class RedisServiceImpl implements RedisService {
     }
 
     /**
-     * Xoa key khoi Redis
+     * Delete a key from Redis.
      *
-     * @param key khoa Redis
+     * @param key Redis key
      */
     @Override
     public void delete(String key) {
@@ -75,10 +100,10 @@ public class RedisServiceImpl implements RedisService {
     }
 
     /**
-     * Kiem tra key co ton tai trong Redis khong
+     * Check if a key exists in Redis.
      *
-     * @param key khoa Redis
-     * @return true neu ton tai, false neu khong
+     * @param key Redis key
+     * @return true if exists, false otherwise
      */
     @Override
     public boolean exists(String key) {
@@ -86,18 +111,32 @@ public class RedisServiceImpl implements RedisService {
     }
 
     /**
-     * Tim tat ca cac key theo mau pattern
-     *
-     * @param pattern vi du: seatInfo:showtime:*
-     * @return tap hop cac key phu hop
+     * Find all Redis keys by pattern.
+     * Example: "seatHold:showtime:*"
      * <p>
-     * Luu y:
-     * - Ham keys() co do phuc tap O(n)
-     * - Chi nen dung cho muc dich admin hoac debug, khong dung trong luong realtime
+     * Note:
+     * - keys() has O(n) complexity.
+     * - Should only be used for debugging or admin tools, not in production flow.
+     *
+     * @param pattern Pattern to match keys
+     * @return Set of matching keys
      */
     @Override
     public Set<String> findKeys(String pattern) {
         if (pattern == null || pattern.isEmpty()) return Set.of();
         return redisTemplate.keys(pattern);
+    }
+
+    /**
+     * Get the remaining TTL (in seconds) of a key.
+     *
+     * @param key Redis key
+     * @return Remaining TTL in seconds, or -2 if not found
+     */
+    @Override
+    public long getTTL(String key) {
+        if (key == null) return -2;
+        Long ttl = redisTemplate.getExpire(key, TimeUnit.SECONDS);
+        return ttl != null ? ttl : -2;
     }
 }

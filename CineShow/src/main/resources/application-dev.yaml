@@ -19,6 +19,16 @@ spring:
       ssl:
         enabled: false
 
+
+  #Redis Upstash
+  #  data:
+  #    redis:
+  #      host: genuine-mastiff-5696.upstash.io
+  #      port: 6379
+  #      password: ARZAAAImcDI5MzY5ZTcwYTE5ZGQ0OWQ5ODRmOGUyMjUyNTVlNjA0MXAyNTY5Ng
+  #      ssl:
+  #        enabled: true
+
   #config oAuth 2.0
   security:
     oauth2:
@@ -141,6 +151,11 @@ spring.servlet.multipart.max-request-size: 10MB
 #  pay-url: https://sandbox.vnpayment.vn/paymentv2/vpcpay.html
 #  return-url: https://yourdomain.com/api/payment/return
 #  timeout: 6
+
+booking:
+  ttl:
+    default: 1200    # 10 phút - chọn ghế
+    payment: 1200   # 20 phút - thanh toán
 
 
 

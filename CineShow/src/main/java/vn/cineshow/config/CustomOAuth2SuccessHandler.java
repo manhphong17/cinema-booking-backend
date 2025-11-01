@@ -1,16 +1,23 @@
 package vn.cineshow.config;
 
 
+import java.io.IOException;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+
+import org.springframework.security.core.Authentication;
+import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
+import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+import org.springframework.stereotype.Component;
+
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
-import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
-import org.springframework.stereotype.Component;
 import vn.cineshow.enums.AccountStatus;
 import vn.cineshow.enums.AuthProvider;
 import vn.cineshow.enums.UserRole;
@@ -24,23 +31,19 @@ import vn.cineshow.repository.RoleRepository;
 import vn.cineshow.service.JWTService;
 import vn.cineshow.service.RefreshTokenService;
 
-import java.io.IOException;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-
 @Component
 @RequiredArgsConstructor
 public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler {
 
+    private static final String REDIRECT_URI_HOME = "http://localhost:3000/home";
+    private static final String REDIRECT_URI_ADMIN = "http://localhost:3000/admin";
+    private static final String REDIRECT_URI_OPERATOR = "http://localhost:3000/operator-manager/dashboard";
+    private static final String REDIRECT_URI_BUSINESS = "http://localhost:3000/business-manager/dashboard";
     private final JWTService jwtService;
     private final AccountRepository accountRepository;
     private final RoleRepository roleRepository;
     private final AccountProviderRepository accountProviderRepository;
     private final RefreshTokenService refreshTokenService;
-
-    private static final String REDIRECT_URI = "http://localhost:3000/customer";
 
     /**
      * Handles successful OAuth2 authentication.
@@ -153,7 +156,12 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
                 .stream().map(role -> role.getRoleName())
                 .toList();
 
-        // 4. create refresh token
+        // 4. Generate access token and refresh token
+        String accessToken = jwtService.generateAccessToken(
+                email,
+                roleNames,
+                account.getId());
+
         String refreshToken = jwtService.generateRefreshToken(
                 email,
                 roleNames);
@@ -161,14 +169,40 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
         refreshTokenService.replaceRefreshToken(account, refreshToken, jwtService.getRefreshTokenExpiryInSecond());
 
         // Set refresh token as HttpOnly cookie
+        // Fix: Set secure(false) for localhost development (http://)
+        // In production (https://), this should be true
         Cookie refreshCookie = new Cookie("refreshToken", refreshToken);
         refreshCookie.setHttpOnly(true);
-        refreshCookie.setSecure(true);
+        refreshCookie.setSecure(false);  // Fix: Changed from true to false for localhost
         refreshCookie.setPath("/");
         refreshCookie.setMaxAge((int) jwtService.getRefreshTokenExpiryInSecond());
+        refreshCookie.setAttribute("SameSite", "Lax");  // Better compatibility
         response.addCookie(refreshCookie);
 
-        response.sendRedirect(REDIRECT_URI);
+        // Redirect with access token as query parameter
+        // If login from admin form (google-admin) -> redirect based on role
+        // If login from customer form (google-user) -> always redirect to home
+        String redirectUri = REDIRECT_URI_HOME; // Default to home
+        
+        if ("google-admin".equals(registrationId)) {
+            // Admin form: redirect based on user's role
+            if (roleNames.contains("ADMIN")) {
+                redirectUri = REDIRECT_URI_ADMIN;
+            } else if (roleNames.contains("OPERATION")) {
+                redirectUri = REDIRECT_URI_OPERATOR;
+            } else if (roleNames.contains("BUSINESS")) {
+                redirectUri = REDIRECT_URI_BUSINESS;
+            } else {
+                // CUSTOMER or any other role -> home page
+                redirectUri = REDIRECT_URI_HOME;
+            }
+        } else {
+            // Customer form (google-user): always redirect to home
+            redirectUri = REDIRECT_URI_HOME;
+        }
+        
+        String redirectUrl = redirectUri + "?token=" + accessToken;
+        response.sendRedirect(redirectUrl);
     }
 
     @Override
