@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="DiffGenerationConfig">
-    <option name="snapshotDb" value="false" />
+    <option name="snapshotDbValue" value="58c3026f-56e5-471b-ad38-8e2aa5963bdc" />
     <option name="snapshotModelValue" value="CineShow:CineShow" />
   </component>
 </project>

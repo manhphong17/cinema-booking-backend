@@ -9,4 +9,6 @@ public interface SeatHoldService {
     SeatHold releaseSeats(SeatSelectRequest req);
 
     long getExpire(Long showtimeId, Long userId);
+    
+    SeatHold getCurrentHold(Long showtimeId, Long userId);
 }

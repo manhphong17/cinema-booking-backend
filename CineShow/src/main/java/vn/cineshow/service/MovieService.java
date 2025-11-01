@@ -1,10 +1,20 @@
 package vn.cineshow.service;
 
-import vn.cineshow.dto.request.movie.*;
-import vn.cineshow.dto.response.PageResponse;
-import vn.cineshow.dto.response.movie.*;
-
+import java.time.LocalDate;
 import java.util.List;
+
+import vn.cineshow.dto.request.movie.MovieCreationRequest;
+import vn.cineshow.dto.request.movie.MovieFilterRequest;
+import vn.cineshow.dto.request.movie.MovieUpdateBasicRequest;
+import vn.cineshow.dto.request.movie.MovieUpdateFullRequest;
+import vn.cineshow.dto.request.movie.UserSearchMovieRequest;
+import vn.cineshow.dto.response.PageResponse;
+import vn.cineshow.dto.response.movie.BannerResponse;
+import vn.cineshow.dto.response.movie.CountryResponse;
+import vn.cineshow.dto.response.movie.LanguageResponse;
+import vn.cineshow.dto.response.movie.MovieGenreResponse;
+import vn.cineshow.dto.response.movie.OperatorMovieOverviewResponse;
+import vn.cineshow.dto.response.movie.StaffMovieListResponse;
 
 public interface MovieService {
     PageResponse<?> getAllMovieWithSortBy(int pageNo, int pageSize, String sortBy);
@@ -34,4 +44,6 @@ public interface MovieService {
     List<BannerResponse> getBanners();
 
     PageResponse<?> getMovieListToBooking(UserSearchMovieRequest request);
+    
+    List<StaffMovieListResponse> getMoviesWithShowtimesOnDate(LocalDate date, String keyword);
 }

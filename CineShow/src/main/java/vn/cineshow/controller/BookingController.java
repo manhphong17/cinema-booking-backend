@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import vn.cineshow.dto.request.booking.ConcessionListRequest;
 import vn.cineshow.dto.response.ResponseData;
 import vn.cineshow.dto.response.booking.BookingSeatsResponse;
+import vn.cineshow.dto.response.booking.SeatHold;
 import vn.cineshow.dto.response.booking.ShowTimeResponse;
 import vn.cineshow.service.BookingService;
 import vn.cineshow.service.OrderSessionService;
@@ -79,6 +80,20 @@ public class BookingController {
                                           @PathVariable Long userId) {
         long ttl = seatHoldService.getExpire(showtimeId, userId);
         return new ResponseData<>(HttpStatus.OK.value(), "Get seat hold TTL successfully", ttl);
+    }
+
+    @Operation(
+            summary = "Get current seat hold for a user",
+            description = "Return the current seat hold information for a user in a specific showtime. " +
+                    "Used by frontend to restore held seats when page reloads."
+    )
+    @GetMapping("/show-times/{showtimeId}/users/{userId}/seat-hold")
+    public ResponseData<?> getCurrentSeatHold(@PathVariable Long showtimeId,
+                                               @PathVariable Long userId) {
+        log.info("Request get current seat hold - showtimeId: {}, userId: {}", showtimeId, userId);
+        SeatHold seatHold = seatHoldService.getCurrentHold(showtimeId, userId);
+        log.info("Response get current seat hold: {}", seatHold);
+        return new ResponseData<>(HttpStatus.OK.value(), "Get current seat hold successfully", seatHold);
     }
 
     @Operation(

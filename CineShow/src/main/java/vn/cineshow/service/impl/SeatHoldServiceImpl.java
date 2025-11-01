@@ -32,7 +32,6 @@ public class SeatHoldServiceImpl implements SeatHoldService {
         return String.format("seatHold:showtime:%d:user:%d", req.getShowtimeId(), req.getUserId());
     }
 
-
     /**
      * hold seat
      *
@@ -171,6 +170,12 @@ public class SeatHoldServiceImpl implements SeatHoldService {
         }
 
         return ttl;
+    }
+
+    @Override
+    public SeatHold getCurrentHold(Long showtimeId, Long userId) {
+        String key = String.format("seatHold:showtime:%d:user:%d", showtimeId, userId);
+        return redisService.get(key, SeatHold.class);
     }
 
 }

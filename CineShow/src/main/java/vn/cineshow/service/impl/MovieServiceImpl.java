@@ -30,6 +30,7 @@ import vn.cineshow.dto.response.movie.CountryResponse;
 import vn.cineshow.dto.response.movie.LanguageResponse;
 import vn.cineshow.dto.response.movie.MovieGenreResponse;
 import vn.cineshow.dto.response.movie.OperatorMovieOverviewResponse;
+import vn.cineshow.dto.response.movie.StaffMovieListResponse;
 import vn.cineshow.enums.MovieStatus;
 import vn.cineshow.exception.AppException;
 import vn.cineshow.exception.DuplicateResourceException;
@@ -212,6 +213,7 @@ public class MovieServiceImpl implements MovieService {
     }
 
     @Override
+    @Transactional
     public void updatebyId(long id, MovieUpdateBasicRequest request) {
 
     }
@@ -319,6 +321,7 @@ public class MovieServiceImpl implements MovieService {
     }
 
     @Override
+    @Transactional
     public void updateFeatureMovie(long id, boolean isFeatured) {
         Movie movie = findById(id);
         if (movie.getBannerUrl() == null) {
@@ -348,6 +351,10 @@ public class MovieServiceImpl implements MovieService {
         return searchRepository.findMoviesBySearchAndFilter(request);
     }
 
+    @Override
+    public List<StaffMovieListResponse> getMoviesWithShowtimesOnDate(LocalDate date, String keyword) {
+        return searchRepository.findMoviesWithShowtimesOnDate(date, keyword);
+    }
 
     private PageResponse<?> getPageResponse(int pageNo, int pageSize, Page<Movie> movies) {
 
