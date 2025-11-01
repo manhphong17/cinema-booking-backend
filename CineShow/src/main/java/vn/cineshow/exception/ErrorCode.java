@@ -34,6 +34,8 @@ public enum ErrorCode {
     SHOW_TIME_NOT_FOUND(3001, "Show time not found"),
     MOVIE_BANNER_NOT_FOUND(3001, "Movie banner not found"),
 
+    REDIS_KEY_NOT_FOUND(3002, "Redis key not found"),
+
 
     //ShowTime error
     ROOM_NOT_FOUND(2003, "Room not found"),
@@ -53,13 +55,13 @@ public enum ErrorCode {
 
 
     //Order
-    ORDER_NOT_FOUND( 3101, "Order không tồn tại"),
-    NOT_ORDER_OWNER( 3102, "Bạn không có quyền xem đơn này"),
+    ORDER_NOT_FOUND(3101, "Order không tồn tại"),
+    NOT_ORDER_OWNER(3102, "Bạn không có quyền xem đơn này"),
     ORDER_NOT_PAID(3103, "Đơn hàng chưa được thanh toán"),
-    ORDER_CANCELED( 3104, "Đơn hàng đã bị huỷ"),
-    QR_EXPIRED( 3105, "Mã QR đã hết hạn"),
+    ORDER_CANCELED(3104, "Đơn hàng đã bị huỷ"),
+    QR_EXPIRED(3105, "Mã QR đã hết hạn"),
     QR_REGENERATE_LIMIT(3106, "Tạo lại QR quá giới hạn"),
-    SHOWTIME_PASSED( 3107, "Suất chiếu đã diễn ra");
+    SHOWTIME_PASSED(3107, "Suất chiếu đã diễn ra");
     private final int code;
     private final String message;
 

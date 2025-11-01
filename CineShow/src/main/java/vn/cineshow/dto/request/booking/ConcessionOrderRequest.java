@@ -1,4 +1,4 @@
-package vn.cineshow.dto.redis;
+package vn.cineshow.dto.request.booking;
 
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -14,5 +14,4 @@ public class ConcessionOrderRequest implements Serializable {
 
     Long comboId;
     Integer quantity;
-    Double unitPrice;
 }

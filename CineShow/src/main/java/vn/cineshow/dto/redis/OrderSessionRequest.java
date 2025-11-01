@@ -2,6 +2,7 @@ package vn.cineshow.dto.redis;
 
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+import vn.cineshow.dto.request.booking.ConcessionOrderRequest;
 
 import java.util.List;
 

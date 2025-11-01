@@ -169,8 +169,8 @@ public class SeatHoldServiceImpl implements SeatHoldService {
         if (ttl == null || ttl <= 0) {
             return 0L;
         }
-        // Subtract 30 seconds for delay buffer
-        return Math.max(ttl - 30, 0);
+
+        return ttl;
     }
 
 }

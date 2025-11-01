@@ -2,20 +2,20 @@ package vn.cineshow.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import vn.cineshow.dto.request.booking.ConcessionListRequest;
 import vn.cineshow.dto.response.ResponseData;
 import vn.cineshow.dto.response.booking.BookingSeatsResponse;
 import vn.cineshow.dto.response.booking.ShowTimeResponse;
 import vn.cineshow.service.BookingService;
+import vn.cineshow.service.OrderSessionService;
 import vn.cineshow.service.SeatHoldService;
 
 import java.time.LocalDate;
@@ -32,6 +32,7 @@ public class BookingController {
 
     BookingService bookingService;
     SeatHoldService seatHoldService;
+    OrderSessionService orderSessionService;
 
     @Operation(summary = "Get list show times by date and a movie",
             description = "Send a request via this API to get list show times by date and a movie")
@@ -78,6 +79,17 @@ public class BookingController {
                                           @PathVariable Long userId) {
         long ttl = seatHoldService.getExpire(showtimeId, userId);
         return new ResponseData<>(HttpStatus.OK.value(), "Get seat hold TTL successfully", ttl);
+    }
+
+    @Operation(
+            summary = "Add concession (combo) to current order session",
+            description = "Store selected concession items in Redis together with seat hold. " +
+                    "TTL will match order session to ensure synchronization."
+    )
+    @PostMapping("/order-session/concessions")
+    public ResponseData<?> addConcessionListToOrderSession(@RequestBody @Valid ConcessionListRequest request) {
+        orderSessionService.addOrUpdateCombos(request);
+        return new ResponseData<>(HttpStatus.OK.value(), "Add concessions to order session successfully");
     }
 
 }

@@ -5,16 +5,22 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import vn.cineshow.dto.redis.ConcessionOrderRequest;
 import vn.cineshow.dto.redis.OrderSessionDTO;
 import vn.cineshow.dto.redis.OrderSessionRequest;
+import vn.cineshow.dto.request.booking.ConcessionListRequest;
+import vn.cineshow.dto.request.booking.ConcessionOrderRequest;
 import vn.cineshow.enums.OrderSessionStatus;
+import vn.cineshow.exception.AppException;
+import vn.cineshow.exception.ErrorCode;
+import vn.cineshow.exception.ResourceNotFoundException;
+import vn.cineshow.model.Concession;
+import vn.cineshow.repository.ConcessionRepository;
 import vn.cineshow.repository.TicketRepository;
 import vn.cineshow.service.OrderSessionService;
 import vn.cineshow.service.RedisService;
 
 import java.time.LocalDateTime;
-import java.util.List;
+import java.util.ArrayList;
 import java.util.Optional;
 
 @Slf4j
@@ -25,6 +31,7 @@ public class OrderSessionServiceImpl implements OrderSessionService {
 
     private final RedisService redisService;
     private final TicketRepository ticketRepository;
+    private final ConcessionRepository concessionRepository;
 
     @Value("${booking.ttl.default}")
     private long TTL_DEFAULT; //600
@@ -77,8 +84,48 @@ public class OrderSessionServiceImpl implements OrderSessionService {
     }
 
     @Override
-    public void addOrUpdateCombos(Long userId, Long showtimeId, List<ConcessionOrderRequest> concessionOrders) {
+    public void addOrUpdateCombos(ConcessionListRequest concessionListRequest) {
+        String key = getKey(concessionListRequest.getUserId(), concessionListRequest.getShowtimeId());
 
+        //get Order session in redis
+        OrderSessionDTO orderExist = redisService.get(key, OrderSessionDTO.class);
+
+        if (orderExist == null) {
+            log.debug("[ORDER_SESSION] [COMBO] key = {} not found", key);
+            throw new AppException(ErrorCode.REDIS_KEY_NOT_FOUND);
+        }
+
+        if (orderExist.getConcessionOrders() == null) {
+            orderExist.setConcessionOrders(new ArrayList<>());
+        } else {
+            orderExist.getConcessionOrders().clear();
+        }
+
+        orderExist.getConcessionOrders().addAll(concessionListRequest.getConcessions());
+        orderExist.setTotalPrice(countTotalAmount(orderExist));
+        log.info("[ORDER_SESSION][COMBO] Combo updated, key = {}", key);
+
+        redisService.update(key, orderExist);
+    }
+
+    private double countTotalAmount(OrderSessionDTO order) {
+
+        double totalAmountConcession = 0.0;
+        for (ConcessionOrderRequest concessionOrder : order.getConcessionOrders()) {
+            Concession cossession = concessionRepository.findById(concessionOrder.getComboId()).orElseThrow(
+                    () -> new ResourceNotFoundException("concession order not found with id: " + concessionOrder.getComboId())
+            );
+            totalAmountConcession += cossession.getPrice() * concessionOrder.getQuantity();
+        }
+
+        double totalAmountTicket = 0.0;
+        for (Long ticketId : order.getTicketIds()) {
+            totalAmountTicket += ticketRepository.findById(ticketId)
+                    .orElseThrow(() -> new ResourceNotFoundException("TicketRepository not found, id: " + ticketId))
+                    .getTicketPrice().getPrice();
+        }
+
+        return totalAmountConcession + totalAmountTicket;
     }
 
     @Override

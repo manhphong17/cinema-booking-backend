@@ -1,12 +1,12 @@
 package vn.cineshow.dto.request.booking;
 
+import java.util.List;
+
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.ToString;
 import vn.cineshow.enums.SeatAction;
-
-import java.util.List;
 
 @Getter
 @ToString

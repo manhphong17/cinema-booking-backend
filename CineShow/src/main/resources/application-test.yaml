@@ -1,0 +1,134 @@
+spring:
+  config:
+    activate:
+      on-profile: test
+  output:
+    ansi:
+      enabled: NEVER
+
+  # Redis Cloud for testing
+  data:
+    redis:
+      host: redis-16466.c1.ap-southeast-1-1.ec2.redns.redis-cloud.com
+      port: 16466
+      username: default
+      password: 9aCamrhrRMWSj12qrRaFmF09EWIwE25C
+      database: 1  # Use database 1 for testing (default is 0 for dev)
+      ssl:
+        enabled: false
+      timeout: 3000ms
+      lettuce:
+        pool:
+          max-active: 8
+          max-idle: 8
+          min-idle: 0
+          max-wait: 1000ms
+
+  #config oAuth 2.0 - using test credentials
+  security:
+    oauth2:
+      client:
+        registration:
+          google-user:
+            client-id: test-google-client-id
+            client-secret: test-google-client-secret
+            redirect-uri: "{baseUrl}/login/oauth2/code/google-user"
+            provider: google
+            scope:
+              - openid
+              - profile
+              - email
+          google-admin:
+            client-id: test-google-client-id
+            client-secret: test-google-client-secret
+            redirect-uri: "{baseUrl}/login/oauth2/code/google-admin"
+            provider: google
+            scope:
+              - openid
+              - profile
+              - email
+        provider:
+          google:
+            user-info-uri: https://www.googleapis.com/oauth2/v3/userinfo
+            authorization-uri: https://accounts.google.com/o/oauth2/v2/auth
+            token-uri: https://oauth2.googleapis.com/token
+            user-name-attribute: sub
+
+  # Using H2 in-memory database for testing
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+  
+  datasource:
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    username: sa
+    password: 
+    driver-class-name: org.h2.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: create-drop  # Create and drop schema for each test run
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: false
+        dialect: org.hibernate.dialect.H2Dialect
+
+  # Disable devtools for test environment
+  devtools:
+    add-properties: false
+
+  # Email service configuration for testing
+  sendgrid:
+    api-key: test-sendgrid-api-key
+    from-email: "test@cineshow.com"
+
+# Application specific configuration
+app:
+  frontend:
+    verify-url: "http://localhost:3000/verify"
+  sendgrid:
+    otp-template-id: "test-otp-template-id"
+
+# Test accounts
+admin: { email_default: "admin@test.com", password_default: "00000000" }
+user-account-test: { email: "user@test.com", password: "00000000" }
+staff-account-test: { email: "staff@test.com", password: "00000000" }
+operation-account-test: { email: "operation@test.com", password: "00000000" }
+business-account-test: { email: "business@test.com", password: "00000000" }
+
+# JWT configuration for testing
+jwt:
+  secret-key-access-token: "test-access-token-secret-key-for-jwt-testing-only-min-32-chars"
+  secret-key-refresh-token: "test-refresh-token-secret-key-for-jwt-testing-only-min-32-chars"
+  expiration-access-token: 3600000  # 1 hour for testing
+  expiration-refresh-token: 86400000 # 24 hours for testing
+
+# AWS configuration for testing (using mock/local)
+aws:
+  access-key: test-aws-access-key
+  secret-key: test-aws-secret-key
+  s3:
+    bucket: cineshow-test-bucket
+    region: ap-southeast-1
+  cloudfront:
+    url: http://localhost:9000
+
+# File upload configuration
+spring.servlet.multipart.enabled: true
+spring.servlet.multipart.max-file-size: 2MB
+spring.servlet.multipart.max-request-size: 5MB
+
+# Booking TTL configuration for testing
+booking:
+  ttl:
+    default: 300    # 5 minutes - shorter for testing
+    payment: 600    # 10 minutes - shorter for testing
+
+# Logging configuration for tests
+logging:
+  level:
+    root: WARN
+    vn.cineshow: INFO
+
