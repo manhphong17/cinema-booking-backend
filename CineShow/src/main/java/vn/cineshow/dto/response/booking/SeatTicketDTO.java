@@ -7,9 +7,11 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@ToString
 public class SeatTicketDTO {
     private Long ticketId;
-    private Long seatId;
+    private int rowIdx;
+    private int columnIdx;
     private String seatType;
     private String status;
 }

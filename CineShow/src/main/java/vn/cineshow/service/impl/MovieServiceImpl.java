@@ -30,6 +30,7 @@ import vn.cineshow.dto.response.movie.CountryResponse;
 import vn.cineshow.dto.response.movie.LanguageResponse;
 import vn.cineshow.dto.response.movie.MovieGenreResponse;
 import vn.cineshow.dto.response.movie.OperatorMovieOverviewResponse;
+import vn.cineshow.dto.response.movie.StaffMovieListResponse;
 import vn.cineshow.enums.MovieStatus;
 import vn.cineshow.exception.AppException;
 import vn.cineshow.exception.DuplicateResourceException;
@@ -211,32 +212,38 @@ public class MovieServiceImpl implements MovieService {
                 .build()).toList();
     }
 
-    @Transactional
     @Override
+    @Transactional
     public void updatebyId(long id, MovieUpdateBasicRequest request) {
-        Movie movie = findById(id);
 
-        // Check for duplicate movie name (excluding current movie)
-        if (isMovieExistForUpdate(request.getName(), request.getReleaseDate(), id)) {
-            log.warn("Movie with name {} already exists", request.getName());
-            throw new DuplicateResourceException("Movie already exists");
-        }
-
-        Set<MovieGenre> movieGenres = new HashSet<>();
-        for (Long genreId : request.getGenreIds()) {
-            movieGenres.add(findMovieGenreById(genreId));
-        }
-
-        movie.setName(request.getName().trim());
-        movie.setLanguage(findLanguageById(request.getLanguageId()));
-        movie.setCountry(findCountryById(request.getCountryId()));
-        movie.setMovieGenres(movieGenres);
-        movie.setStatus(MovieStatus.valueOf(request.getStatus()));
-        movie.setReleaseDate(request.getReleaseDate());
-
-        movieRepository.save(movie);
-        log.info("Movie updated successfully, id: {}", movie.getId());
     }
+
+//    @Transactional
+//    @Override
+//    public void updatebyId(long id, MovieUpdateBasicRequest request) {
+//        Movie movie = findById(id);
+//
+//        // Check for duplicate movie name (excluding current movie)
+//        if (isMovieExistForUpdate(request.getName(), request.getReleaseDate(), id)) {
+//            log.warn("Movie with name {} already exists", request.getName());
+//            throw new DuplicateResourceException("Movie already exists");
+//        }
+//
+//        Set<MovieGenre> movieGenres = new HashSet<>();
+//        for (Long genreId : request.getGenreIds()) {
+//            movieGenres.add(findMovieGenreById(genreId));
+//        }
+//
+//        movie.setName(request.getName().trim());
+//        movie.setLanguage(findLanguageById(request.getLanguageId()));
+//        movie.setCountry(findCountryById(request.getCountryId()));
+//        movie.setMovieGenres(movieGenres);
+//        movie.setStatus(MovieStatus.valueOf(request.getStatus()));
+//        movie.setReleaseDate(request.getReleaseDate());
+//
+//        movieRepository.save(movie);
+//        log.info("Movie updated successfully, id: {}", movie.getId());
+//    }
 
     @Transactional
     @Override
@@ -314,6 +321,7 @@ public class MovieServiceImpl implements MovieService {
     }
 
     @Override
+    @Transactional
     public void updateFeatureMovie(long id, boolean isFeatured) {
         Movie movie = findById(id);
         if (movie.getBannerUrl() == null) {
@@ -343,6 +351,10 @@ public class MovieServiceImpl implements MovieService {
         return searchRepository.findMoviesBySearchAndFilter(request);
     }
 
+    @Override
+    public List<StaffMovieListResponse> getMoviesWithShowtimesOnDate(LocalDate date, String keyword) {
+        return searchRepository.findMoviesWithShowtimesOnDate(date, keyword);
+    }
 
     private PageResponse<?> getPageResponse(int pageNo, int pageSize, Page<Movie> movies) {
 
@@ -379,9 +391,9 @@ public class MovieServiceImpl implements MovieService {
         return movieRepository.existsByNameAndReleaseDate(name, releaseDate);
     }
 
-    private boolean isMovieExistForUpdate(String name, LocalDate releaseDate, Long excludeId) {
-        return movieRepository.existsByNameAndReleaseDateAndIdNot(name, releaseDate, excludeId);
-    }
+//    private boolean isMovieExistForUpdate(String name, LocalDate releaseDate, Long excludeId) {
+//        return movieRepository.existsByNameAndReleaseDateAndIdNot(name, releaseDate, excludeId);
+//    }
 
     private List<MovieGenreResponse> getMovieGenresByMovie(Movie movie) {
         List<MovieGenre> movieGenres = movie.getMovieGenres().stream().toList();

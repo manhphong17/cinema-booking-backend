@@ -1,17 +1,21 @@
 package vn.cineshow.service;
 
-import vn.cineshow.dto.response.booking.SeatHold;
 
 import java.util.Set;
 
 public interface RedisService {
-    void saveSeatHold(String key, SeatHold hold, long ttlSeconds);
+    <T> void save(String key, T value, long ttlSeconds);
 
-    SeatHold getSeatHold(String key);
+    <T> T get(String key, Class<T> clazz);
+
+    <T> void update(String key, T newValue);
 
     void delete(String key);
 
     boolean exists(String key);
 
     Set<String> findKeys(String pattern);
+
+    long getTTL(String key);
+
 }

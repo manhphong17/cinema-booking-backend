@@ -11,7 +11,6 @@ import java.io.Serializable;
 @Builder
 public class TicketResponse implements Serializable {
     private Long ticketId;
-    private Long seatId;
     private int rowIdx;
     private int columnInx;
     private String seatType;

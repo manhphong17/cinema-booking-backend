@@ -147,7 +147,7 @@ public class ShowTimeServiceImpl implements ShowTimeService {
         ShowTime saved = showTimeRepository.save(st);
 
         // 6) create seat-showtime
-        createSeatForShowTime(st);
+        createSeatForShowTime(saved);
 
         return ShowTimeResponse.builder()
                 .id(saved.getId())
@@ -263,28 +263,6 @@ public class ShowTimeServiceImpl implements ShowTimeService {
         if (n == 0) {
             throw new AppException(ErrorCode.SHOW_TIME_NOT_FOUND);
         }
-    }
-
-    @Override
-    public List<IdNameDTO> lookupMovieIdNameForUpcoming(LocalDateTime from) {
-        // Lấy danh sách movieId có suất chiếu chưa bắt đầu và chưa xoá mềm
-        List<Long> movieIds = showTimeRepository.findDistinctMovieIdsForUpcoming(from);
-        if (movieIds.isEmpty()) return List.of();
-
-        return movieRepo.findAllById(movieIds).stream()
-                .sorted((a, b) -> a.getName().compareToIgnoreCase(b.getName()))
-                .map(m -> new IdNameDTO(m.getId(), m.getName()))
-                .toList();
-    }
-
-    @Override
-    public List<IdNameDTO> lookupMovieIdNameByStatuses() {
-        return movieRepo
-                .findByStatusIn(List.of(MovieStatus.PLAYING, MovieStatus.UPCOMING),
-                        Sort.by(Sort.Direction.ASC, "name"))
-                .stream()
-                .map(m -> IdNameDTO.of(m.getId(), m.getName()))
-                .toList();
     }
 
     @Override

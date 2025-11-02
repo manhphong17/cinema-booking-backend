@@ -130,7 +130,7 @@ public class TicketPriceServiceImpl implements TicketPriceService {
         DayType dayType = getDayType(showDate);
 
         // 4. Truy vấn giá
-        return ticketPriceRepository.findBySeatTypeIdAndRoomTypeIdAndDayType(roomTypeId, seatTypeId, dayType)
+        return ticketPriceRepository.findBySeatTypeIdAndRoomTypeIdAndDayType(seatTypeId, roomTypeId, dayType)
                 .orElseThrow(() -> new AppException(ErrorCode.TICKET_PRICE_NOT_FOUND));
     }
 

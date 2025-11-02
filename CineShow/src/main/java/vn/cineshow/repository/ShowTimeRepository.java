@@ -1,5 +1,10 @@
 package vn.cineshow.repository;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
@@ -7,13 +12,12 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
+
+import vn.cineshow.dto.response.booking.ShowTimeResponse;
 import vn.cineshow.model.ShowTime;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
-
+@Repository
 public interface ShowTimeRepository extends JpaRepository<ShowTime, Long> {
 
     @Override
@@ -97,95 +101,33 @@ public interface ShowTimeRepository extends JpaRepository<ShowTime, Long> {
             """)
     List<Long> findDistinctMovieIdsForUpcoming(@Param("from") LocalDateTime from);
 
-    // (Tuỳ chọn) Lọc theo khoảng thời gian
-    @EntityGraph(attributePaths = {"room", "movie", "subtitle"})
-    List<ShowTime> findByMovie_IdAndStartTimeBetweenOrderByStartTimeAsc(
-            Long movieId, LocalDateTime from, LocalDateTime to
-    );
-
     @Query("""
-               SELECT st FROM ShowTime st
-               JOIN FETCH st.movie m
-               LEFT JOIN FETCH st.room r
-               LEFT JOIN FETCH st.subtitle s
-               WHERE (:movieId IS NULL OR m.id = :movieId)
-                 AND (:from IS NULL OR st.startTime >= :from)
-                 AND (:to   IS NULL OR st.startTime <= :to)
-               ORDER BY st.startTime ASC
-            """)
-    List<ShowTime> search(@Param("movieId") Long movieId,
-                          @Param("from") LocalDateTime from,
-                          @Param("to") LocalDateTime to);
-
-
-    // Tất cả showtime giao cắt [start, end) (dùng cho search theo range)
-    @Query("""
-            select st from ShowTime st
-            join st.room r
-            left join r.roomType rt
-            where st.startTime < :end
-              and st.endTime   > :start
-              and (:roomTypeId is null or rt.id = :roomTypeId)
-              and (:movieId    is null or st.movie.id = :movieId)
-            order by st.startTime asc
-            """)
-    List<ShowTime> searchOverlap(
-            @Param("start") LocalDateTime start,
-            @Param("end") LocalDateTime end,
-            @Param("roomTypeId") Long roomTypeId,
-            @Param("movieId") Long movieId
-    );
-
-    // Chuyên dụng theo NGÀY: [dayStart, dayEnd)
-    @Query("""
-            select st from ShowTime st
-            join st.room r
-            left join r.roomType rt
-            where st.startTime < :dayEnd
-              and st.endTime   > :dayStart
-              and (:roomTypeId is null or rt.id = :roomTypeId)
-              and (:movieId    is null or st.movie.id = :movieId)
-            order by st.startTime asc
-            """)
-    List<ShowTime> searchByDay(
-            @Param("dayStart") LocalDateTime dayStart,
-            @Param("dayEnd") LocalDateTime dayEnd,
-            @Param("roomTypeId") Long roomTypeId,
-            @Param("movieId") Long movieId
-    );
-
-    @Query("""
-            SELECT st FROM ShowTime st
-             JOIN FETCH st.room r
-             JOIN FETCH st.movie m
-             JOIN FETCH r.roomType rt
-             WHERE
-               (:movieId IS NULL OR m.id = :movieId)
-               AND (:date IS NULL OR CAST(st.startTime AS date) = :date)
-               AND (:roomId IS NULL OR r.id = :roomId)
-               AND (:roomTypeId IS NULL OR rt.id = :roomTypeId)
-               AND (:startTime IS NULL OR st.startTime >= :startTime)
-               AND (:endTime IS NULL OR st.startTime <= :endTime)
-             ORDER BY st.startTime ASC
-            """)
-    List<ShowTime> findShowtimes(
-            @Param("movieId") Long movieId,
-            @Param("date") LocalDate date,
-            @Param("roomId") Long roomId
-    );
-
-    @Query("""
-            SELECT DISTINCT s.startTime, s.endTime 
-            FROM ShowTime s 
+            SELECT new vn.cineshow.dto.response.booking.ShowTimeResponse(
+                s.id,
+                s.startTime,
+                s.endTime,
+                r.id,
+                r.name,
+                rt.name,
+                COUNT(t.id),
+                SUM(CASE WHEN t.status = 'AVAILABLE' THEN 1 ELSE 0 END)
+            )
+            FROM ShowTime s
             JOIN s.room r
+            JOIN r.roomType rt
             JOIN s.tickets t
-            WHERE FUNCTION('DATE', s.startTime) = :targetDate 
-            AND s.movie.id = :movieId 
-            AND t.status = 'AVAILABLE' 
-            AND r.status ='ACTIVE' 
-            ORDER BY s.startTime ASC 
+            WHERE s.movie.id = :movieId
+              AND r.status = 'ACTIVE'
+              AND FUNCTION('DATE', s.startTime) = :targetDate
+              AND (:minStartTime IS NULL OR s.startTime > :minStartTime)
+            GROUP BY s.id, s.startTime, s.endTime, r.id, r.name, rt.name
+            ORDER BY s.startTime ASC
             """)
-    List<Object[]> findDistinctStartAndEndTimesByDate(@Param("targetDate") LocalDate targetDate, @Param("movieId") Long movieId);
+    List<ShowTimeResponse> findUpcomingShowTimes(
+            @Param("targetDate") LocalDate targetDate,
+            @Param("minStartTime") LocalDateTime minStartTime,
+            @Param("movieId") Long movieId);
+
 
     List<ShowTime> findByMovie_IdAndStartTime(Long movieId, LocalDateTime startTime);
 
