@@ -12,7 +12,7 @@ import vn.cineshow.service.TicketPriceService;
 import java.util.List;
 
 @RestController
-@RequestMapping("/ticket-prices")
+    @RequestMapping("/ticket-prices")
 @RequiredArgsConstructor
 public class TicketPriceController {
 

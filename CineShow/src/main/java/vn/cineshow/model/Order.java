@@ -30,8 +30,8 @@ public class Order extends AbstractEntity implements Serializable {
     @Column(nullable = false, unique = true)
     String code;
 
-    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "order")
-    private List<Payment> payments;
+    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "order")
+    private Payment payment;
 
     @OneToMany(cascade = {CascadeType.PERSIST, CascadeType.REMOVE}, fetch = FetchType.LAZY, mappedBy = "order")
     private List<OrderConcession> orderConcession;

@@ -65,13 +65,13 @@ public class BookingController {
 
     }
 
-    @PostMapping("/checkout")
-    public ResponseData<?> checkout( @RequestBody CheckoutRequest request) {
-
-        CheckoutResponse response = bookingService.checkout(email, request);
-
-        return new ResponseData<>(200, "Redirect to payment", response);
-    }
+//    @PostMapping("/checkout")
+//    public ResponseData<?> checkout( @RequestBody CheckoutRequest request) {
+//
+//        CheckoutResponse response = bookingService.checkout(email, request);
+//
+//        return new ResponseData<>(200, "Redirect to payment", response);
+//    }
 
 
 }
