@@ -19,7 +19,6 @@ spring:
       ssl:
         enabled: false
 
-
   #Redis Upstash
   #  data:
   #    redis:

@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import vn.cineshow.enums.TokenType;
+import vn.cineshow.exception.TokenExpiredException;
 import vn.cineshow.service.JWTService;
 
 import java.security.Key;
@@ -88,7 +89,11 @@ public class JWTServiceImpl implements JWTService {
                     .setSigningKey(getKey(type))
                     .build()
                     .parseClaimsJws(token).getBody();
-        } catch (SignatureException | ExpiredJwtException e) {
+        } catch (ExpiredJwtException e) {
+            log.warn("Token expired: {}", e.getMessage());
+            throw new TokenExpiredException("Token expired");
+        } catch (SignatureException e) {
+            log.warn("Invalid token signature: {}", e.getMessage());
             throw new AccessDeniedException("Access denied!, error: " + e.getMessage());
         }
     }

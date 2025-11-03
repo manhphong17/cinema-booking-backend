@@ -14,6 +14,7 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 import vn.cineshow.enums.TokenType;
+import vn.cineshow.exception.TokenExpiredException;
 import vn.cineshow.service.JWTService;
 import vn.cineshow.service.impl.AccountDetailsService;
 
@@ -47,9 +48,13 @@ public class CustomizeRequestFilter extends OncePerRequestFilter {
                     auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                     SecurityContextHolder.getContext().setAuthentication(auth);
                 }
+            } catch (TokenExpiredException e) {
+                log.warn("Token expired: {}", e.getMessage());
+                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Token expired");
+                return;
             } catch (AccessDeniedException e) {
                 log.warn("Invalid JWT: {}", e.getMessage());
-                response.sendError(HttpServletResponse.SC_FORBIDDEN, "Invalid or expired JWT");
+                response.sendError(HttpServletResponse.SC_FORBIDDEN, "Invalid JWT");
                 return;
             }
         }

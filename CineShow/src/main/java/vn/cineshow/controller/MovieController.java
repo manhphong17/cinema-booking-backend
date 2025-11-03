@@ -9,11 +9,13 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import vn.cineshow.dto.request.movie.*;
 import vn.cineshow.dto.response.PageResponse;
 import vn.cineshow.dto.response.ResponseData;
 import vn.cineshow.dto.response.movie.*;
+import vn.cineshow.enums.UserRole;
 import vn.cineshow.service.MovieService;
 
 import java.time.LocalDate;
@@ -36,6 +38,7 @@ public class MovieController {
             description = "Send a request via this API to get movies list with filter by many columns and sort by"
     )
     @GetMapping("/list-with-filter-many-column-and-sortBy")
+    @PreAuthorize("hasAuthority('OPERATION')")
     public ResponseData<?> getMoviesListWithFilterByManyColumnAndSortBy(
             @RequestParam(required = false) String keyword,
             @RequestParam(required = false) String genre,
@@ -77,6 +80,7 @@ public class MovieController {
             description = "Send a request via this API to get all languages"
     )
     @GetMapping("/languages")
+    @PreAuthorize("hasAuthority('OPERATION')")
     public ResponseData<List<LanguageResponse>> getAllLanguage() {
         log.info("Request getAllLanguages");
 
@@ -102,6 +106,7 @@ public class MovieController {
             summary = "Get all countries",
             description = "Send a request via this API to get all countries"
     )
+    @PreAuthorize("hasAuthority('OPERATION')")
     @GetMapping("/countries")
     public ResponseData<List<CountryResponse>> getAllCountries() {
         log.info("Request get all country");
@@ -117,6 +122,7 @@ public class MovieController {
             description = "Send a request via this API to get movie by id"
     )
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyAuthority('CUSTOMER','OPERATION')")
     public ResponseData<OperatorMovieOverviewResponse> getMovieById(@PathVariable long id) {
         log.info("Request get movie by id: {}", id);
 
@@ -130,6 +136,7 @@ public class MovieController {
             summary = "Create a movie",
             description = "Send a request via this API to create a new movie"
     )
+    @PreAuthorize("hasAuthority('OPERATION')")
     @PostMapping(value = "/add", consumes = "multipart/form-data")
     public ResponseData<Long> createMovie(@Valid @ModelAttribute MovieCreationRequest request) {
         log.info("Request create movie: {}", request);
@@ -144,6 +151,7 @@ public class MovieController {
             summary = "Update a movie by id",
             description = "Send a request via this API to update a movie by id"
     )
+    @PreAuthorize("hasAuthority('OPERATION')")
     @PutMapping(value = "/update/{id}")
     public ResponseData<?> updateSomeFailedById(@PathVariable long id, @Valid @RequestBody MovieUpdateBasicRequest request) {
 
@@ -157,6 +165,7 @@ public class MovieController {
             summary = "Update complete movie information by id",
             description = "Send a request via this API to update complete movie information by id including poster and banner files"
     )
+    @PreAuthorize("hasAuthority('OPERATION')")
     @PutMapping(value = "/update-full/{movieId}", consumes = {"multipart/form-data"})
     public ResponseData<?> updateFullMovieById(
             @PathVariable @Min(1) long movieId,
@@ -172,6 +181,7 @@ public class MovieController {
             summary = "Soft delete movie",
             description = "Send a request via this API to soft delete movie"
     )
+    @PreAuthorize("hasAuthority('OPERATION')")
     @PatchMapping("/delete/{id}")
     public ResponseData<?> softDeleteMovie(@PathVariable long id) {
         log.info("Request delete movie: {}", id);
@@ -184,6 +194,7 @@ public class MovieController {
             summary = "Update feature of movie",
             description = "Send a request via this API to update feature of movie"
     )
+    @PreAuthorize("hasAuthority('OPERATION')")
     @PatchMapping("/update-feature/{id}")
     public ResponseData<?> updateFeatureMovie(@PathVariable long id, @RequestBody Map<String, Boolean> request) {
         boolean isFeatured = request.get("isFeatured");
@@ -196,6 +207,7 @@ public class MovieController {
             summary = "Get top movie (now showing/ up coming) to show in homepage",
             description = "Send a request via this API to get top movie to show in homepage"
     )
+    @PreAuthorize("hasAnyAuthority('CUSTOMER','OPERATION')")
     @GetMapping("/top/{limit}")
     public ResponseData<List<OperatorMovieOverviewResponse>> getTopMoviesForHomePage(@RequestParam @NotNull String movieStatus, @Min(4) @PathVariable int limit) {
 
@@ -210,6 +222,7 @@ public class MovieController {
             summary = "Get movie banners to show in homepage",
             description = "Send a request via this API to get movie banners to show in homepage"
     )
+    @PreAuthorize("hasAnyAuthority('CUSTOMER','OPERATION')")
     @GetMapping("/banners")
     public ResponseData<List<BannerResponse>> getBanners() {
 
@@ -223,6 +236,7 @@ public class MovieController {
             summary = "Used by end users to browse and select movies for booking",
             description = "Get movie banners to display on homepage for users before booking."
     )
+    @PreAuthorize("hasAnyAuthority('OPERATION','CUSTOMER')")
     @PostMapping("/search")
     public ResponseData<?> getMovieListToBooking(@RequestBody UserSearchMovieRequest request) {
 
@@ -238,6 +252,7 @@ public class MovieController {
             description = "Returns list of movies that have showtimes scheduled on the given date. " +
                     "Can filter by movie name keyword. Used by staff for ticket selection."
     )
+    @PreAuthorize("hasAnyAuthority('CUSTOMER','OPERATION','STAFF')")
     @GetMapping("/with-showtimes/{date}")
     public ResponseData<List<StaffMovieListResponse>> getMoviesWithShowtimesOnDate(
             @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
