@@ -24,6 +24,8 @@ management:
     health:
       show-details: ALWAYS
 
+qr:
+  secret: your-secure-256-bit-secret-key-change-this-in-production
 
 logging:
   level:
