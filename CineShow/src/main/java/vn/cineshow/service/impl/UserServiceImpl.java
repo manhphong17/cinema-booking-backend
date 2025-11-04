@@ -1,8 +1,9 @@
 package vn.cineshow.service.impl;
 
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import lombok.RequiredArgsConstructor;
 import vn.cineshow.dto.request.UpdateUserRequest;
 import vn.cineshow.dto.response.UserResponse;
 import vn.cineshow.exception.ResourceNotFoundException;
@@ -35,6 +36,12 @@ public class UserServiceImpl implements UserService {
         User user = getUserByEmail(email);
         user.setName(request.getName());
         user.setAddress(request.getAddress());
+        if (request.getGender() != null) {
+            user.setGender(request.getGender());
+        }
+        if (request.getDateOfBirth() != null) {
+            user.setDateOfBirth(request.getDateOfBirth());
+        }
 
         userRepository.save(user);
         return mapToResponse(user);
@@ -52,6 +59,8 @@ public class UserServiceImpl implements UserService {
                 .email(user.getAccount() != null ? user.getAccount().getEmail() : null)
                 .address(user.getAddress())
                 .loyalPoint(user.getLoyalPoint())
+                .gender(user.getGender())
+                .dateOfBirth(user.getDateOfBirth())
                 .build();
     }
 }

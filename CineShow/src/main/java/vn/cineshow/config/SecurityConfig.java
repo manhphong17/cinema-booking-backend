@@ -51,6 +51,22 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http,
                                            CustomAuthenticationProvider customAuthenticationProvider) throws Exception {
+
+        List<String> publicEndpoints = List.of(
+                "/auth/**",
+                "/oauth2/**",
+                "/swagger-ui/**",
+                "/v3/api-docs/**",
+                "/public/**",
+                "/actuator/**",
+                "/ws/**",
+                "/ws-native/**",
+                "/movies/banners",
+                "/movies/top/**",
+                "/movies/movie-genres",
+                "/movies/*"
+        );
+
         http
                 //1. disable CSRF vi API la stateless
                 .csrf(AbstractHttpConfigurer::disable)
@@ -62,14 +78,7 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
-                                "/auth/**",
-                                "/oauth2/**",
-                                "/swagger-ui/**",
-                                "/v3/api-docs/**",
-                                "/public/**",
-                                "/actuator/**",
-                                "/ws/**",
-                                "/ws-native/**"
+                                publicEndpoints.toArray(new String[0])
                         ).permitAll()
                         .anyRequest().authenticated()
                 )

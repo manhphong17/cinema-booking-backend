@@ -1,9 +1,10 @@
 package vn.cineshow.service.impl;
 
-import lombok.AccessLevel;
-import lombok.RequiredArgsConstructor;
-import lombok.experimental.FieldDefaults;
-import lombok.extern.slf4j.Slf4j;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -16,12 +17,21 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
 import vn.cineshow.dto.request.EmailRegisterRequest;
 import vn.cineshow.dto.request.SignInRequest;
 import vn.cineshow.dto.response.SignInResponse;
 import vn.cineshow.dto.response.TokenResponse;
 import vn.cineshow.enums.AccountStatus;
-import vn.cineshow.exception.*;
+import vn.cineshow.exception.AppException;
+import vn.cineshow.exception.AuthenticatedException;
+import vn.cineshow.exception.DuplicateResourceException;
+import vn.cineshow.exception.ErrorCode;
+import vn.cineshow.exception.ResourceNotFoundException;
 import vn.cineshow.model.Account;
 import vn.cineshow.model.RefreshToken;
 import vn.cineshow.model.Role;
@@ -33,11 +43,6 @@ import vn.cineshow.service.AuthenticationService;
 import vn.cineshow.service.JWTService;
 import vn.cineshow.service.OtpService;
 import vn.cineshow.service.RefreshTokenService;
-
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -122,6 +127,16 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 .roleName(roleNames)
                 .email(account.getEmail())
                 .build();
+    }
+
+    @Override
+    @Transactional
+    public void logout(String refreshToken) {
+        if (refreshToken != null && !refreshToken.isBlank()) {
+            refreshTokenRepository.findByToken(refreshToken)
+                    .ifPresent(refreshTokenRepository::delete);
+            log.info("Refresh token deleted for logout");
+        }
     }
 
 

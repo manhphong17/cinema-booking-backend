@@ -1,5 +1,17 @@
 package vn.cineshow.controller;
 
+import java.time.Duration;
+
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseCookie;
+import org.springframework.web.bind.annotation.CookieValue;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
@@ -7,10 +19,6 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseCookie;
-import org.springframework.web.bind.annotation.*;
 import vn.cineshow.dto.request.EmailRegisterRequest;
 import vn.cineshow.dto.request.SignInRequest;
 import vn.cineshow.dto.response.ResponseData;
@@ -20,8 +28,6 @@ import vn.cineshow.exception.IllegalParameterException;
 import vn.cineshow.service.AuthenticationService;
 import vn.cineshow.service.OtpService;
 import vn.cineshow.service.UserService;
-
-import java.time.Duration;
 
 @RestController
 @RequiredArgsConstructor
@@ -75,6 +81,30 @@ public class AuthenticationController {
         return new ResponseData<>(HttpStatus.OK.value(),
                 "Token refreshed successfully",
                 tokenResponse
+        );
+    }
+
+    @Operation(summary = "Logout", description = "Logout user and delete refresh token")
+    @PostMapping("/log-out")
+    public ResponseData<String> logout(@CookieValue(value = "refreshToken", required = false) String refreshToken, HttpServletResponse response) {
+        log.info("Logout request");
+        authenticationService.logout(refreshToken);
+
+        // Xóa cookie refreshToken bằng cách set maxAge = 0
+        ResponseCookie cookie = ResponseCookie.from("refreshToken", "")
+                .httpOnly(true)
+                .secure(false)
+                .path("/")
+                .maxAge(Duration.ZERO)
+                .sameSite("Lax")
+                .build();
+
+        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+        log.info("User logged out successfully, refresh token deleted");
+
+        return new ResponseData<>(HttpStatus.OK.value(),
+                "Logout successful",
+                null
         );
     }
 
