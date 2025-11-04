@@ -166,7 +166,6 @@ public class AuthenticationController {
         );
     }
 
-    // Quên mật khẩu → gửi OTP
     @PostMapping("/forgot-password")
     public ResponseData<?> forgotPassword(@RequestBody @Valid ForgotPasswordRequest request) {
         boolean sent = accountService.forgotPassword(request);
@@ -178,7 +177,6 @@ public class AuthenticationController {
                 "OTP sent to your email", null);
     }
 
-    // B3: Verify OTP khi reset password
     @PostMapping("/verify-otp-reset")
     public ResponseData<VerifyOtpResetResponse> verifyOtpReset(@RequestBody @Valid OtpVerifyDTO req) {
         Optional<String> tokenOpt = accountService.verifyOtpForReset(req.email(), req.otpCode());
@@ -190,7 +188,6 @@ public class AuthenticationController {
                 new VerifyOtpResetResponse(tokenOpt.get()));
     }
 
-    // B4: Đặt lại mật khẩu bằng OTP
     @PostMapping("/reset-password")
     public ResponseData<?> resetPassword(@RequestBody @Valid ResetPasswordRequest request) {
         boolean success = accountService.resetPassword(request);
