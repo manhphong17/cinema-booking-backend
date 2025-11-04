@@ -60,6 +60,4 @@ public class Room extends AbstractEntity implements Serializable {
     @Column(length = 500)
     String description;
 
-    @Column(length = 100)
-    String screenType;
 }
