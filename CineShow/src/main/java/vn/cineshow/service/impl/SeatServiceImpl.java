@@ -323,7 +323,6 @@ public class SeatServiceImpl implements SeatService {
                 .capacity(room.getCapacity())
                 .status(room.getStatus() == null ? null : room.getStatus().name()) // enum -> String
                 .description(room.getDescription())
-                .screenType(room.getScreenType())
                 .createdAt(room.getCreatedAt())
                 .updatedAt(room.getUpdatedAt())
                 .build();

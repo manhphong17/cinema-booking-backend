@@ -96,7 +96,6 @@ public class RoomServiceImpl implements RoomService {
         entity.setStatus(RoomStatus.valueOf(request.getStatus().trim().toUpperCase()));
 
         entity.setDescription(request.getDescription());
-        entity.setScreenType(request.getScreenType());
 
         Room saved = roomRepository.save(entity);
         return toDTO(saved);
@@ -123,7 +122,6 @@ public class RoomServiceImpl implements RoomService {
         entity.setStatus(RoomStatus.valueOf(request.getStatus().trim().toUpperCase()));
 
         entity.setDescription(request.getDescription());
-        entity.setScreenType(request.getScreenType());
 
         Room saved = roomRepository.save(entity);
         return toDTO(saved);
@@ -181,7 +179,6 @@ public class RoomServiceImpl implements RoomService {
                 // Enum -> String cho DTO
                 .status(room.getStatus() == null ? null : room.getStatus().name())
                 .description(room.getDescription())
-                .screenType(room.getScreenType())
                 .createdAt(room.getCreatedAt())
                 .updatedAt(room.getUpdatedAt())
                 .build();
