@@ -61,7 +61,10 @@ public enum ErrorCode {
     ORDER_CANCELED(3104, "Đơn hàng đã bị huỷ"),
     QR_EXPIRED(3105, "Mã QR đã hết hạn"),
     QR_REGENERATE_LIMIT(3106, "Tạo lại QR quá giới hạn"),
-    SHOWTIME_PASSED(3107, "Suất chiếu đã diễn ra");
+    SHOWTIME_PASSED(3107, "Suất chiếu đã diễn ra"),
+    
+    //Password
+    PASSWORD_TOO_WEAK(1020, "Mật khẩu quá yếu");
     private final int code;
     private final String message;
 

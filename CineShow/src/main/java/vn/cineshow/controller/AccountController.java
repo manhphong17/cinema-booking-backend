@@ -4,6 +4,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import vn.cineshow.dto.request.ChangePasswordRequest;
 import vn.cineshow.dto.request.EmailRegisterRequest;
 import vn.cineshow.dto.request.ForgotPasswordRequest;
 import vn.cineshow.dto.request.OtpVerifyDTO;
@@ -94,6 +95,16 @@ private final AuthenticationService authenticationService;
         }
         return new ResponseData<>(HttpStatus.OK.value(),
                 "Password reset successfully", null);
+    }
+
+    // Đổi mật khẩu cho user đã đăng nhập
+    @PostMapping("/{userId}/change-password")
+    public ResponseData<?> changePassword(
+            @PathVariable Long userId,
+            @RequestBody @Valid ChangePasswordRequest request) {
+        accountService.changePassword(userId, request);
+        return new ResponseData<>(HttpStatus.OK.value(),
+                "Password changed successfully", null);
     }
 
 }

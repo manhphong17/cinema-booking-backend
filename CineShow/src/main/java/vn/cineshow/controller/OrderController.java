@@ -36,6 +36,8 @@ import java.util.*;
 
 @RestController
 @RequiredArgsConstructor
+@RequestMapping("/orders")
+
 public class OrderController {
 
     private final OrderRepository orderRepository;
@@ -58,6 +60,7 @@ public class OrderController {
             return OrderListItemResponse.builder()
                     .orderId(o.getId())
                     .createdAt(o.getCreatedAt())
+                    .userName(o.getUser() != null ? o.getUser().getName() : null)
                     .movieName(movie)
                     .showtimeStart(start)
                     .roomName(room)
@@ -363,6 +366,7 @@ public class OrderController {
             return OrderListItemResponse.builder()
                     .orderId(o.getId())
                     .createdAt(o.getCreatedAt())
+                    .userName(o.getUser() != null ? o.getUser().getName() : null)
                     .movieName(movie)
                     .showtimeStart(start)
                     .code(o.getCode())                     // ⬅️ thêm dòng này
@@ -407,7 +411,13 @@ public class OrderController {
         java.time.LocalDateTime start = req.getDate().atStartOfDay();
         java.time.LocalDateTime end = start.plusDays(1);
 
-        Page<Order> pageData = orderRepository.findByCreatedAtBetween(start, end, pageable);
+        // Filter by userId first if provided, then by date
+        Page<Order> pageData;
+        if (req.getUserId() != null) {
+            pageData = orderRepository.findByUser_IdAndCreatedAtBetween(req.getUserId(), start, end, pageable);
+        } else {
+            pageData = orderRepository.findByCreatedAtBetween(start, end, pageable);
+        }
 
         List<OrderListItemResponse> items = pageData.getContent().stream().map(o -> {
             String movie = safeMovieName(o);
@@ -419,6 +429,7 @@ public class OrderController {
             return OrderListItemResponse.builder()
                     .orderId(o.getId())
                     .createdAt(o.getCreatedAt())
+                    .userName(o.getUser() != null ? o.getUser().getName() : null)
                     .movieName(movie)
                     .showtimeStart(st)
                     .roomName(room)

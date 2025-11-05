@@ -9,6 +9,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
+import vn.cineshow.dto.request.ChangePasswordRequest;
 import vn.cineshow.dto.request.ForgotPasswordRequest;
 import vn.cineshow.dto.request.ResetPasswordRequest;
 import vn.cineshow.model.Account;
@@ -16,6 +17,8 @@ import vn.cineshow.model.PasswordResetToken;
 import vn.cineshow.repository.AccountRepository;
 import vn.cineshow.repository.PasswordResetTokenRepository;
 import vn.cineshow.repository.RefreshTokenRepository;
+import vn.cineshow.exception.AppException;
+import vn.cineshow.exception.ErrorCode;
 import vn.cineshow.service.AccountService;
 import vn.cineshow.service.OtpService;
 
@@ -44,6 +47,28 @@ class AccountServiceImpl implements AccountService {
 
     private static String base64Url(byte[] b) {
         return Base64.getUrlEncoder().withoutPadding().encodeToString(b);
+    }
+
+    /**
+     * Validate password strength
+     * Password is considered weak if:
+     * - Length < 8 characters
+     * - No uppercase letter
+     * - No lowercase letter
+     * - No digit
+     */
+    private void validatePasswordStrength(String password) {
+        if (password.length() < 8) {
+            throw new AppException(ErrorCode.PASSWORD_TOO_WEAK);
+        }
+        
+        boolean hasUpperCase = password.chars().anyMatch(Character::isUpperCase);
+        boolean hasLowerCase = password.chars().anyMatch(Character::isLowerCase);
+        boolean hasDigit = password.chars().anyMatch(Character::isDigit);
+        
+        if (!hasUpperCase || !hasLowerCase || !hasDigit) {
+            throw new AppException(ErrorCode.PASSWORD_TOO_WEAK);
+        }
     }
 
 
@@ -190,5 +215,52 @@ class AccountServiceImpl implements AccountService {
 
         // (tùy chọn) Thu hồi session/refresh tại đây nếu bạn hỗ trợ
         return true;
+    }
+
+    // -----------------------------------------------------------------------------------
+    // Change password: Đổi mật khẩu cho user đã đăng nhập (dựa trên user_id)
+    // -----------------------------------------------------------------------------------
+    @Override
+    @Transactional
+    public void changePassword(Long userId, ChangePasswordRequest request) {
+        // 1) Validate input
+        if (request == null || 
+            request.getCurrentPassword() == null || request.getCurrentPassword().isBlank() ||
+            request.getNewPassword() == null || request.getNewPassword().isBlank() ||
+            request.getConfirmPassword() == null || request.getConfirmPassword().isBlank()) {
+            throw new ResponseStatusException(BAD_REQUEST, "Tham số không hợp lệ");
+        }
+
+        // 2) Check if new password matches confirm password
+        if (!request.getNewPassword().equals(request.getConfirmPassword())) {
+            throw new ResponseStatusException(BAD_REQUEST, "Mật khẩu mới và xác nhận mật khẩu không khớp");
+        }
+
+        // 3) Check if new password is same as current password
+        if (request.getCurrentPassword().equals(request.getNewPassword())) {
+            throw new ResponseStatusException(BAD_REQUEST, "Mật khẩu mới không được trùng với mật khẩu hiện tại");
+        }
+
+        // 4) Find account by user_id
+        Optional<Account> accOpt = accountRepository.findById(userId);
+        if (!accOpt.isPresent()) {
+            throw new UsernameNotFoundException("Không tìm thấy người dùng");
+        }
+
+        Account account = accOpt.get();
+
+        // 5) Verify current password
+        if (!passwordEncoder.matches(request.getCurrentPassword(), account.getPassword())) {
+            throw new ResponseStatusException(BAD_REQUEST, "Mật khẩu hiện tại không đúng");
+        }
+
+        // 6) Validate new password strength
+        validatePasswordStrength(request.getNewPassword());
+
+        // 7) Update password
+        account.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        accountRepository.save(account);
+
+        log.info("Password changed successfully for user: {}", userId);
     }
 }

@@ -41,4 +41,12 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
             "tickets.showTime.room"
     })
     Page<Order> findByCreatedAtBetween(LocalDateTime start, LocalDateTime end, Pageable pageable);
+
+    @EntityGraph(attributePaths = {
+            "user",
+            "tickets.seat",
+            "tickets.showTime.movie",
+            "tickets.showTime.room"
+    })
+    Page<Order> findByUser_IdAndCreatedAtBetween(Long userId, LocalDateTime start, LocalDateTime end, Pageable pageable);
 }
