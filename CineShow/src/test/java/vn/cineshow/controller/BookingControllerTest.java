@@ -6,11 +6,20 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.mockito.ArgumentCaptor;
+import vn.cineshow.dto.request.booking.ConcessionListRequest;
+import vn.cineshow.dto.request.booking.ConcessionOrderRequest;
 import vn.cineshow.dto.response.booking.BookingSeatsResponse;
+import vn.cineshow.dto.response.booking.SeatHold;
 import vn.cineshow.dto.response.booking.ShowTimeResponse;
 import vn.cineshow.service.BookingService;
+import vn.cineshow.service.JWTService;
+import vn.cineshow.service.OrderSessionService;
 import vn.cineshow.service.SeatHoldService;
+import vn.cineshow.service.impl.AccountDetailsService;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -18,9 +27,11 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -36,6 +47,18 @@ class BookingControllerTest {
 
     @MockBean
     private SeatHoldService seatHoldService;
+
+    @MockBean
+    private OrderSessionService orderSessionService;
+
+    @MockBean
+    private JWTService jwtService;
+
+    @MockBean
+    private AccountDetailsService accountDetailsService;
+
+    @Autowired
+    private ObjectMapper objectMapper;
 
     @Test
     @DisplayName("GET /bookings/movies/{movieId}/show-times/{date} should return showtimes by movie and date")
@@ -133,6 +156,58 @@ class BookingControllerTest {
                 .andExpect(jsonPath("$.data").value(300L));
 
         verify(seatHoldService).getExpire(1L, 1L);
+    }
+
+    @Test
+    @DisplayName("GET /bookings/show-times/{showtimeId}/users/{userId}/seat-hold should return current seat hold")
+    void getCurrentSeatHold_shouldReturnSeatHold() throws Exception {
+        SeatHold seatHold = SeatHold.builder()
+                .showtimeId(1L)
+                .userId(1L)
+                .seats(Collections.emptyList())
+                .build();
+
+        when(seatHoldService.getCurrentHold(1L, 1L)).thenReturn(seatHold);
+
+        mockMvc.perform(get("/bookings/show-times/1/users/1/seat-hold"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value(200))
+                .andExpect(jsonPath("$.message").value("Get current seat hold successfully"))
+                .andExpect(jsonPath("$.data.showtimeId").value(1L))
+                .andExpect(jsonPath("$.data.userId").value(1L));
+
+        verify(seatHoldService).getCurrentHold(1L, 1L);
+    }
+
+    @Test
+    @DisplayName("POST /bookings/order-session/concessions should add concessions to order session")
+    void addConcessionListToOrderSession_shouldAddConcessions() throws Exception {
+        ConcessionOrderRequest concessionOrder = ConcessionOrderRequest.builder()
+                .comboId(1L)
+                .quantity(2)
+                .build();
+
+        ConcessionListRequest request = ConcessionListRequest.builder()
+                .showtimeId(1L)
+                .userId(1L)
+                .concessions(Arrays.asList(concessionOrder))
+                .build();
+
+        doNothing().when(orderSessionService).addOrUpdateCombos(any(ConcessionListRequest.class));
+
+        mockMvc.perform(post("/bookings/order-session/concessions")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value(200))
+                .andExpect(jsonPath("$.message").value("Add concessions to order session successfully"));
+
+        ArgumentCaptor<ConcessionListRequest> captor = ArgumentCaptor.forClass(ConcessionListRequest.class);
+        verify(orderSessionService, times(1)).addOrUpdateCombos(captor.capture());
+        
+        assertThat(captor.getValue().getShowtimeId()).isEqualTo(1L);
+        assertThat(captor.getValue().getUserId()).isEqualTo(1L);
+        assertThat(captor.getValue().getConcessions()).hasSize(1);
     }
 }
 

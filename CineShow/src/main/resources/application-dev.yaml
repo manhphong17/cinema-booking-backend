@@ -10,23 +10,23 @@ spring:
   #      host: localhost
   #      port: 6379
 
+#  data:
+#    redis:
+#      host: redis-16466.c1.ap-southeast-1-1.ec2.redns.redis-cloud.com
+#      port: 16466
+#      username: default
+#      password: 9aCamrhrRMWSj12qrRaFmF09EWIwE25C
+#      ssl:
+#        enabled: false
+
+#  Redis Upstash
   data:
     redis:
-      host: redis-16466.c1.ap-southeast-1-1.ec2.redns.redis-cloud.com
-      port: 16466
-      username: default
-      password: 9aCamrhrRMWSj12qrRaFmF09EWIwE25C
+      host: genuine-mastiff-5696.upstash.io
+      port: 6379
+      password: ARZAAAImcDI5MzY5ZTcwYTE5ZGQ0OWQ5ODRmOGUyMjUyNTVlNjA0MXAyNTY5Ng
       ssl:
-        enabled: false
-
-  #Redis Upstash
-  #  data:
-  #    redis:
-  #      host: genuine-mastiff-5696.upstash.io
-  #      port: 6379
-  #      password: ARZAAAImcDI5MzY5ZTcwYTE5ZGQ0OWQ5ODRmOGUyMjUyNTVlNjA0MXAyNTY5Ng
-  #      ssl:
-  #        enabled: true
+        enabled: true
 
   #config oAuth 2.0
   security:
@@ -99,7 +99,7 @@ spring:
   #        dialect: org.hibernate.dialect.SQLServerDialect
   sendgrid:
     api-key: ${SENDGRID_API_KEY}
-    from-email: "manhphongg6572@gmail.com"
+    from-email: "manhphongchy17@gmail.com"
 
 
 app:
