@@ -209,6 +209,10 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             account.setUser(user);
             account.setPassword(encoder.encode(req.password()));
             account.setStatus(AccountStatus.PENDING); // reset lại trạng thái pending nếu cần
+            AccountProvider provider =AccountProvider.builder()
+                    .provider(AuthProvider.LOCAL)
+                    .account(account)
+                    .build();
             accountRepository.save(account);
 
             otpService.sendOtp(req.email(), req.name());
