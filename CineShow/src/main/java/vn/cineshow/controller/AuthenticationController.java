@@ -84,30 +84,6 @@ public class AuthenticationController {
         );
     }
 
-    @Operation(summary = "Logout", description = "Logout user and delete refresh token")
-    @PostMapping("/log-out")
-    public ResponseData<String> logout(@CookieValue(value = "refreshToken", required = false) String refreshToken, HttpServletResponse response) {
-        log.info("Logout request");
-        authenticationService.logout(refreshToken);
-
-        // Xóa cookie refreshToken bằng cách set maxAge = 0
-        ResponseCookie cookie = ResponseCookie.from("refreshToken", "")
-                .httpOnly(true)
-                .secure(false)
-                .path("/")
-                .maxAge(Duration.ZERO)
-                .sameSite("Lax")
-                .build();
-
-        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
-        log.info("User logged out successfully, refresh token deleted");
-
-        return new ResponseData<>(HttpStatus.OK.value(),
-                "Logout successful",
-                null
-        );
-    }
-
     @Operation(summary = "Resend verification email", description = "Resend account verification email")
     @PostMapping("/resend-verification")
     public ResponseData<String> resendVerification(@RequestParam @Email String email) {
@@ -166,6 +142,7 @@ public class AuthenticationController {
         );
     }
 
+    // Quên mật khẩu → gửi OTP
     @PostMapping("/forgot-password")
     public ResponseData<?> forgotPassword(@RequestBody @Valid ForgotPasswordRequest request) {
         boolean sent = accountService.forgotPassword(request);
@@ -177,6 +154,7 @@ public class AuthenticationController {
                 "OTP sent to your email", null);
     }
 
+    // B3: Verify OTP khi reset password
     @PostMapping("/verify-otp-reset")
     public ResponseData<VerifyOtpResetResponse> verifyOtpReset(@RequestBody @Valid OtpVerifyDTO req) {
         Optional<String> tokenOpt = accountService.verifyOtpForReset(req.email(), req.otpCode());
@@ -188,6 +166,7 @@ public class AuthenticationController {
                 new VerifyOtpResetResponse(tokenOpt.get()));
     }
 
+    // B4: Đặt lại mật khẩu bằng OTP
     @PostMapping("/reset-password")
     public ResponseData<?> resetPassword(@RequestBody @Valid ResetPasswordRequest request) {
         boolean success = accountService.resetPassword(request);

@@ -7,6 +7,7 @@ import java.util.List;
 
 @Data
 public class OrderCreatedAtSearchRequest {
+    private Long userId; // optional: filter by user
     private LocalDate date; // required: search by this day
     private Integer page;
     private Integer size;

@@ -1,7 +1,5 @@
 package vn.cineshow.dto.response;
 
-import java.time.LocalDate;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -18,6 +16,6 @@ public class UserResponse {
     private String email;
     private String address;
     private int loyalPoint;
+    private String avatar;
     private Gender gender;
-    private LocalDate dateOfBirth;
 }
