@@ -30,6 +30,7 @@ import vn.cineshow.dto.response.booking.BookingSeatsResponse;
 import vn.cineshow.dto.response.booking.SeatHold;
 import vn.cineshow.dto.response.booking.ShowTimeResponse;
 import vn.cineshow.dto.response.booking.TicketDetailResponse;
+import vn.cineshow.dto.response.payment.PaymentMethodDTO;
 import vn.cineshow.service.BookingService;
 import vn.cineshow.service.OrderSessionService;
 import vn.cineshow.service.SeatHoldService;
@@ -148,6 +149,16 @@ public class BookingController {
 
         List<TicketDetailResponse> result = bookingService.getTicketDetailsByIds(idList);
         return new ResponseData<>(HttpStatus.OK.value(), "Get ticket details successfully", result);
+    }
+
+    @GetMapping("/payment-methods")
+    public ResponseData<List<PaymentMethodDTO>> getPaymentMethods() {
+        List<PaymentMethodDTO> methods = bookingService.getActivePaymentMethods();
+        return new ResponseData<>(
+                HttpStatus.OK.value(),
+                "Lấy danh sách phương thức thanh toán thành công",
+                methods
+        );
     }
 
 }

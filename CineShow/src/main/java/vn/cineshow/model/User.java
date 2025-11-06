@@ -20,7 +20,6 @@ import java.util.List;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class User extends AbstractEntity implements Serializable {
 
-
     String name;
 
     String address;

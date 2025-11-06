@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import vn.cineshow.config.VNPayProperties;
 import vn.cineshow.dto.redis.OrderSessionDTO;
 import vn.cineshow.dto.request.payment.CheckoutRequest;
+import vn.cineshow.dto.response.payment.PaymentMethodDTO;
 import vn.cineshow.enums.OrderStatus;
 import vn.cineshow.enums.PaymentStatus;
 import vn.cineshow.enums.TicketStatus;
@@ -45,8 +46,7 @@ public class VNPayServiceImpl implements VNPayService {
     private final TicketRepository ticketRepository;
     private final UserRepository userRepository;
     private final RedisService redisService;
-    private final SeatHoldServiceImpl seatHoldServiceImpl;
-    private final OrderSessionServiceImpl orderSessionServiceImpl;
+
 
     @Value("${booking.ttl.payment}")
     long HOLD_DURATION;
@@ -102,7 +102,7 @@ public class VNPayServiceImpl implements VNPayService {
 
             // 5️⃣ Tạo Payment
             PaymentMethod paymentMethod = paymentMethodRepository
-                    .findByMethodNameContainingIgnoreCase(checkoutRequest.getPaymentMethod())
+                    .findByPaymentCodeIgnoreCase(checkoutRequest.getPaymentCode())
                     .orElseThrow(() -> new AppException(ErrorCode.PAYMENT_METHOD_NOT_FOUND));
 
             Payment payment = Payment.builder()
@@ -156,6 +156,9 @@ public class VNPayServiceImpl implements VNPayService {
             vnp_Params.put("vnp_Command", vnpayProperties.getCommand());
             vnp_Params.put("vnp_TmnCode", vnpayProperties.getTmnCode());
             vnp_Params.put("vnp_Amount", String.valueOf((long) (payment.getAmount() * 100)));
+            if (!"CASH".equalsIgnoreCase(paymentMethod.getPaymentCode())) {
+                vnp_Params.put("vnp_BankCode", paymentMethod.getPaymentCode());
+            }
             vnp_Params.put("vnp_CurrCode", "VND");
             vnp_Params.put("vnp_TxnRef", order.getCode());
             vnp_Params.put("vnp_OrderInfo", orderInfo);
@@ -426,6 +429,7 @@ public class VNPayServiceImpl implements VNPayService {
         }
     }
 
+
     private  String hmacSHA512(String key, String data) {
         try {
             Mac hmac512 = Mac.getInstance("HmacSHA512");
@@ -500,4 +504,7 @@ public class VNPayServiceImpl implements VNPayService {
         }
         return isValid;
     }
+
+
+
 }

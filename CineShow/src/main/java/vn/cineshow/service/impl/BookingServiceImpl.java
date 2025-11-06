@@ -9,15 +9,14 @@ import org.springframework.stereotype.Service;
 import vn.cineshow.dto.redis.OrderSessionRequest;
 import vn.cineshow.dto.request.booking.SeatSelectRequest;
 import vn.cineshow.dto.response.booking.*;
+import vn.cineshow.dto.response.payment.PaymentMethodDTO;
 import vn.cineshow.enums.SeatStatus;
 import vn.cineshow.enums.TicketStatus;
 import vn.cineshow.exception.AppException;
 import vn.cineshow.exception.ErrorCode;
-import vn.cineshow.model.Room;
-import vn.cineshow.model.Seat;
-import vn.cineshow.model.ShowTime;
-import vn.cineshow.model.Ticket;
+import vn.cineshow.model.*;
 import vn.cineshow.repository.MovieRepository;
+import vn.cineshow.repository.PaymentMethodRepository;
 import vn.cineshow.repository.ShowTimeRepository;
 import vn.cineshow.repository.TicketRepository;
 import vn.cineshow.service.BookingService;
@@ -52,6 +51,7 @@ public class BookingServiceImpl implements BookingService {
     SimpMessagingTemplate messagingTemplate;
     TicketRepository ticketRepository;
     OrderSessionService orderSessionService;
+    PaymentMethodRepository paymentMethodRepository;
 
     @Override
     public List<ShowTimeResponse> getShowTimesByMovieAndDay(Long movieId, LocalDate date) {
@@ -298,5 +298,17 @@ public class BookingServiceImpl implements BookingService {
                 })
                 .toList();
 
+    }
+
+    @Override
+    public List<PaymentMethodDTO> getActivePaymentMethods() {
+        List<PaymentMethod> methods = paymentMethodRepository.findByIsActiveTrue();
+        return methods.stream()
+                .map(m -> PaymentMethodDTO.builder()
+                        .paymentName(m.getMethodName())
+                        .paymentCode(m.getPaymentCode())
+                        .imageUrl(m.getImageUrl())
+                        .build())
+                .collect(Collectors.toList());
     }
 }

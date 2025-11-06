@@ -157,7 +157,7 @@ vnpay:
 booking:
   ttl:
     default: 360    # 6 phút - chọn ghế
-    payment: 900    #15 ' giữ ghế cho thanh toán
+    payment: 600    #10 ' giữ ghế cho thanh toán
 
 
     

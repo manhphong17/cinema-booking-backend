@@ -21,7 +21,7 @@ public class RoomTypeController {
     private final RoomTypeService service;
 
     @GetMapping
-    @PreAuthorize("hasAuthority('OPERATION')")
+    @PreAuthorize("hasAnyAuthority('OPERATION','BUSINESS')")
     public ResponseEntity<?> list(@RequestParam(required = false) Boolean onlyActive) {
         return ResponseEntity.ok(service.findAll(onlyActive));
     }

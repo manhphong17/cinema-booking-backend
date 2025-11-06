@@ -20,7 +20,7 @@ public class CheckoutRequest {
     private Double totalPrice;   // tổng tiền trước giảm giá
     private Double discount;     // số tiền giảm
     private Double amount;       // tổng tiền cuối cùng (sau giảm)
-    private String paymentMethod; // "cash" | "vnpay"
+    private String paymentCode;
 
     @Getter
     @Setter

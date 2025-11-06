@@ -9,9 +9,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import vn.cineshow.dto.request.booking.SeatSelectRequest;
-import vn.cineshow.dto.response.booking.BookingSeatsResponse;
-import vn.cineshow.dto.response.booking.ShowTimeResponse;
+import vn.cineshow.dto.response.payment.PaymentMethodDTO;
 
 public interface BookingService {
     List<ShowTimeResponse> getShowTimesByMovieAndDay(Long movieId, LocalDate date);
@@ -29,4 +27,6 @@ public interface BookingService {
      * @param ticketIds List of ticket IDs that were booked
      */
     void broadcastBooked(Long showtimeId, List<Long> ticketIds);
+
+    List<PaymentMethodDTO> getActivePaymentMethods();
 }

@@ -17,5 +17,4 @@ public class VNPayProperties {
     private String version;       // Phiên bản API (vd: 2.1.0)
     private Integer timeout;      // Thời gian hết hạn thanh toán (phút)
     private String command;       // Mã API của VNPay, mặc định: "pay"
-
 }
