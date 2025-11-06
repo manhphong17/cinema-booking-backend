@@ -8,7 +8,7 @@ import vn.cineshow.dto.response.dashboard.*;
 import vn.cineshow.enums.MovieStatus;
 import vn.cineshow.enums.OrderStatus;
 import vn.cineshow.enums.RoomStatus;
-import vn.cineshow.enums.SeatShowTimeStatus;
+import vn.cineshow.enums.TicketStatus;
 import vn.cineshow.model.Movie;
 import vn.cineshow.model.Order;
 import vn.cineshow.model.Room;
@@ -214,7 +214,7 @@ public class OperationDashboardServiceImpl implements OperationDashboardService 
                     }
 
                     // Calculate occupancy rate
-                    Long soldTickets = ticketRepository.countByShowTime_IdAndStatus(st.getId(), SeatShowTimeStatus.BOOKED);
+                    Long soldTickets = ticketRepository.countByShowTime_IdAndStatus(st.getId(), TicketStatus.BOOKED);
                     Integer capacity = st.getRoom() != null ? st.getRoom().getCapacity() : null;
                     Long totalCapacity = capacity != null ? (long) capacity : 0L;
                     Double occupancyRate = totalCapacity > 0 ? (soldTickets.doubleValue() / totalCapacity.doubleValue()) * 100 : 0.0;

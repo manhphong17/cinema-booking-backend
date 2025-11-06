@@ -3,6 +3,7 @@ package vn.cineshow.service;
 import vn.cineshow.dto.request.booking.SeatSelectRequest;
 import vn.cineshow.dto.response.booking.BookingSeatsResponse;
 import vn.cineshow.dto.response.booking.ShowTimeResponse;
+import vn.cineshow.dto.response.booking.TicketDetailResponse;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -16,4 +17,6 @@ public interface BookingService {
     List<BookingSeatsResponse> getSeatsByShowTimeId(Long showTimeId);
 
     void handleSeatAction(SeatSelectRequest req);
+
+    List<TicketDetailResponse> getTicketDetailsByIds(List<Long> ids);
 }

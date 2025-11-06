@@ -10,24 +10,24 @@ spring:
   #      host: localhost
   #      port: 6379
 
-  data:
-    redis:
-      host: redis-16466.c1.ap-southeast-1-1.ec2.redns.redis-cloud.com
-      port: 16466
-      username: default
-      password: 9aCamrhrRMWSj12qrRaFmF09EWIwE25C
-      ssl:
-        enabled: false
+#  data:
+#    redis:
+#      host: redis-16466.c1.ap-southeast-1-1.ec2.redns.redis-cloud.com
+#      port: 16466
+#      username: default
+#      password: 9aCamrhrRMWSj12qrRaFmF09EWIwE25C
+#      ssl:
+#        enabled: false
 
 
   #Redis Upstash
-  #  data:
-  #    redis:
-  #      host: genuine-mastiff-5696.upstash.io
-  #      port: 6379
-  #      password: ARZAAAImcDI5MzY5ZTcwYTE5ZGQ0OWQ5ODRmOGUyMjUyNTVlNjA0MXAyNTY5Ng
-  #      ssl:
-  #        enabled: true
+  data:
+    redis:
+      host: genuine-mastiff-5696.upstash.io
+      port: 6379
+      password: ARZAAAImcDI5MzY5ZTcwYTE5ZGQ0OWQ5ODRmOGUyMjUyNTVlNjA0MXAyNTY5Ng
+      ssl:
+        enabled: true
 
   #config oAuth 2.0
   security:
@@ -100,7 +100,7 @@ spring:
   #        dialect: org.hibernate.dialect.SQLServerDialect
   sendgrid:
     api-key: ${SENDGRID_API_KEY}
-    from-email: "manhphongg6572@gmail.com"
+    from-email: "manhphongchy17@gmail.com"
 
 
 app:
@@ -144,18 +144,24 @@ spring.servlet.multipart.max-request-size: 10MB
 #    org.springframework.transaction: DEBUG
 #    org.hibernate.engine.jdbc.spi.SqlExceptionHelper: WARN
 
-#
-#vnpay:
-#  tmn-code: ME5W6VFG
-#  hash-secret: ${VNPAY_HASH_SECRET}
-#  pay-url: https://sandbox.vnpayment.vn/paymentv2/vpcpay.html
-#  return-url: https://yourdomain.com/api/payment/return
-#  timeout: 6
+
+vnpay:
+  tmn-code: ME5W6VFG
+  hash-secret: ${VNPAY_HASH_SECRET}
+  pay-url: https://sandbox.vnpayment.vn/paymentv2/vpcpay.html
+  return-url: http://localhost:3000/booking/confirmation
+  version: 2.1.0
+  timeout: 7
+  command: pay
 
 booking:
   ttl:
-    default: 1200    # 10 phút - chọn ghế
-    payment: 1200   # 20 phút - thanh toán
+    default: 360    # 6 phút - chọn ghế
+    payment: 900    #15 ' giữ ghế cho thanh toán
+
+
+    
+
 
 
 

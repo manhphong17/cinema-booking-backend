@@ -63,8 +63,9 @@ public class SecurityConfig {
                                 "/public/**",
                                 "/actuator/**",
                                 "/ws/**",// Cho phép handshake WebSocket
-                                "/ws-native/**"
-                        ).permitAll()
+                                "/ws-native/**",
+                                "/payment/ipn"
+                                ).permitAll()
                         .anyRequest().authenticated()
                 )
                 .authenticationProvider(customAuthenticationProvider)

@@ -9,12 +9,14 @@ import org.springframework.stereotype.Service;
 import vn.cineshow.dto.redis.OrderSessionRequest;
 import vn.cineshow.dto.request.booking.SeatSelectRequest;
 import vn.cineshow.dto.response.booking.*;
-import vn.cineshow.enums.SeatShowTimeStatus;
 import vn.cineshow.enums.SeatStatus;
+import vn.cineshow.enums.TicketStatus;
 import vn.cineshow.exception.AppException;
 import vn.cineshow.exception.ErrorCode;
 import vn.cineshow.model.Room;
+import vn.cineshow.model.Seat;
 import vn.cineshow.model.ShowTime;
+import vn.cineshow.model.Ticket;
 import vn.cineshow.repository.MovieRepository;
 import vn.cineshow.repository.ShowTimeRepository;
 import vn.cineshow.repository.TicketRepository;
@@ -25,6 +27,7 @@ import vn.cineshow.service.SeatHoldService;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -144,7 +147,7 @@ public class BookingServiceImpl implements BookingService {
         orderSessionService.createOrUpdate(sessionReq);
 
         // Broadcast HELD
-        broadcast(req, SeatShowTimeStatus.HELD.name());
+        broadcast(req, TicketStatus.HELD.name());
     }
 
     private void handleDeselectSeat(SeatSelectRequest req) {
@@ -153,7 +156,7 @@ public class BookingServiceImpl implements BookingService {
 
         if (updated == null) {
             orderSessionService.delete(req.getUserId(), req.getShowtimeId());
-            broadcast(req, SeatShowTimeStatus.RELEASED.name());
+            broadcast(req, TicketStatus.RELEASED.name());
             return;
         }
 
@@ -167,7 +170,7 @@ public class BookingServiceImpl implements BookingService {
         orderSessionService.removeTickets(sessionReq);
 
         // Broadcast seat release to all clients
-        broadcast(req, SeatShowTimeStatus.RELEASED.name());
+        broadcast(req, TicketStatus.RELEASED.name());
     }
 
 
@@ -205,5 +208,48 @@ public class BookingServiceImpl implements BookingService {
         return room.getSeats().stream().filter(seat -> seat.getStatus().equals(SeatStatus.AVAILABLE)).toList().size();
     }
 
+    @Override
+    public List<TicketDetailResponse> getTicketDetailsByIds(List<Long> ids) {
+        List<Ticket> tickets = ticketRepository.findTicketsWithRelations(ids);
+        DateTimeFormatter dateFmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        DateTimeFormatter timeFmt = DateTimeFormatter.ofPattern("HH:mm");
 
+
+        return tickets.stream()
+                .map(t -> {
+                    Seat seat = t.getSeat();
+                    ShowTime sh = t.getShowTime();
+                    Room room = seat.getRoom();
+
+                    String seatCode;
+                    if (seat.getRow() != null && seat.getColumn() != null) {
+                        int rowIndex1Based = Integer.parseInt(seat.getRow()); // 1,2,3,...
+                        int rowIndex0Based = Math.max(0, rowIndex1Based - 1); // 0=A, 1=B, ...
+                        char rowLetter = (char) ('A' + rowIndex0Based);
+                        seatCode = rowLetter + String.valueOf(seat.getColumn());
+                    } else {
+                        seatCode = "";
+                    }
+
+                    return TicketDetailResponse.builder()
+                            .ticketId(t.getId())
+                            .seatCode(seatCode)
+                            .seatType(seat.getSeatType().getName())
+                            .ticketPrice(t.getTicketPrice().getPrice())
+
+                            .roomName(room.getName())
+                            .roomType(room.getRoomType().getName())
+                            .hall(room.getName()) // hoặc format khác nếu bạn muốn
+
+                            .showtimeId(sh.getId())
+                            .showDate(sh.getStartTime().format(dateFmt))
+                            .showTime(sh.getStartTime().format(timeFmt))
+
+                            .movieName(sh.getMovie().getName())
+                            .posterUrl(sh.getMovie().getPosterUrl())
+                            .build();
+                })
+                .toList();
+
+    }
 }

@@ -2,11 +2,18 @@ package vn.cineshow.service;
 
 
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.transaction.annotation.Transactional;
+import vn.cineshow.dto.request.payment.CheckoutRequest;
 
 import java.util.Map;
 
 public interface VNPayService {
-    Map<String, Object> createPaymentUrl(HttpServletRequest req, Long amount, String orderId);
+
+    String createPaymentUrl(HttpServletRequest req, CheckoutRequest checkoutRequest);
+
+
     Map<String, String> handleIPN(Map<String, String> params);
-    String handleReturn(Map<String, String> params);
+
+    @Transactional(readOnly = true)
+    Map<String, Object> handleReturn(Map<String, String> params);
 }

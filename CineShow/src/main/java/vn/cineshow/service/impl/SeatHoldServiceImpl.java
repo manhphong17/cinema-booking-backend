@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service;
 import vn.cineshow.dto.request.booking.SeatSelectRequest;
 import vn.cineshow.dto.response.booking.SeatHold;
 import vn.cineshow.dto.response.booking.SeatTicketDTO;
-import vn.cineshow.enums.SeatShowTimeStatus;
+import vn.cineshow.enums.TicketStatus;
 import vn.cineshow.repository.TicketRepository;
 import vn.cineshow.service.RedisService;
 import vn.cineshow.service.SeatHoldService;
@@ -86,7 +86,7 @@ public class SeatHoldServiceImpl implements SeatHoldService {
                             .rowIdx(Integer.parseInt(ticket.getSeat().getRow()) - 1)
                             .columnIdx(Integer.parseInt(ticket.getSeat().getColumn()) - 1)
                             .seatType(ticket.getSeat().getSeatType().getName())
-                            .status(SeatShowTimeStatus.HELD.name())
+                            .status(TicketStatus.HELD.name())
                             .build();
                 })
                 .toList();

@@ -35,3 +35,8 @@ INSERT INTO cineshow.holidays (id, created_at, updated_at, day_of_month, descrip
 (32, '2025-10-19 13:33:35.861772', '2025-10-19 13:33:35.861772', NULL, 'giỗ tổ hùng vương', '2025-04-07', 0, NULL),
 (33, '2025-10-19 16:38:13.319874', '2025-10-19 16:38:13.319874', 1, 'tết thiếu nhi', NULL, 1, 6),
 (35, '2025-10-19 17:49:33.809065', '2025-10-19 17:49:33.809065', 31, 'ko ngày gì', '2025-01-31', 0, NULL);
+
+
+INSERT INTO payment_methods (method_name, is_active, created_at, updated_at)
+VALUES ('vnpay', true, NOW(), NOW()),
+       ('cash', true, NOW(), NOW());

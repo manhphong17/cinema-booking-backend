@@ -11,13 +11,16 @@ import vn.cineshow.dto.request.concession.ConcessionAddRequest;
 import vn.cineshow.dto.request.concession.ConcessionTypeRequest;
 import vn.cineshow.dto.request.concession.ConcessionUpdateRequest;
 import vn.cineshow.dto.response.concession.ConcessionResponse;
+import vn.cineshow.dto.response.concession.ConcessionSimpleResponse;
 import vn.cineshow.dto.response.concession.ConcessionTypeResponse;
 import vn.cineshow.dto.response.ResponseData;
 import vn.cineshow.enums.ConcessionStatus;
 import vn.cineshow.service.ConcessionService;
 import vn.cineshow.service.ConcessionTypeService;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/concession")
@@ -155,6 +158,16 @@ public class ConcessionController {
         );
     }
 
+    @GetMapping("/list-by-ids")
+    public ResponseData<List<ConcessionSimpleResponse>> getConcessionsByIds(@RequestParam("ids") String ids) {
+        List<Long> idList = Arrays.stream(ids.split(","))
+                .map(String::trim)
+                .map(Long::parseLong)
+                .collect(Collectors.toList());
+
+        List<ConcessionSimpleResponse> result = concessionService.getConcessionsByIds(idList);
+        return new ResponseData<>(HttpStatus.OK.value(), "Get concession list successfully", result);
+    }
 }
 
 

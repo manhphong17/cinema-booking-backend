@@ -1,7 +1,7 @@
 package vn.cineshow.dto.response.booking;
 
 import lombok.*;
-import vn.cineshow.enums.SeatShowTimeStatus;
+import vn.cineshow.enums.TicketStatus;
 
 import java.util.List;
 
@@ -13,6 +13,6 @@ import java.util.List;
 public class SeatUpdateMessage {
     private Long showtimeId;
     private List<Long> tickets;
-    private SeatShowTimeStatus status;
+    private TicketStatus status;
     private Long userId;
 }

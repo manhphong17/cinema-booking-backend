@@ -1,6 +1,6 @@
 package vn.cineshow.enums;
 
-public enum SeatShowTimeStatus {
+public enum TicketStatus {
     BOOKED,
     AVAILABLE,
     BLOCKED,
