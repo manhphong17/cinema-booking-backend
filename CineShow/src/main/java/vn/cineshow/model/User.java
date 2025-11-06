@@ -33,6 +33,9 @@ public class User extends AbstractEntity implements Serializable {
     @Enumerated(EnumType.STRING)
     Gender gender;
 
+    @Column(columnDefinition = "TEXT")
+    String avatar;
+
     @OneToOne()
     @JoinColumn(name = "account_id", referencedColumnName = "id")
     Account account;

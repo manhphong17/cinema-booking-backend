@@ -16,6 +16,8 @@ public interface AuthenticationService {
 
     SignInResponse refresh(String refreshToken);
 
+    void logout(String refreshToken);
+
     long registerByEmail(EmailRegisterRequest req);
 
     void verifyAccountAndUpdateStatus(String email, String otp);

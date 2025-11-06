@@ -122,7 +122,6 @@ public class MovieController {
             description = "Send a request via this API to get movie by id"
     )
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyAuthority('CUSTOMER','OPERATION')")
     public ResponseData<OperatorMovieOverviewResponse> getMovieById(@PathVariable long id) {
         log.info("Request get movie by id: {}", id);
 
@@ -207,7 +206,6 @@ public class MovieController {
             summary = "Get top movie (now showing/ up coming) to show in homepage",
             description = "Send a request via this API to get top movie to show in homepage"
     )
-    @PreAuthorize("hasAnyAuthority('CUSTOMER','OPERATION')")
     @GetMapping("/top/{limit}")
     public ResponseData<List<OperatorMovieOverviewResponse>> getTopMoviesForHomePage(@RequestParam @NotNull String movieStatus, @Min(4) @PathVariable int limit) {
 
@@ -222,7 +220,6 @@ public class MovieController {
             summary = "Get movie banners to show in homepage",
             description = "Send a request via this API to get movie banners to show in homepage"
     )
-    @PreAuthorize("hasAnyAuthority('CUSTOMER','OPERATION')")
     @GetMapping("/banners")
     public ResponseData<List<BannerResponse>> getBanners() {
 
@@ -236,7 +233,6 @@ public class MovieController {
             summary = "Used by end users to browse and select movies for booking",
             description = "Get movie banners to display on homepage for users before booking."
     )
-    @PreAuthorize("hasAnyAuthority('OPERATION','CUSTOMER')")
     @PostMapping("/search")
     public ResponseData<?> getMovieListToBooking(@RequestBody UserSearchMovieRequest request) {
 

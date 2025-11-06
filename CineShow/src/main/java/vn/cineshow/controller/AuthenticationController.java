@@ -12,6 +12,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.web.bind.annotation.*;
 import vn.cineshow.dto.request.*;
+import vn.cineshow.dto.request.EmailRegisterRequest;
+import vn.cineshow.dto.request.SignInRequest;
 import vn.cineshow.dto.response.ResponseData;
 import vn.cineshow.dto.response.SignInResponse;
 import vn.cineshow.dto.response.TokenResponse;
@@ -140,10 +142,10 @@ public class AuthenticationController {
         );
     }
 
-    // Forgot Password → gửi OTP
+    // Quên mật khẩu → gửi OTP
     @PostMapping("/forgot-password")
     public ResponseData<?> forgotPassword(@RequestBody @Valid ForgotPasswordRequest request) {
-        boolean sent = authenticationService.forgotPassword(request);
+        boolean sent = accountService.forgotPassword(request);
         if (!sent) {
             return new ResponseData<>(HttpStatus.BAD_REQUEST.value(),
                     "Email not found or OTP could not be sent", null);
@@ -155,7 +157,7 @@ public class AuthenticationController {
     // B3: Verify OTP khi reset password
     @PostMapping("/verify-otp-reset")
     public ResponseData<VerifyOtpResetResponse> verifyOtpReset(@RequestBody @Valid OtpVerifyDTO req) {
-        Optional<String> tokenOpt = authenticationService.verifyOtpForReset(req.email(), req.otpCode());
+        Optional<String> tokenOpt = accountService.verifyOtpForReset(req.email(), req.otpCode());
         if (!tokenOpt.isPresent()) {
             return new ResponseData<>(HttpStatus.BAD_REQUEST.value(), "Invalid or expired OTP", null);
         }
@@ -167,7 +169,7 @@ public class AuthenticationController {
     // B4: Đặt lại mật khẩu bằng OTP
     @PostMapping("/reset-password")
     public ResponseData<?> resetPassword(@RequestBody @Valid ResetPasswordRequest request) {
-        boolean success = authenticationService.resetPassword(request);
+        boolean success = accountService.resetPassword(request);
         if (!success) {
             return new ResponseData<>(HttpStatus.BAD_REQUEST.value(),
                     "Invalid OTP or expired", null);

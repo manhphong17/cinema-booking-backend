@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import vn.cineshow.enums.Gender;
 
 @Data
 @Builder
@@ -19,4 +20,9 @@ public class UpdateUserRequest {
 
     @Size(max = 500, message = "Address must not exceed 500 characters")
     private String address;
+
+    @Size(max = 90000, message = "Avatar URL must not exceed 65535 characters")
+    private String avatar;
+
+    private Gender gender;
 }
