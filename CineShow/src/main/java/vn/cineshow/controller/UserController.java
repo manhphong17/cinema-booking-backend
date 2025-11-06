@@ -28,16 +28,8 @@ public class UserController {
     @GetMapping("/me")
     @PreAuthorize("hasAnyAuthority('CUSTOMER')")
     public ResponseData<UserResponse> getProfile(@AuthenticationPrincipal UserDetails principal) {
-        System.out.println("=== USER CONTROLLER DEBUG ===");
-        System.out.println("Principal: " + principal);
-        System.out.println("Principal class: " + (principal != null ? principal.getClass().getSimpleName() : "null"));
-        System.out.println("Principal username: " + (principal != null ? principal.getUsername() : "null"));
-        System.out.println("Principal authorities: " + (principal != null ? principal.getAuthorities() : "null"));
 
         String email = resolveEmail(principal);
-
-        System.out.println("Resolved email: " + email);
-        System.out.println("=== END USER CONTROLLER DEBUG ===");
 
         UserResponse response = userService.getProfile(email);
         return new ResponseData<>(HttpStatus.OK.value(), "Fetched user profile successfully", response);

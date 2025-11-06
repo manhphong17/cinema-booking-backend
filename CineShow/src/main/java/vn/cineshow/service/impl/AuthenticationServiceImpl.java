@@ -30,6 +30,7 @@ import vn.cineshow.dto.request.SignInRequest;
 import vn.cineshow.dto.response.SignInResponse;
 import vn.cineshow.dto.response.TokenResponse;
 import vn.cineshow.enums.AccountStatus;
+import vn.cineshow.enums.AuthProvider;
 import vn.cineshow.exception.*;
 import vn.cineshow.model.*;
 import vn.cineshow.exception.AppException;
@@ -209,6 +210,10 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             account.setUser(user);
             account.setPassword(encoder.encode(req.password()));
             account.setStatus(AccountStatus.PENDING); // reset lại trạng thái pending nếu cần
+            AccountProvider provider =AccountProvider.builder()
+                    .provider(AuthProvider.LOCAL)
+                    .account(account)
+                    .build();
             accountRepository.save(account);
 
             otpService.sendOtp(req.email(), req.name());

@@ -22,7 +22,7 @@ public class SeatTypeController {
     private final SeatTypeService service;
 
     @GetMapping
-    @PreAuthorize("hasAuthority('OPERATION')")
+    @PreAuthorize("hasAnyAuthority('OPERATION','BUSINESS')")
     public ResponseEntity<?> list(@RequestParam(required = false) Boolean onlyActive) {
         return ResponseEntity.ok(service.findAll(onlyActive));
     }

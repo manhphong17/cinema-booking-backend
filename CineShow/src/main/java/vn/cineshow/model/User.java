@@ -4,10 +4,13 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.Past;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 import vn.cineshow.enums.Gender;
 
 import java.io.Serializable;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
@@ -18,8 +21,10 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class User extends AbstractEntity implements Serializable {
+public class User  implements Serializable {
 
+    @Id
+    private Long id;
 
     String name;
 
@@ -36,8 +41,9 @@ public class User extends AbstractEntity implements Serializable {
     @Column(columnDefinition = "TEXT")
     String avatar;
 
-    @OneToOne()
-    @JoinColumn(name = "account_id", referencedColumnName = "id")
+    @MapsId
+    @OneToOne
+    @JoinColumn(name = "id")
     Account account;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
@@ -46,4 +52,11 @@ public class User extends AbstractEntity implements Serializable {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<VoucherItem> voucherItems;
 
+    @Column(name = "created_at")
+    @CreationTimestamp
+    private LocalDateTime createdAt;
+
+    @Column(name = "updated_at")
+    @UpdateTimestamp
+    private LocalDateTime updatedAt;
 }
