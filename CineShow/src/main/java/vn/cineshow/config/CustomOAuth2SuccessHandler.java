@@ -120,6 +120,25 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
                         return accountProviderRepository.save(googleProvider);
                     });
 
+            // 3. Cập nhật thông tin User từ Google nếu có
+            User user = account.getUser();
+            if (user != null && name != null && !name.isBlank()) {
+                // Cập nhật name nếu đang null hoặc trống
+                if (user.getName() == null || user.getName().isBlank()) {
+                    user.setName(name);
+                    accountRepository.save(account);
+                }
+            } else if (user == null && name != null && !name.isBlank()) {
+                // Tạo User nếu chưa có
+                User newUser = User.builder()
+                        .name(name)
+                        .loyalPoint(0)
+                        .account(account)
+                        .build();
+                account.setUser(newUser);
+                accountRepository.save(account);
+            }
+
         } else {
             //if not exist account -> new account
             if ("google-admin".equals(registrationId)) {
@@ -149,6 +168,7 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
                     .providerId(sub)
                     .build();
             account.setProviders(List.of(googleProvider));
+            user.setAccount(account);
             accountRepository.save(account);
         }
 

@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import vn.cineshow.dto.response.ResponseData;
 import vn.cineshow.dto.response.dashboard.OperationDashboardStatsResponse;
@@ -24,6 +25,7 @@ public class OperationDashboardController {
             description = "Send a request via this API to get operation dashboard statistics including movies, showtimes, rooms stats, alerts and insights"
     )
     @GetMapping("/operation")
+    @PreAuthorize("hasAuthority('OPERATION')")
     public ResponseData<OperationDashboardStatsResponse> getOperationDashboardStats() {
         log.info("Request get operation dashboard statistics");
 

@@ -35,7 +35,7 @@ public class JWTLoginTest {
         // Test data
         SignInRequest signInRequest = new SignInRequest();
         signInRequest.setEmail("user@test.com");
-        signInRequest.setPassword("12345678");
+        signInRequest.setPassword("00000000");
 
         // Test login endpoint
         mockMvc.perform(post("/auth/log-in")

@@ -1,9 +1,16 @@
 package vn.cineshow.service.impl;
 
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import vn.cineshow.dto.request.booking.SeatSelectRequest;
 import vn.cineshow.dto.response.booking.SeatHold;
 import vn.cineshow.dto.response.booking.SeatTicketDTO;
@@ -11,12 +18,6 @@ import vn.cineshow.enums.TicketStatus;
 import vn.cineshow.repository.TicketRepository;
 import vn.cineshow.service.RedisService;
 import vn.cineshow.service.SeatHoldService;
-
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
 @Slf4j
 @Service

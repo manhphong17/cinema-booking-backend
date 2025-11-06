@@ -16,12 +16,15 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.test.web.servlet.MockMvc;
 import vn.cineshow.dto.request.UpdateUserRequest;
 import vn.cineshow.dto.response.UserResponse;
+import vn.cineshow.service.JWTService;
 import vn.cineshow.service.UserService;
+import vn.cineshow.service.impl.AccountDetailsService;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -39,6 +42,12 @@ class UserControllerTest {
 
     @MockBean
     private UserService userService;
+
+    @MockBean
+    private JWTService jwtService;
+
+    @MockBean
+    private AccountDetailsService accountDetailsService;
 
     private UserDetails userDetails;
 
@@ -73,6 +82,19 @@ class UserControllerTest {
                 .andExpect(jsonPath("$.data.email").value("user@example.com"))
                 .andExpect(jsonPath("$.data.address").value("Hanoi"))
                 .andExpect(jsonPath("$.data.loyalPoint").value(10));
+
+        verify(userService, times(1)).getProfile("user@example.com");
+    }
+
+    @Test
+    @DisplayName("GET /users/me without principal should throw AuthenticatedException")
+    void getProfile_withoutPrincipal_shouldThrowException() throws Exception {
+        // When principal is null, resolveEmail() throws AuthenticatedException
+        // Since @PreAuthorize is disabled with addFilters = false, we can test this directly
+        mockMvc.perform(get("/users/me"))
+                .andExpect(status().is5xxServerError());
+
+        verify(userService, never()).getProfile(anyString());
     }
 
     @Test
@@ -104,8 +126,25 @@ class UserControllerTest {
                 .andExpect(jsonPath("$.data.address").value("Da Nang"));
 
         ArgumentCaptor<UpdateUserRequest> captor = ArgumentCaptor.forClass(UpdateUserRequest.class);
-        verify(userService).updateProfile(eq("user@example.com"), captor.capture());
+        verify(userService, times(1)).updateProfile(eq("user@example.com"), captor.capture());
         assertThat(captor.getValue().getName()).isEqualTo("New Name");
         assertThat(captor.getValue().getAddress()).isEqualTo("Da Nang");
+    }
+
+    @Test
+    @DisplayName("PUT /users/me without principal should throw AuthenticatedException")
+    void updateProfile_withoutPrincipal_shouldThrowException() throws Exception {
+        UpdateUserRequest request = UpdateUserRequest.builder()
+                .name("New Name")
+                .address("Da Nang")
+                .build();
+
+        // When principal is null, resolveEmail() throws AuthenticatedException
+        mockMvc.perform(put("/users/me")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().is5xxServerError());
+
+        verify(userService, never()).updateProfile(anyString(), any(UpdateUserRequest.class));
     }
 }

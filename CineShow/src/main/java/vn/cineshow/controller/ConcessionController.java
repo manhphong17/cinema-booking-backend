@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import vn.cineshow.dto.request.concession.ConcessionAddRequest;
 import vn.cineshow.dto.request.concession.ConcessionTypeRequest;
@@ -31,6 +32,7 @@ public class ConcessionController {
     private final ConcessionTypeService concessionTypeService;
 
     @GetMapping
+    @PreAuthorize("hasAnyAuthority('BUSINESS','CUSTOMER')")
     public ResponseData<Page<ConcessionResponse>> showListConcessions(
             @RequestParam(defaultValue = "0") int page,        // trang hiện tại (mặc định 0)
             @RequestParam(defaultValue = "10") int size,       // số item / trang
@@ -58,6 +60,7 @@ public class ConcessionController {
     }
 
 
+    @PreAuthorize("hasAuthority('BUSINESS')")
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseData<Long> addConcession(@ModelAttribute @Valid ConcessionAddRequest concessionAddRequest) {
 
@@ -70,6 +73,7 @@ public class ConcessionController {
         );
     }
 
+    @PreAuthorize("hasAuthority('BUSINESS')")
     @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseData<ConcessionResponse> updateConcession(
             @PathVariable Long id,
@@ -84,6 +88,7 @@ public class ConcessionController {
         );
     }
 
+    @PreAuthorize("hasAuthority('BUSINESS')")
     @PutMapping("/{id}/stock")
     public ResponseData<ConcessionResponse> addStock(
             @PathVariable Long id,
@@ -105,6 +110,7 @@ public class ConcessionController {
         );
     }
 
+    @PreAuthorize("hasAuthority('BUSINESS')")
     @PutMapping("/{id}/status")
     public ResponseData<ConcessionResponse> updateConcessionStatus(
             @PathVariable Long id,
@@ -119,6 +125,7 @@ public class ConcessionController {
         );
     }
 
+    @PreAuthorize("hasAuthority('BUSINESS')")
     @DeleteMapping("/{id}")
     public ResponseData<Void> deleteConcession(@PathVariable Long id) {
         concessionService.deleteConcession(id);
@@ -130,6 +137,7 @@ public class ConcessionController {
 
     // TYPE
     @GetMapping("/types")
+    @PreAuthorize("hasAuthority('BUSINESS')")
     public ResponseData<List<ConcessionTypeResponse>> getAllConcessionTypes() {
         List<ConcessionTypeResponse> types = concessionTypeService.getAll();
 
@@ -141,6 +149,7 @@ public class ConcessionController {
     }
 
     @PutMapping("/types/{id}/status")
+    @PreAuthorize("hasAuthority('BUSINESS')")
     public ResponseData<Void> updateConcessionTypeStatus(@PathVariable Long id) {
         concessionTypeService.updateStatus(id);
         return new ResponseData<>(
@@ -150,6 +159,7 @@ public class ConcessionController {
     }
 
     @PostMapping("/type")
+    @PreAuthorize("hasAuthority('BUSINESS')")
     public ResponseData<Void> addConcessionType(@Valid @RequestBody ConcessionTypeRequest request) {
         concessionTypeService.addConcessionType(request.getName());
         return new ResponseData<>(

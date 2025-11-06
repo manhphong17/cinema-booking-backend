@@ -51,4 +51,11 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
             "AND o.updatedAt < :threshold")
     List<Order> findPendingBefore(@Param("threshold") LocalDateTime threshold);
 
+    @EntityGraph(attributePaths = {
+            "user",
+            "tickets.seat",
+            "tickets.showTime.movie",
+            "tickets.showTime.room"
+    })
+    Page<Order> findByUser_IdAndCreatedAtBetween(Long userId, LocalDateTime start, LocalDateTime end, Pageable pageable);
 }

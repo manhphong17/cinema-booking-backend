@@ -3,6 +3,7 @@ package vn.cineshow.controller;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import vn.cineshow.dto.request.room.RoomRequest;
 import vn.cineshow.dto.response.PageResponse;
@@ -30,6 +31,7 @@ public class RoomController {
 
     // (Tùy chọn) GET /rooms/meta -> { roomTypes:[...], seatTypes:[...] }
     @GetMapping("/meta")
+    @PreAuthorize("hasAuthority('OPERATION')")
     public ResponseData<RoomMetaResponse> getMeta() {
         var meta = RoomMetaResponse.builder()
                 .roomTypes(roomTypeService.getAllRoomTypesDTO())
@@ -42,6 +44,7 @@ public class RoomController {
     // GET /rooms? pageNo, pageSize, keyword, roomTypeId, status, sortBy
     // Trả: PageResponse<List<RoomDTO>>
     @GetMapping
+    @PreAuthorize("hasAuthority('OPERATION')")
     public ResponseData<PageResponse<List<RoomDTO>>> searchRooms(
             @RequestParam(required = false) Integer pageNo,
             @RequestParam(required = false) Integer pageSize,
@@ -56,6 +59,7 @@ public class RoomController {
 
     // GET /rooms/{roomId}
     @GetMapping("/{roomId}")
+    @PreAuthorize("hasAuthority('OPERATION')")
     public ResponseData<RoomDTO> getRoomDetail(@PathVariable Long roomId) {
         RoomDTO room = roomService.getRoomDetail(roomId);
         if (room == null) {
@@ -66,6 +70,7 @@ public class RoomController {
 
     // POST /rooms
     @PostMapping
+    @PreAuthorize("hasAuthority('OPERATION')")
     public ResponseData<RoomDTO> createRoom(@RequestBody @Valid RoomRequest request) {
         RoomDTO created = roomService.createRoom(request);
         return new ResponseData<>(HttpStatus.CREATED.value(), "Đã thêm phòng chiếu thành công", created);
@@ -73,6 +78,7 @@ public class RoomController {
 
     // PUT /rooms/{roomId}
     @PutMapping("/{roomId}")
+    @PreAuthorize("hasAuthority('OPERATION')")
     public ResponseData<RoomDTO> updateRoom(@PathVariable Long roomId,
                                             @RequestBody @Valid RoomRequest request) {
         RoomDTO updated = roomService.updateRoom(roomId, request);
@@ -84,6 +90,7 @@ public class RoomController {
 
     // DELETE /rooms/{roomId}
     @DeleteMapping("/{roomId}")
+    @PreAuthorize("hasAuthority('OPERATION')")
     public ResponseData<?> deleteRoom(@PathVariable Long roomId) {
         boolean deleted = roomService.deleteRoom(roomId);
         if (!deleted) {

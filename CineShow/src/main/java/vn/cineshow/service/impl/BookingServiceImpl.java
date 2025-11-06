@@ -34,6 +34,11 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import vn.cineshow.dto.response.booking.BookingSeatsResponse;
+import vn.cineshow.dto.response.booking.SeatHold;
+import vn.cineshow.dto.response.booking.SeatTicketDTO;
+import vn.cineshow.dto.response.booking.ShowTimeResponse;
+import vn.cineshow.dto.response.booking.TicketResponse;
 
 @Service
 @Slf4j(topic = "BOOKING-SERVICE")
@@ -61,11 +66,10 @@ public class BookingServiceImpl implements BookingService {
         );
     }
 
-
     @Override
     public List<ShowTimeResponse> getShowTimesByMovieAndStartTime(Long movieId, LocalDateTime startTime) {
+        // Return all showtimes, even if sold out, so frontend can display "Hết vé" message
         return showTimeRepository.findByMovie_IdAndStartTime(movieId, startTime).stream()
-                .filter(showTime -> countTotalSeatAvailable(showTime.getRoom()) > 0)
                 .map(s -> ShowTimeResponse.builder()
                         .showTimeId(s.getId())
                         .startTime(s.getStartTime())
@@ -74,7 +78,7 @@ public class BookingServiceImpl implements BookingService {
                         .roomType(s.getRoom().getRoomType().getName())
                         .roomName(s.getRoom().getName())
                         .totalSeat((long) s.getRoom().getSeats().size())
-                        .totalSeatAvailable((long) countTotalSeatAvailable(s.getRoom()))
+                        .totalSeatAvailable((long) countTotalSeatAvailable(s))
                         .build())
                 .toList();
     }
@@ -204,8 +208,51 @@ public class BookingServiceImpl implements BookingService {
         );
     }
 
-    private int countTotalSeatAvailable(Room room) {
-        return room.getSeats().stream().filter(seat -> seat.getStatus().equals(SeatStatus.AVAILABLE)).toList().size();
+    @Override
+    public void broadcastBooked(Long showtimeId, List<Long> ticketIds) {
+        log.info("[BOOKING] Broadcasting BOOKED status for showtime {} with {} tickets", showtimeId, ticketIds.size());
+        
+        List<SeatTicketDTO> seatDetails = ticketIds.stream()
+                .map(ticketId -> {
+                    var ticketOpt = ticketRepository.findByIdWithSeat(ticketId);
+                    if (ticketOpt.isEmpty()) {
+                        return SeatTicketDTO.builder()
+                                .ticketId(ticketId)
+                                .status(TicketStatus.BOOKED.name())
+                                .build();
+                    }
+                    var ticket = ticketOpt.get();
+                    return SeatTicketDTO.builder()
+                            .ticketId(ticketId)
+                            .rowIdx(Integer.parseInt(ticket.getSeat().getRow()) - 1)
+                            .columnIdx(Integer.parseInt(ticket.getSeat().getColumn()) - 1)
+                            .seatType(ticket.getSeat().getSeatType().getName())
+                            .status(TicketStatus.BOOKED.name())
+                            .build();
+                })
+                .toList();
+
+        messagingTemplate.convertAndSend(
+                "/topic/seat/" + showtimeId,
+                Map.of("seats", seatDetails,
+                        "status", TicketStatus.BOOKED.name(),
+                        "showtimeId", showtimeId)
+        );
+        
+        log.info("[BOOKING] Successfully broadcasted BOOKED status for {} tickets", seatDetails.size());
+    }
+
+    /**
+     * Count available seats based on ticket status in the showtime
+     * Only tickets with status AVAILABLE are counted (not HELD, BOOKED, or BLOCKED)
+     * Uses TicketRepository to count directly from database for better performance
+     */
+    private int countTotalSeatAvailable(ShowTime showTime) {
+        Long count = ticketRepository.countByShowTime_IdAndStatus(
+                showTime.getId(), 
+                TicketStatus.AVAILABLE
+        );
+        return count != null ? count.intValue() : 0;
     }
 
     @Override

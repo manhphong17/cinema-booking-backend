@@ -78,9 +78,10 @@ public class VNPayServiceImpl implements VNPayService {
             }
             order.setTickets(tickets);
 
+            ticketRepository.saveAll(tickets);
+
             // 4️⃣ Lưu Order (cascade tickets nếu có CascadeType.MERGE)
             orderRepository.save(order);
-
 
             // 4️⃣ Tạo OrderConcession
             List<OrderConcession> orderConcessions = checkoutRequest.getConcessions().stream()

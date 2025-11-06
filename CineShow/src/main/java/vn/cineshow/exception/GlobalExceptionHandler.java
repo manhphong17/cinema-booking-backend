@@ -6,11 +6,10 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.authentication.AuthenticationServiceException;
+import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -23,9 +22,7 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 
 import java.nio.file.AccessDeniedException;
 import java.security.InvalidParameterException;
-import java.time.Instant;
 import java.time.LocalDateTime;
-import java.util.Map;
 
 @RestControllerAdvice
 @Slf4j
@@ -216,6 +213,43 @@ public class GlobalExceptionHandler {
         return errorResponse;
     }
 
+    @ExceptionHandler(TokenExpiredException.class)
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Token Expired",
+                    content = @Content(
+                            mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            examples = @ExampleObject(
+                                    name = "401 Response",
+                                    summary = "Token expired",
+                                    value = """
+                                            {
+                                              "timestamp": "2023-10-19T06:07:35.321+00:00",
+                                              "status": 401,
+                                              "path": "/api/v1/secure-resource",
+                                              "error": "Token expired"
+                                            }
+                                            """
+                            )
+                    )
+            )
+    })
+    public ErrorResponse handleTokenExpiredError(TokenExpiredException e, WebRequest req) {
+        log.info("================> TOKEN EXPIRED ERROR");
+        ErrorResponse errorResponse = new ErrorResponse();
+        errorResponse.setTitle(HttpStatus.UNAUTHORIZED.getReasonPhrase());
+        errorResponse.setStatus(HttpStatus.UNAUTHORIZED.value());
+        errorResponse.setInstance(req.getDescription(false).replace("uri=", ""));
+        errorResponse.setTimestamp(LocalDateTime.now());
+
+        if (e != null) {
+            errorResponse.setMessage(e.getMessage());
+        }
+        return errorResponse;
+    }
+
     @ExceptionHandler(UsernameNotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
     @ApiResponses(value = {
@@ -393,54 +427,43 @@ public class GlobalExceptionHandler {
         errorResponse.setTimestamp(LocalDateTime.now());
     }
 
-    @ExceptionHandler(org.springframework.web.server.ResponseStatusException.class)
-    @ResponseStatus // Status HTTP sẽ lấy từ ex.getStatusCode()
-    public ErrorResponse handleResponseStatusException(
-            org.springframework.web.server.ResponseStatusException ex,
-            WebRequest req
-    ) {
-        HttpStatusCode statusCode = ex.getStatusCode();
-        int code = statusCode.value();
 
-        // Resolve sang HttpStatus (có thể null nếu code lạ)
-        HttpStatus httpStatus = HttpStatus.resolve(code);
-        String title = (httpStatus != null) ? httpStatus.getReasonPhrase() : "Error";
+    @ExceptionHandler(AuthorizationDeniedException.class)
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "403",
+                    description = "Authorization Denied",
+                    content = @Content(
+                            mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            examples = @ExampleObject(
+                                    name = "403 Response",
+                                    summary = "User is not authorized to access this resource",
+                                    value = """
+                                        {
+                                          "timestamp": "2025-11-01T12:00:00",
+                                          "status": 403,
+                                          "path": "/api/v1/secure-resource",
+                                          "error": "Access denied"
+                                        }
+                                        """
+                            )
+                    )
+            )
+    })
+    public ErrorResponse handleAuthorizationDeniedException(AuthorizationDeniedException e, WebRequest request) {
+        log.warn("================> AUTHORIZATION DENIED: {}", e.getMessage());
 
         ErrorResponse errorResponse = new ErrorResponse();
         errorResponse.setTimestamp(LocalDateTime.now());
-        errorResponse.setInstance(req.getDescription(false).replace("uri=", ""));
-        errorResponse.setStatus(code);
-        errorResponse.setTitle(title);
-
-        // Fallback VN message theo mã lỗi (nếu reason trống)
-        String fallback = switch (code) {
-            case 400 -> "Tham số không hợp lệ";
-            case 401 -> "Bạn chưa được xác thực";
-            case 403 -> "Truy cập bị từ chối";
-            case 404 -> "Không tìm thấy tài nguyên";
-            case 500 -> "Lỗi máy chủ, vui lòng thử lại";
-            default -> "Đã xảy ra lỗi";
-        };
-
-        String reason = ex.getReason();
-        errorResponse.setMessage((reason == null || reason.isBlank()) ? fallback : reason);
+        errorResponse.setInstance(request.getDescription(false).replace("uri=", ""));
+        errorResponse.setStatus(HttpStatus.FORBIDDEN.value());
+        errorResponse.setTitle(HttpStatus.FORBIDDEN.getReasonPhrase());
+        errorResponse.setMessage(
+                e.getMessage() != null ? e.getMessage() : "You do not have permission to access this resource"
+        );
         return errorResponse;
     }
 
-
-
-    //hungnthe
-    // (Tuỳ chọn) fallback cho lỗi runtime không bắt riêng
-    @ExceptionHandler(RuntimeException.class)
-    public ResponseEntity<Map<String, Object>> handleUnhandled(RuntimeException ex) {
-        HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
-        Map<String, Object> body = Map.of(
-                "timestamp", Instant.now().toString(),
-                "status", status.value(),
-                "code", 9999,
-                "message", "Unexpected error"
-        );
-        return ResponseEntity.status(status).body(body);
-    }
 
 }

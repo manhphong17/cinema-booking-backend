@@ -20,7 +20,7 @@ spring:
 #        enabled: false
 
 
-  #Redis Upstash
+#  Redis Upstash
   data:
     redis:
       host: genuine-mastiff-5696.upstash.io
