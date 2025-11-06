@@ -99,7 +99,7 @@ spring:
   #        dialect: org.hibernate.dialect.SQLServerDialect
   sendgrid:
     api-key: ${SENDGRID_API_KEY}
-    from-email: "manhphongg6572@gmail.com"
+    from-email: "manhphongchy17@gmail.com"
 
 
 app:
