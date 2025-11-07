@@ -10,6 +10,7 @@ public enum ErrorCode {
     ACCOUNT_INACTIVE(1004, "Account inactive"),
     INVALID_CREDENTIALS(1005, "Invalid email or password"),
     OTP_NOT_FOUND(1006, "OTP not found"),
+    OTP_SEND_FAILED(1015, "Failed to send OTP"),
     OTP_INVALID(1007, "Invalid OTP"),
     OTP_EXPIRED(1008, "OTP expired"),
     INVALID_SORT_ORDER(1009, "Invalid Sort Order Exception"),
@@ -20,8 +21,12 @@ public enum ErrorCode {
     FILE_UPLOAD_FAILED(1014, "File upload failed"),
     CONCESSION_NOT_FOUND(1016, "Concession not found"),
     INVALID_QUANTITY(1017, "Invalid quantity to add"),
+    INVALID_PARAMETER(1020, "Invalid parameter"),
     CONCESSION_ALREADY_DELETED(1018, "Concession has been deleted"),
     ACCOUNT_NOT_FOUND(1019, "Account not found"),
+    PASSWORD_RESET_TOKEN_NOT_FOUND(1033, "Password reset token not found"),
+    PASSWORD_RESET_TOKEN_INVALID(1034, "Password reset token is invalid or has expired"),
+
     CONCESSION_TYPE_NOT_FOUND(1025, "Concession type not found"),
     CONCESSION_TYPE_IN_USE(1026, "Concession has been in use"),
     CONCESSION_TYPE_EXISTED(1027, "Concession already existed"),
@@ -30,6 +35,11 @@ public enum ErrorCode {
     SEAT_TYPE_NOT_FOUND(1030, "Seat type not found"),
     ROOM_TYPE_NOT_FOUND(1031, "Room type not found"),
     TICKET_PRICE_NOT_FOUND(1032, "Ticket price not found"),
+    ORDER_SESSION_NOT_FOUND(1033, "Order-session not found"),
+    USER_NOT_FOUND(1034, "User not found"),
+    TICKET_NOT_FOUND(1035, "Ticket not found"),
+    PAYMENT_METHOD_NOT_FOUND(1036, "Payment method not found"),
+    PAYMENT_URL_GENERATION_FAILED(1037, "Payment URL generation failed"),
 
     SHOW_TIME_NOT_FOUND(3001, "Show time not found"),
     MOVIE_BANNER_NOT_FOUND(3001, "Movie banner not found"),
@@ -61,7 +71,10 @@ public enum ErrorCode {
     ORDER_CANCELED(3104, "Đơn hàng đã bị huỷ"),
     QR_EXPIRED(3105, "Mã QR đã hết hạn"),
     QR_REGENERATE_LIMIT(3106, "Tạo lại QR quá giới hạn"),
-    SHOWTIME_PASSED(3107, "Suất chiếu đã diễn ra");
+    SHOWTIME_PASSED(3107, "Suất chiếu đã diễn ra"),
+    
+    //Password
+    PASSWORD_TOO_WEAK(1020, "Mật khẩu quá yếu");
     private final int code;
     private final String message;
 

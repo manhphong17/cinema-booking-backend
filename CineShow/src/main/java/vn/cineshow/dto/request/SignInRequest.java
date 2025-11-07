@@ -22,7 +22,7 @@ public class SignInRequest implements Serializable {
     String email;
 
     @Password
-    @Schema(example = "12345678", defaultValue = "12345678")
+    @Schema(example = "00000000", defaultValue = "00000000")
     String password;
 
 }

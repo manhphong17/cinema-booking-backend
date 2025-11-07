@@ -15,9 +15,6 @@ public class OtpCode {
     @Id @GeneratedValue(strategy=GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    Account account;
-
     @Column(nullable=false)
     private String email;
 

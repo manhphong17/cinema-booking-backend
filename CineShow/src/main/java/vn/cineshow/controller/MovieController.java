@@ -1,22 +1,5 @@
 package vn.cineshow.controller;
 
-import java.time.LocalDate;
-import java.util.List;
-import java.util.Map;
-
-import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -24,19 +7,20 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import vn.cineshow.dto.request.movie.MovieCreationRequest;
-import vn.cineshow.dto.request.movie.MovieFilterRequest;
-import vn.cineshow.dto.request.movie.MovieUpdateBasicRequest;
-import vn.cineshow.dto.request.movie.MovieUpdateFullRequest;
-import vn.cineshow.dto.request.movie.UserSearchMovieRequest;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
+import vn.cineshow.dto.request.movie.*;
 import vn.cineshow.dto.response.PageResponse;
 import vn.cineshow.dto.response.ResponseData;
-import vn.cineshow.dto.response.movie.BannerResponse;
-import vn.cineshow.dto.response.movie.CountryResponse;
-import vn.cineshow.dto.response.movie.LanguageResponse;
-import vn.cineshow.dto.response.movie.MovieGenreResponse;
-import vn.cineshow.dto.response.movie.OperatorMovieOverviewResponse;
+import vn.cineshow.dto.response.movie.*;
+import vn.cineshow.enums.UserRole;
 import vn.cineshow.service.MovieService;
+
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/movies")
@@ -54,6 +38,7 @@ public class MovieController {
             description = "Send a request via this API to get movies list with filter by many columns and sort by"
     )
     @GetMapping("/list-with-filter-many-column-and-sortBy")
+    @PreAuthorize("hasAuthority('OPERATION')")
     public ResponseData<?> getMoviesListWithFilterByManyColumnAndSortBy(
             @RequestParam(required = false) String keyword,
             @RequestParam(required = false) String genre,
@@ -95,6 +80,7 @@ public class MovieController {
             description = "Send a request via this API to get all languages"
     )
     @GetMapping("/languages")
+    @PreAuthorize("hasAuthority('OPERATION')")
     public ResponseData<List<LanguageResponse>> getAllLanguage() {
         log.info("Request getAllLanguages");
 
@@ -120,6 +106,7 @@ public class MovieController {
             summary = "Get all countries",
             description = "Send a request via this API to get all countries"
     )
+    @PreAuthorize("hasAuthority('OPERATION')")
     @GetMapping("/countries")
     public ResponseData<List<CountryResponse>> getAllCountries() {
         log.info("Request get all country");
@@ -148,6 +135,7 @@ public class MovieController {
             summary = "Create a movie",
             description = "Send a request via this API to create a new movie"
     )
+    @PreAuthorize("hasAuthority('OPERATION')")
     @PostMapping(value = "/add", consumes = "multipart/form-data")
     public ResponseData<Long> createMovie(@Valid @ModelAttribute MovieCreationRequest request) {
         log.info("Request create movie: {}", request);
@@ -162,6 +150,7 @@ public class MovieController {
             summary = "Update a movie by id",
             description = "Send a request via this API to update a movie by id"
     )
+    @PreAuthorize("hasAuthority('OPERATION')")
     @PutMapping(value = "/update/{id}")
     public ResponseData<?> updateSomeFailedById(@PathVariable long id, @Valid @RequestBody MovieUpdateBasicRequest request) {
 
@@ -175,6 +164,7 @@ public class MovieController {
             summary = "Update complete movie information by id",
             description = "Send a request via this API to update complete movie information by id including poster and banner files"
     )
+    @PreAuthorize("hasAuthority('OPERATION')")
     @PutMapping(value = "/update-full/{movieId}", consumes = {"multipart/form-data"})
     public ResponseData<?> updateFullMovieById(
             @PathVariable @Min(1) long movieId,
@@ -190,6 +180,7 @@ public class MovieController {
             summary = "Soft delete movie",
             description = "Send a request via this API to soft delete movie"
     )
+    @PreAuthorize("hasAuthority('OPERATION')")
     @PatchMapping("/delete/{id}")
     public ResponseData<?> softDeleteMovie(@PathVariable long id) {
         log.info("Request delete movie: {}", id);
@@ -202,6 +193,7 @@ public class MovieController {
             summary = "Update feature of movie",
             description = "Send a request via this API to update feature of movie"
     )
+    @PreAuthorize("hasAuthority('OPERATION')")
     @PatchMapping("/update-feature/{id}")
     public ResponseData<?> updateFeatureMovie(@PathVariable long id, @RequestBody Map<String, Boolean> request) {
         boolean isFeatured = request.get("isFeatured");
@@ -249,5 +241,23 @@ public class MovieController {
         log.info("Response to get movie list to booking");
 
         return new ResponseData<>(HttpStatus.OK.value(), "Get movie list to booking successfully", movieList);
+    }
+
+    @Operation(
+            summary = "Get movies with showtimes on a specific date",
+            description = "Returns list of movies that have showtimes scheduled on the given date. " +
+                    "Can filter by movie name keyword. Used by staff for ticket selection."
+    )
+    @PreAuthorize("hasAnyAuthority('CUSTOMER','OPERATION','STAFF')")
+    @GetMapping("/with-showtimes/{date}")
+    public ResponseData<List<StaffMovieListResponse>> getMoviesWithShowtimesOnDate(
+            @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+            @RequestParam(required = false) String keyword) {
+
+        log.info("Request to get movies with showtimes on date: {}, keyword: {}", date, keyword);
+        List<StaffMovieListResponse> movies = movieService.getMoviesWithShowtimesOnDate(date, keyword);
+        log.info("Response: found {} movies with showtimes on date {}", movies.size(), date);
+
+        return new ResponseData<>(HttpStatus.OK.value(), "Get movies with showtimes successfully", movies);
     }
 }

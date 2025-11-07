@@ -30,6 +30,7 @@ import vn.cineshow.dto.response.movie.CountryResponse;
 import vn.cineshow.dto.response.movie.LanguageResponse;
 import vn.cineshow.dto.response.movie.MovieGenreResponse;
 import vn.cineshow.dto.response.movie.OperatorMovieOverviewResponse;
+import vn.cineshow.dto.response.movie.StaffMovieListResponse;
 import vn.cineshow.enums.MovieStatus;
 import vn.cineshow.exception.AppException;
 import vn.cineshow.exception.DuplicateResourceException;
@@ -67,9 +68,9 @@ public class MovieServiceImpl implements MovieService {
 
         List<Sort.Order> sorts = new ArrayList<>();
 
-        //if sortBy != null
+        // if sortBy != null
         if (StringUtils.hasLength(sortBy)) {
-            //firstName:asc|desc
+            // firstName:asc|desc
             Pattern pattern = Pattern.compile("(\\w+)(:)(.*)");
             Matcher matcher = pattern.matcher(sortBy);
             if (matcher.find()) {
@@ -95,7 +96,6 @@ public class MovieServiceImpl implements MovieService {
     public PageResponse<?> getMoviesWithFilterBymanyColumnAndSortBy(MovieFilterRequest filterRequest) {
         return searchRepository.getMoviesListWithFilterByManyColumnAndSortBy(filterRequest);
     }
-
 
     @Override
     public List<LanguageResponse> getAllLanguage() {
@@ -151,12 +151,12 @@ public class MovieServiceImpl implements MovieService {
     @Override
     @Transactional
     public Long create(MovieCreationRequest request) {
-        //check language exist
+        // check language exist
         Language language = findLanguageById(request.getLanguageId());
         // get Country
         Country country = findCountryById(request.getCountryId());
 
-        //get Movie Genres
+        // get Movie Genres
         Set<MovieGenre> movieGenres = new HashSet<>();
         for (Long genreId : request.getGenreIds()) {
             movieGenres.add(findMovieGenreById(genreId));
@@ -211,37 +211,34 @@ public class MovieServiceImpl implements MovieService {
                 .build()).toList();
     }
 
-    @Override
-    public void updatebyId(long id, MovieUpdateBasicRequest request) {
 
-    }
 
-//    @Transactional
-//    @Override
-//    public void updatebyId(long id, MovieUpdateBasicRequest request) {
-//        Movie movie = findById(id);
-//
-//        // Check for duplicate movie name (excluding current movie)
-//        if (isMovieExistForUpdate(request.getName(), request.getReleaseDate(), id)) {
-//            log.warn("Movie with name {} already exists", request.getName());
-//            throw new DuplicateResourceException("Movie already exists");
-//        }
-//
-//        Set<MovieGenre> movieGenres = new HashSet<>();
-//        for (Long genreId : request.getGenreIds()) {
-//            movieGenres.add(findMovieGenreById(genreId));
-//        }
-//
-//        movie.setName(request.getName().trim());
-//        movie.setLanguage(findLanguageById(request.getLanguageId()));
-//        movie.setCountry(findCountryById(request.getCountryId()));
-//        movie.setMovieGenres(movieGenres);
-//        movie.setStatus(MovieStatus.valueOf(request.getStatus()));
-//        movie.setReleaseDate(request.getReleaseDate());
-//
-//        movieRepository.save(movie);
-//        log.info("Movie updated successfully, id: {}", movie.getId());
-//    }
+     @Transactional
+     @Override
+     public void updatebyId(long id, MovieUpdateBasicRequest request) {
+     Movie movie = findById(id);
+
+     // Check for duplicate movie name (excluding current movie)
+     if (isMovieExistForUpdate(request.getName(), request.getReleaseDate(), id)) {
+     log.warn("Movie with name {} already exists", request.getName());
+     throw new DuplicateResourceException("Movie already exists");
+     }
+
+     Set<MovieGenre> movieGenres = new HashSet<>();
+     for (Long genreId : request.getGenreIds()) {
+     movieGenres.add(findMovieGenreById(genreId));
+     }
+
+     movie.setName(request.getName().trim());
+     movie.setLanguage(findLanguageById(request.getLanguageId()));
+     movie.setCountry(findCountryById(request.getCountryId()));
+     movie.setMovieGenres(movieGenres);
+     movie.setStatus(MovieStatus.valueOf(request.getStatus()));
+     movie.setReleaseDate(request.getReleaseDate());
+
+     movieRepository.save(movie);
+     log.info("Movie updated successfully, id: {}", movie.getId());
+     }
 
     @Transactional
     @Override
@@ -319,6 +316,7 @@ public class MovieServiceImpl implements MovieService {
     }
 
     @Override
+    @Transactional
     public void updateFeatureMovie(long id, boolean isFeatured) {
         Movie movie = findById(id);
         if (movie.getBannerUrl() == null) {
@@ -348,28 +346,34 @@ public class MovieServiceImpl implements MovieService {
         return searchRepository.findMoviesBySearchAndFilter(request);
     }
 
+    @Override
+    public List<StaffMovieListResponse> getMoviesWithShowtimesOnDate(LocalDate date, String keyword) {
+        return searchRepository.findMoviesWithShowtimesOnDate(date, keyword);
+    }
 
     private PageResponse<?> getPageResponse(int pageNo, int pageSize, Page<Movie> movies) {
 
-        List<OperatorMovieOverviewResponse> responses = movies.stream().map(movie -> OperatorMovieOverviewResponse.builder()
-                .id(movie.getId())
-                .actor(movie.getActor())
-                .name(movie.getName())
-                .genre(getMovieGenresByMovie(movie))
-                .country(CountryResponse.builder()
-                        .id(movie.getCountry().getId())
-                        .name(movie.getCountry().getName())
+        List<OperatorMovieOverviewResponse> responses = movies.stream()
+                .map(movie -> OperatorMovieOverviewResponse.builder()
+                        .id(movie.getId())
+                        .actor(movie.getActor())
+                        .name(movie.getName())
+                        .genre(getMovieGenresByMovie(movie))
+                        .country(CountryResponse.builder()
+                                .id(movie.getCountry().getId())
+                                .name(movie.getCountry().getName())
+                                .build())
+                        .description(movie.getDescription())
+                        .releaseDate(movie.getReleaseDate())
+                        .trailerUrl(movie.getTrailerUrl())
+                        .language(LanguageResponse.builder()
+                                .id(movie.getLanguage().getId())
+                                .name(movie.getLanguage().getName())
+                                .build())
+                        .posterUrl(movie.getPosterUrl())
+                        .director(movie.getDirector())
                         .build())
-                .description(movie.getDescription())
-                .releaseDate(movie.getReleaseDate())
-                .trailerUrl(movie.getTrailerUrl())
-                .language(LanguageResponse.builder()
-                        .id(movie.getLanguage().getId())
-                        .name(movie.getLanguage().getName())
-                        .build())
-                .posterUrl(movie.getPosterUrl())
-                .director(movie.getDirector())
-                .build()).toList();
+                .toList();
 
         return PageResponse.builder()
                 .pageNo(pageNo)
@@ -384,16 +388,18 @@ public class MovieServiceImpl implements MovieService {
         return movieRepository.existsByNameAndReleaseDate(name, releaseDate);
     }
 
-//    private boolean isMovieExistForUpdate(String name, LocalDate releaseDate, Long excludeId) {
-//        return movieRepository.existsByNameAndReleaseDateAndIdNot(name, releaseDate, excludeId);
-//    }
+     private boolean isMovieExistForUpdate(String name, LocalDate releaseDate,
+         Long excludeId) {
+         return movieRepository.existsByNameAndReleaseDateAndIdNot(name, releaseDate,
+         excludeId);
+         }
 
     private List<MovieGenreResponse> getMovieGenresByMovie(Movie movie) {
         List<MovieGenre> movieGenres = movie.getMovieGenres().stream().toList();
         return movieGenres.stream().map(movieGenre -> MovieGenreResponse.builder()
-                        .id(movieGenre.getId())
-                        .name(movieGenre.getName())
-                        .build())
+                .id(movieGenre.getId())
+                .name(movieGenre.getName())
+                .build())
                 .toList();
     }
 

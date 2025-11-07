@@ -1,6 +1,7 @@
 package vn.cineshow.service;
 
 
+import vn.cineshow.dto.request.ChangePasswordRequest;
 import vn.cineshow.dto.request.ForgotPasswordRequest;
 import vn.cineshow.dto.request.ResetPasswordRequest;
 
@@ -14,5 +15,7 @@ public interface AccountService {
     Optional<String> verifyOtpForReset(String email, String otp);
 
     boolean resetPassword(ResetPasswordRequest request);
+
+    void changePassword(Long userId, ChangePasswordRequest request);
 
 }

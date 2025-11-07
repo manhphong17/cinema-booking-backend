@@ -1,22 +1,23 @@
 package vn.cineshow.service.impl;
 
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-import vn.cineshow.dto.request.booking.SeatSelectRequest;
-import vn.cineshow.dto.response.booking.SeatHold;
-import vn.cineshow.dto.response.booking.SeatTicketDTO;
-import vn.cineshow.enums.SeatShowTimeStatus;
-import vn.cineshow.repository.TicketRepository;
-import vn.cineshow.service.RedisService;
-import vn.cineshow.service.SeatHoldService;
-
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import vn.cineshow.dto.request.booking.SeatSelectRequest;
+import vn.cineshow.dto.response.booking.SeatHold;
+import vn.cineshow.dto.response.booking.SeatTicketDTO;
+import vn.cineshow.enums.TicketStatus;
+import vn.cineshow.repository.TicketRepository;
+import vn.cineshow.service.RedisService;
+import vn.cineshow.service.SeatHoldService;
 
 @Slf4j
 @Service
@@ -31,7 +32,6 @@ public class SeatHoldServiceImpl implements SeatHoldService {
     private String buildId(SeatSelectRequest req) {
         return String.format("seatHold:showtime:%d:user:%d", req.getShowtimeId(), req.getUserId());
     }
-
 
     /**
      * hold seat
@@ -87,7 +87,7 @@ public class SeatHoldServiceImpl implements SeatHoldService {
                             .rowIdx(Integer.parseInt(ticket.getSeat().getRow()) - 1)
                             .columnIdx(Integer.parseInt(ticket.getSeat().getColumn()) - 1)
                             .seatType(ticket.getSeat().getSeatType().getName())
-                            .status(SeatShowTimeStatus.HELD.name())
+                            .status(TicketStatus.HELD.name())
                             .build();
                 })
                 .toList();
@@ -171,6 +171,12 @@ public class SeatHoldServiceImpl implements SeatHoldService {
         }
 
         return ttl;
+    }
+
+    @Override
+    public SeatHold getCurrentHold(Long showtimeId, Long userId) {
+        String key = String.format("seatHold:showtime:%d:user:%d", showtimeId, userId);
+        return redisService.get(key, SeatHold.class);
     }
 
 }

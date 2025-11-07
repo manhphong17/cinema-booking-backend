@@ -33,8 +33,26 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserResponse updateProfile(String email, UpdateUserRequest request) {
         User user = getUserByEmail(email);
-        user.setName(request.getName());
-        user.setAddress(request.getAddress());
+
+        // Update name if provided
+        if (request.getName() != null && !request.getName().isBlank()) {
+            user.setName(request.getName());
+        }
+
+        // Update address if provided
+        if (request.getAddress() != null) {
+            user.setAddress(request.getAddress());
+        }
+
+        // Update avatar if provided
+        if (request.getAvatar() != null) {
+            user.setAvatar(request.getAvatar());
+        }
+
+        // Update gender if provided
+        if (request.getGender() != null) {
+            user.setGender(request.getGender());
+        }
 
         userRepository.save(user);
         return mapToResponse(user);
@@ -52,6 +70,8 @@ public class UserServiceImpl implements UserService {
                 .email(user.getAccount() != null ? user.getAccount().getEmail() : null)
                 .address(user.getAddress())
                 .loyalPoint(user.getLoyalPoint())
+                .avatar(user.getAvatar())
+                .gender(user.getGender())
                 .build();
     }
 }

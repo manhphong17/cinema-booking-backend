@@ -1,36 +1,27 @@
 package vn.cineshow.repository;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import org.springframework.stereotype.Component;
-import org.springframework.util.StringUtils;
-
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.Query;
 import jakarta.persistence.TypedQuery;
-import jakarta.persistence.criteria.CriteriaBuilder;
-import jakarta.persistence.criteria.CriteriaQuery;
-import jakarta.persistence.criteria.Join;
-import jakarta.persistence.criteria.JoinType;
-import jakarta.persistence.criteria.Predicate;
-import jakarta.persistence.criteria.Root;
+import jakarta.persistence.criteria.*;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 import vn.cineshow.dto.request.movie.MovieFilterRequest;
 import vn.cineshow.dto.request.movie.UserSearchMovieRequest;
 import vn.cineshow.dto.response.PageResponse;
-import vn.cineshow.dto.response.movie.CountryResponse;
-import vn.cineshow.dto.response.movie.LanguageResponse;
-import vn.cineshow.dto.response.movie.MovieGenreResponse;
-import vn.cineshow.dto.response.movie.OperatorMovieOverviewResponse;
-import vn.cineshow.dto.response.movie.UserMovieBookingListResponse;
+import vn.cineshow.dto.response.movie.*;
 import vn.cineshow.exception.AppException;
 import vn.cineshow.exception.ErrorCode;
 import vn.cineshow.model.Movie;
 import vn.cineshow.model.MovieGenre;
+
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Component
 @Slf4j(topic = "SEARCH_REPOSITORY")
@@ -271,6 +262,56 @@ public class SearchMovieRepository implements SearchMovieRepositoryCustom {
                 .name(movie.getName())
                 .ageRating(movie.getAgeRating())
                 .id(movie.getId())
+                .build();
+    }
+
+    /**
+     * Retrieves a list of movies that have showtimes on a specific date.
+     * Only returns movies with status PLAYING or UPCOMING.
+     *
+     * @param date    The date to check for showtimes
+     * @param keyword Optional keyword to search by movie name
+     * @return List of movies with showtimes on the given date
+     */
+    @Override
+    public List<StaffMovieListResponse> findMoviesWithShowtimesOnDate(LocalDate date, String keyword) {
+        StringBuilder jpql = new StringBuilder();
+        jpql.append("SELECT DISTINCT m FROM Movie m ");
+        jpql.append("INNER JOIN m.showTimes st ");
+        jpql.append("WHERE m.isDeleted = false ");
+        jpql.append("AND st.isDeleted = false ");
+        jpql.append("AND st.startTime BETWEEN :startTime AND :endTime ");
+        jpql.append("AND (m.status = :statusPlaying OR m.status = :statusUpcoming) ");
+
+        if (StringUtils.hasText(keyword)) {
+            jpql.append("AND LOWER(m.name) LIKE LOWER(:keyword) ");
+        }
+
+        jpql.append("ORDER BY m.releaseDate DESC, m.name DESC");
+
+        Query query = entityManager.createQuery(jpql.toString());
+        query.setParameter("startTime", date.atStartOfDay());
+        query.setParameter("endTime", date.atTime(23, 59, 59));
+        query.setParameter("statusPlaying", vn.cineshow.enums.MovieStatus.PLAYING);
+        query.setParameter("statusUpcoming", vn.cineshow.enums.MovieStatus.UPCOMING);
+
+        if (StringUtils.hasText(keyword)) {
+            query.setParameter("keyword", "%" + keyword + "%");
+        }
+
+        @SuppressWarnings("unchecked")
+        List<Movie> movies = query.getResultList();
+
+        return movies.stream().map(this::mapToStaffMovie).toList();
+    }
+
+    private StaffMovieListResponse mapToStaffMovie(Movie movie) {
+        return StaffMovieListResponse.builder()
+                .id(movie.getId())
+                .name(movie.getName())
+                .posterUrl(movie.getPosterUrl())
+                .duration(movie.getDuration())
+                .ageRating(movie.getAgeRating())
                 .build();
     }
 

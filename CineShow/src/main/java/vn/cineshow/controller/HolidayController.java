@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import vn.cineshow.dto.request.holiday.HolidayRequest;
 import vn.cineshow.dto.response.ResponseData;
@@ -24,7 +25,7 @@ public class HolidayController {
     private final HolidayService holidayService;
 
     @PostMapping("/create")
-
+    @PreAuthorize("hasAuthority('BUSINESS')")
     public ResponseData<List<Holiday>> createHolidays(@RequestBody List<HolidayRequest> requests) {
         List<Holiday> created = holidayService.addHolidays(requests);
         return new ResponseData<>(
@@ -40,6 +41,7 @@ public class HolidayController {
      * GET /holidays?filterType=recurring&page=1&limit=7
      */
     @GetMapping
+    @PreAuthorize("hasAuthority('BUSINESS')")
     public ResponseData<Map<String, Object>> getHolidays(
             @RequestParam(defaultValue = "recurring") String filterType,
             @RequestParam(defaultValue = "1") int page,
@@ -62,6 +64,7 @@ public class HolidayController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAuthority('BUSINESS')")
     public ResponseData<Void> deleteHoliday(@PathVariable Long id) {
         holidayService.deleteHolidayById(id);
         return new ResponseData<>(

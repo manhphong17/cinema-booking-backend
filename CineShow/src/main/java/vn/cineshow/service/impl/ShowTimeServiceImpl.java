@@ -15,8 +15,8 @@ import vn.cineshow.dto.response.showtime.ShowTimeListDTO;
 import vn.cineshow.dto.response.showtime.ShowTimeResponse;
 import vn.cineshow.enums.MovieStatus;
 import vn.cineshow.enums.RoomStatus;
-import vn.cineshow.enums.SeatShowTimeStatus;
 import vn.cineshow.enums.SeatStatus;
+import vn.cineshow.enums.TicketStatus;
 import vn.cineshow.exception.AppException;
 import vn.cineshow.exception.ErrorCode;
 import vn.cineshow.model.*;
@@ -333,7 +333,7 @@ public class ShowTimeServiceImpl implements ShowTimeService {
                     .build();
 
             ticket.setStatus(
-                    seat.getStatus() == SeatStatus.AVAILABLE ? SeatShowTimeStatus.AVAILABLE : SeatShowTimeStatus.BLOCKED
+                    seat.getStatus() == SeatStatus.AVAILABLE ? TicketStatus.AVAILABLE : TicketStatus.BLOCKED
             );
             //save
             ticketRepository.save(ticket);

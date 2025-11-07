@@ -4,6 +4,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import vn.cineshow.dto.request.ChangePasswordRequest;
 import vn.cineshow.dto.request.EmailRegisterRequest;
 import vn.cineshow.dto.request.ForgotPasswordRequest;
 import vn.cineshow.dto.request.OtpVerifyDTO;
@@ -59,8 +60,6 @@ private final AuthenticationService authenticationService;
     }
 
 
-
-    // Quên mật khẩu → gửi OTP
     @PostMapping("/forgot-password")
     public ResponseData<?> forgotPassword(@RequestBody @Valid ForgotPasswordRequest request) {
         boolean sent = accountService.forgotPassword(request);
@@ -72,7 +71,7 @@ private final AuthenticationService authenticationService;
                 "OTP sent to your email", null);
     }
 
-    // B3: Verify OTP khi reset password
+
     @PostMapping("/verify-otp-reset")
     public ResponseData<VerifyOtpResetResponse> verifyOtpReset(@RequestBody @Valid OtpVerifyDTO req) {
         Optional<String> tokenOpt = accountService.verifyOtpForReset(req.email(), req.otpCode());
@@ -84,7 +83,7 @@ private final AuthenticationService authenticationService;
                 new VerifyOtpResetResponse(tokenOpt.get()));
     }
 
-    // B4: Đặt lại mật khẩu bằng OTP
+
     @PostMapping("/reset-password")
     public ResponseData<?> resetPassword(@RequestBody @Valid ResetPasswordRequest request) {
         boolean success = accountService.resetPassword(request);
@@ -94,6 +93,16 @@ private final AuthenticationService authenticationService;
         }
         return new ResponseData<>(HttpStatus.OK.value(),
                 "Password reset successfully", null);
+    }
+
+    // Đổi mật khẩu cho user đã đăng nhập
+    @PostMapping("/{userId}/change-password")
+    public ResponseData<?> changePassword(
+            @PathVariable Long userId,
+            @RequestBody @Valid ChangePasswordRequest request) {
+        accountService.changePassword(userId, request);
+        return new ResponseData<>(HttpStatus.OK.value(),
+                "Password changed successfully", null);
     }
 
 }
