@@ -21,7 +21,7 @@ public enum ErrorCode {
     FILE_UPLOAD_FAILED(1014, "File upload failed"),
     CONCESSION_NOT_FOUND(1016, "Concession not found"),
     INVALID_QUANTITY(1017, "Invalid quantity to add"),
-    INVALID_PARAMETER(1020, "Invalid parameter"),
+    INVALID_PARAMETER(1021, "Invalid parameter"),
     CONCESSION_ALREADY_DELETED(1018, "Concession has been deleted"),
     ACCOUNT_NOT_FOUND(1019, "Account not found"),
     PASSWORD_RESET_TOKEN_NOT_FOUND(1033, "Password reset token not found"),
