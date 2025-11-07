@@ -12,14 +12,14 @@ import vn.cineshow.dto.response.seat.seat_type.SeatTypeDTO;
 public class SeatCellDTO {
     Long id;
 
-    Integer rowIndex;     // 1..rows
-    Integer columnIndex;  // 1..columns
+    Integer rowIndex;
+    Integer columnIndex;
 
-    String rowLabel;      // "A", "B", ...
-    Integer number;       // 1..N (số ghế trong hàng)
+    String rowLabel;
+    Integer number;
 
-    SeatTypeDTO seatType; // {id, code, name, description?}
-    String status;        // "ACTIVE" | "INACTIVE" | "BLOCKED"
-    Boolean isBlocked;    // true/false
-    String note;          // có thể null
+    SeatTypeDTO seatType;
+    String status;
+    Boolean isBlocked;
+    String note;
 }
