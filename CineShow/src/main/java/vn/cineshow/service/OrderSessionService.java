@@ -18,5 +18,7 @@ public interface OrderSessionService {
 
     void delete(Long userId, Long showtimeId);
 
-    void extendTTL(Long userId, Long showtimeId);
+//    void extendTTL(Long userId, Long showtimeId);
+
+    OrderSessionDTO getOrderSession(Long showtimeId, Long userId);
 }

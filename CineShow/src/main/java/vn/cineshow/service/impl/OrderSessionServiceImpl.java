@@ -36,8 +36,8 @@ public class OrderSessionServiceImpl implements OrderSessionService {
     @Value("${booking.ttl.default}")
     private long TTL_DEFAULT; //600
 
-    @Value("${booking.ttl.payment}")
-    private long PAYMENT_EXTENSION; //1200
+//    @Value("${booking.ttl.payment}")
+//    private long PAYMENT_EXTENSION; //1200
 
     private String getKey(Long userId, Long showtimeId) {
         return String.format("orderSession:showtime:%d:userId:%d", showtimeId, userId);
@@ -163,21 +163,41 @@ public class OrderSessionServiceImpl implements OrderSessionService {
         log.info("[ORDER_SESSION] [DELETE] key = {}", getKey(userId, showtimeId));
     }
 
+//    @Override
+//    public void extendTTL(Long userId, Long showtimeId) {
+//        String key = getKey(userId, showtimeId);
+//
+//        //get order session
+//        OrderSessionDTO order = redisService.get(key, OrderSessionDTO.class);
+//
+//        if (order == null) {
+//            log.warn("[ORDER_SESSION][EXTEND] no session order found for userId ={}, showtimrId ={}", userId, showtimeId);
+//            return;
+//        }
+//
+//        order.setExpiredAt(LocalDateTime.now().plusSeconds(PAYMENT_EXTENSION));
+//
+//        redisService.save(key, order, PAYMENT_EXTENSION);
+//        log.info("[ORDER_SESSION][EXTEND] Payment start with ttl extended, key = {}", key);
+//    }
+
     @Override
-    public void extendTTL(Long userId, Long showtimeId) {
+    public OrderSessionDTO getOrderSession(Long showtimeId, Long userId) {
+        //  Tạo key theo convention chung
         String key = getKey(userId, showtimeId);
 
-        //get order session
-        OrderSessionDTO order = redisService.get(key, OrderSessionDTO.class);
 
-        if (order == null) {
-            log.warn("[ORDER_SESSION][EXTEND] no session order found for userId ={}, showtimrId ={}", userId, showtimeId);
-            return;
+        //  Lấy OrderSessionDTO từ Redis
+        OrderSessionDTO orderExist = redisService.get(key, OrderSessionDTO.class);
+
+        //  Nếu không tồn tại → ném exception
+        if (orderExist == null) {
+            log.warn("[ORDER_SESSION][FETCH] No session found for key={}", key);
+            throw new AppException(ErrorCode.ORDER_SESSION_NOT_FOUND);
         }
 
-        order.setExpiredAt(LocalDateTime.now().plusSeconds(PAYMENT_EXTENSION));
-
-        redisService.save(key, order, PAYMENT_EXTENSION);
-        log.info("[ORDER_SESSION][EXTEND] Payment start with ttl extended, key = {}", key);
+        log.info("[ORDER_SESSION][FETCH] Successfully retrieved order session for key={}", key);
+        return orderExist;
     }
+
 }

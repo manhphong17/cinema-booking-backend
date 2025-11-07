@@ -139,4 +139,26 @@ public class RedisServiceImpl implements RedisService {
         Long ttl = redisTemplate.getExpire(key, TimeUnit.SECONDS);
         return ttl != null ? ttl : -2;
     }
+
+    /**
+     * Reset TTL (time-to-live) of an existing key without modifying its value.
+     *
+     * @param key Redis key
+     * @param duration New expiration duration (e.g. Duration.ofMinutes(7))
+     */
+    @Override
+    public void expire(String key, java.time.Duration duration) {
+        if (key == null || duration == null || duration.isNegative() || duration.isZero()) {
+            log.warn("Cannot set TTL for null key or invalid duration={}", duration);
+            return;
+        }
+
+        Boolean result = redisTemplate.expire(key, duration.getSeconds(), TimeUnit.SECONDS);
+        if (Boolean.TRUE.equals(result)) {
+            log.info("[REDIS TTL] Reset TTL for key={} to {} seconds", key, duration.getSeconds());
+        } else {
+            log.warn("[REDIS TTL] Failed to reset TTL for key={} (key may not exist)", key);
+        }
+    }
+
 }

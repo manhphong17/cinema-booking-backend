@@ -20,14 +20,23 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+
+import org.springframework.web.bind.annotation.*;
+import vn.cineshow.dto.redis.OrderSessionDTO;
+
 import vn.cineshow.dto.request.booking.ConcessionListRequest;
 import vn.cineshow.dto.response.ResponseData;
 import vn.cineshow.dto.response.booking.BookingSeatsResponse;
 import vn.cineshow.dto.response.booking.SeatHold;
 import vn.cineshow.dto.response.booking.ShowTimeResponse;
+import vn.cineshow.dto.response.booking.TicketDetailResponse;
+import vn.cineshow.dto.response.payment.PaymentMethodDTO;
 import vn.cineshow.service.BookingService;
 import vn.cineshow.service.OrderSessionService;
 import vn.cineshow.service.SeatHoldService;
+import java.util.Arrays;
+import java.util.stream.Collectors;
+
 
 @RestController
 @RequestMapping("/bookings")
@@ -111,6 +120,45 @@ public class BookingController {
     public ResponseData<?> addConcessionListToOrderSession(@RequestBody @Valid ConcessionListRequest request) {
         orderSessionService.addOrUpdateCombos(request);
         return new ResponseData<>(HttpStatus.OK.value(), "Add concessions to order session successfully");
+    }
+
+    @Operation(
+            summary = "Get current order session (tickets + concessions) from Redis",
+            description = "Used by frontend payment page to restore user's selected seats and concessions before payment."
+    )
+    @GetMapping("/order-session")
+    public ResponseData<?> getOrderSession(@RequestParam Long showtimeId,
+                                           @RequestParam Long userId) {
+        log.info("[ORDER_SESSION][FETCH] Request get order session - showtimeId: {}, userId: {}", showtimeId, userId);
+
+        // 🔹 Gọi service để lấy order session từ Redis
+        OrderSessionDTO orderSession = orderSessionService.getOrderSession(showtimeId, userId);
+
+        log.info("[ORDER_SESSION][FETCH] Response order session: {}", orderSession);
+        return new ResponseData<>(HttpStatus.OK.value(),
+                "Get order session successfully",
+                orderSession);
+    }
+
+    @GetMapping("/tickets/details")
+    public ResponseData<List<TicketDetailResponse>> getTicketDetails(@RequestParam("ids") String ids) {
+        List<Long> idList = Arrays.stream(ids.split(","))
+                .map(String::trim)
+                .map(Long::parseLong)
+                .collect(Collectors.toList());
+
+        List<TicketDetailResponse> result = bookingService.getTicketDetailsByIds(idList);
+        return new ResponseData<>(HttpStatus.OK.value(), "Get ticket details successfully", result);
+    }
+
+    @GetMapping("/payment-methods")
+    public ResponseData<List<PaymentMethodDTO>> getPaymentMethods() {
+        List<PaymentMethodDTO> methods = bookingService.getActivePaymentMethods();
+        return new ResponseData<>(
+                HttpStatus.OK.value(),
+                "Lấy danh sách phương thức thanh toán thành công",
+                methods
+        );
     }
 
 }

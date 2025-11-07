@@ -28,4 +28,9 @@ public class PaymentMethod extends AbstractEntity implements Serializable {
     @OneToMany(mappedBy = "method")
     private List<Payment> payments;
 
+    @Column(name = "payment_code", length = 50)
+    private String paymentCode;
+
+    @Column(name = "image_url", length = 255)
+    private String imageUrl;
 }

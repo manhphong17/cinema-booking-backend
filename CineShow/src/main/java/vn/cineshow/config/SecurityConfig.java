@@ -64,7 +64,8 @@ public class SecurityConfig {
                 "/movies/banners",
                 "/movies/top/**",
                 "/movies/movie-genres",
-                "/movies/*"
+                "/movies/*",
+                "/payment/ipn"
         );
 
         http
@@ -78,8 +79,21 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
+//<<<<<<< HEAD
+//                                "/auth/**",
+//                                "/oauth2/**",
+//                                "/swagger-ui/**",
+//                                "/v3/api-docs/**",
+//                                "/public/**",
+//                                "/actuator/**",
+//                                "/ws/**",// Cho phép handshake WebSocket
+//                                "/ws-native/**",
+//                                "/payment/ipn"
+//                                ).permitAll()
+//=======
                                 publicEndpoints.toArray(new String[0])
                         ).permitAll()
+//>>>>>>> 46f8b4af6fb6819d1d23649bc1c02ce60654500d
                         .anyRequest().authenticated()
                 )
 

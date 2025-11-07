@@ -61,7 +61,6 @@ public class OtpServiceImpl implements OtpService {
             code.setUsed(false);
         }
 
-
         otpRepo.save(code);
 
         // gửi email (nên async nếu load cao)

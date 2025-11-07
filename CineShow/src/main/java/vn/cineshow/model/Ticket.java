@@ -3,7 +3,7 @@ package vn.cineshow.model;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
-import vn.cineshow.enums.SeatShowTimeStatus;
+import vn.cineshow.enums.TicketStatus;
 
 import java.io.Serializable;
 
@@ -28,7 +28,7 @@ public class Ticket extends AbstractEntity implements Serializable {
     Double priceSnapshot;
 
     @Enumerated(EnumType.STRING)
-    SeatShowTimeStatus status;
+    TicketStatus status;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "showtime_id", nullable = false)

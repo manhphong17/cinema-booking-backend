@@ -1,32 +1,22 @@
 package vn.cineshow.service.impl;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import org.springframework.messaging.simp.SimpMessagingTemplate;
-import org.springframework.stereotype.Service;
-
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.stereotype.Service;
 import vn.cineshow.dto.redis.OrderSessionRequest;
 import vn.cineshow.dto.request.booking.SeatSelectRequest;
-import vn.cineshow.dto.response.booking.BookingSeatsResponse;
-import vn.cineshow.dto.response.booking.SeatHold;
-import vn.cineshow.dto.response.booking.SeatTicketDTO;
-import vn.cineshow.dto.response.booking.ShowTimeResponse;
-import vn.cineshow.dto.response.booking.TicketResponse;
-import vn.cineshow.enums.SeatShowTimeStatus;
+import vn.cineshow.dto.response.booking.*;
+import vn.cineshow.dto.response.payment.PaymentMethodDTO;
+import vn.cineshow.enums.SeatStatus;
+import vn.cineshow.enums.TicketStatus;
 import vn.cineshow.exception.AppException;
 import vn.cineshow.exception.ErrorCode;
-import vn.cineshow.model.ShowTime;
+import vn.cineshow.model.*;
 import vn.cineshow.repository.MovieRepository;
+import vn.cineshow.repository.PaymentMethodRepository;
 import vn.cineshow.repository.ShowTimeRepository;
 import vn.cineshow.repository.TicketRepository;
 import vn.cineshow.service.BookingService;
@@ -34,6 +24,20 @@ import vn.cineshow.service.OrderSessionService;
 import vn.cineshow.service.RedisService;
 import vn.cineshow.service.SeatHoldService;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import vn.cineshow.dto.response.booking.BookingSeatsResponse;
+import vn.cineshow.dto.response.booking.SeatHold;
+import vn.cineshow.dto.response.booking.SeatTicketDTO;
+import vn.cineshow.dto.response.booking.ShowTimeResponse;
+import vn.cineshow.dto.response.booking.TicketResponse;
 
 @Service
 @Slf4j(topic = "BOOKING-SERVICE")
@@ -47,6 +51,7 @@ public class BookingServiceImpl implements BookingService {
     SimpMessagingTemplate messagingTemplate;
     TicketRepository ticketRepository;
     OrderSessionService orderSessionService;
+    PaymentMethodRepository paymentMethodRepository;
 
     @Override
     public List<ShowTimeResponse> getShowTimesByMovieAndDay(Long movieId, LocalDate date) {
@@ -60,7 +65,6 @@ public class BookingServiceImpl implements BookingService {
                 movieId
         );
     }
-
 
     @Override
     public List<ShowTimeResponse> getShowTimesByMovieAndStartTime(Long movieId, LocalDateTime startTime) {
@@ -147,7 +151,7 @@ public class BookingServiceImpl implements BookingService {
         orderSessionService.createOrUpdate(sessionReq);
 
         // Broadcast HELD
-        broadcast(req, SeatShowTimeStatus.HELD.name());
+        broadcast(req, TicketStatus.HELD.name());
     }
 
     private void handleDeselectSeat(SeatSelectRequest req) {
@@ -156,7 +160,7 @@ public class BookingServiceImpl implements BookingService {
 
         if (updated == null) {
             orderSessionService.delete(req.getUserId(), req.getShowtimeId());
-            broadcast(req, SeatShowTimeStatus.RELEASED.name());
+            broadcast(req, TicketStatus.RELEASED.name());
             return;
         }
 
@@ -170,7 +174,7 @@ public class BookingServiceImpl implements BookingService {
         orderSessionService.removeTickets(sessionReq);
 
         // Broadcast seat release to all clients
-        broadcast(req, SeatShowTimeStatus.RELEASED.name());
+        broadcast(req, TicketStatus.RELEASED.name());
     }
 
 
@@ -214,7 +218,7 @@ public class BookingServiceImpl implements BookingService {
                     if (ticketOpt.isEmpty()) {
                         return SeatTicketDTO.builder()
                                 .ticketId(ticketId)
-                                .status(SeatShowTimeStatus.BOOKED.name())
+                                .status(TicketStatus.BOOKED.name())
                                 .build();
                     }
                     var ticket = ticketOpt.get();
@@ -223,7 +227,7 @@ public class BookingServiceImpl implements BookingService {
                             .rowIdx(Integer.parseInt(ticket.getSeat().getRow()) - 1)
                             .columnIdx(Integer.parseInt(ticket.getSeat().getColumn()) - 1)
                             .seatType(ticket.getSeat().getSeatType().getName())
-                            .status(SeatShowTimeStatus.BOOKED.name())
+                            .status(TicketStatus.BOOKED.name())
                             .build();
                 })
                 .toList();
@@ -231,7 +235,7 @@ public class BookingServiceImpl implements BookingService {
         messagingTemplate.convertAndSend(
                 "/topic/seat/" + showtimeId,
                 Map.of("seats", seatDetails,
-                        "status", SeatShowTimeStatus.BOOKED.name(),
+                        "status", TicketStatus.BOOKED.name(),
                         "showtimeId", showtimeId)
         );
         
@@ -246,10 +250,65 @@ public class BookingServiceImpl implements BookingService {
     private int countTotalSeatAvailable(ShowTime showTime) {
         Long count = ticketRepository.countByShowTime_IdAndStatus(
                 showTime.getId(), 
-                SeatShowTimeStatus.AVAILABLE
+                TicketStatus.AVAILABLE
         );
         return count != null ? count.intValue() : 0;
     }
 
+    @Override
+    public List<TicketDetailResponse> getTicketDetailsByIds(List<Long> ids) {
+        List<Ticket> tickets = ticketRepository.findTicketsWithRelations(ids);
+        DateTimeFormatter dateFmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        DateTimeFormatter timeFmt = DateTimeFormatter.ofPattern("HH:mm");
 
+
+        return tickets.stream()
+                .map(t -> {
+                    Seat seat = t.getSeat();
+                    ShowTime sh = t.getShowTime();
+                    Room room = seat.getRoom();
+
+                    String seatCode;
+                    if (seat.getRow() != null && seat.getColumn() != null) {
+                        int rowIndex1Based = Integer.parseInt(seat.getRow()); // 1,2,3,...
+                        int rowIndex0Based = Math.max(0, rowIndex1Based - 1); // 0=A, 1=B, ...
+                        char rowLetter = (char) ('A' + rowIndex0Based);
+                        seatCode = rowLetter + String.valueOf(seat.getColumn());
+                    } else {
+                        seatCode = "";
+                    }
+
+                    return TicketDetailResponse.builder()
+                            .ticketId(t.getId())
+                            .seatCode(seatCode)
+                            .seatType(seat.getSeatType().getName())
+                            .ticketPrice(t.getTicketPrice().getPrice())
+
+                            .roomName(room.getName())
+                            .roomType(room.getRoomType().getName())
+                            .hall(room.getName()) // hoặc format khác nếu bạn muốn
+
+                            .showtimeId(sh.getId())
+                            .showDate(sh.getStartTime().format(dateFmt))
+                            .showTime(sh.getStartTime().format(timeFmt))
+
+                            .movieName(sh.getMovie().getName())
+                            .posterUrl(sh.getMovie().getPosterUrl())
+                            .build();
+                })
+                .toList();
+
+    }
+
+    @Override
+    public List<PaymentMethodDTO> getActivePaymentMethods() {
+        List<PaymentMethod> methods = paymentMethodRepository.findByIsActiveTrue();
+        return methods.stream()
+                .map(m -> PaymentMethodDTO.builder()
+                        .paymentName(m.getMethodName())
+                        .paymentCode(m.getPaymentCode())
+                        .imageUrl(m.getImageUrl())
+                        .build())
+                .collect(Collectors.toList());
+    }
 }

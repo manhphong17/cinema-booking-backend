@@ -1,5 +1,6 @@
 package vn.cineshow.service.impl;
 
+import java.security.Provider;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -30,6 +31,7 @@ import vn.cineshow.dto.request.SignInRequest;
 import vn.cineshow.dto.response.SignInResponse;
 import vn.cineshow.dto.response.TokenResponse;
 import vn.cineshow.enums.AccountStatus;
+import vn.cineshow.enums.AuthProvider;
 import vn.cineshow.exception.*;
 import vn.cineshow.model.*;
 import vn.cineshow.exception.AppException;
@@ -41,10 +43,7 @@ import vn.cineshow.model.Account;
 import vn.cineshow.model.RefreshToken;
 import vn.cineshow.model.Role;
 import vn.cineshow.model.User;
-import vn.cineshow.repository.AccountRepository;
-import vn.cineshow.repository.PasswordResetTokenRepository;
-import vn.cineshow.repository.RefreshTokenRepository;
-import vn.cineshow.repository.RoleRepository;
+import vn.cineshow.repository.*;
 import vn.cineshow.service.AuthenticationService;
 import vn.cineshow.service.JWTService;
 import vn.cineshow.service.OtpService;
@@ -75,6 +74,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     private final RoleRepository roleRepo;
     private final PasswordEncoder encoder;
     private final OtpService otpService;
+    private final AccountProviderRepository accountProviderRepository;
 
     private static final SecureRandom RNG = new SecureRandom();
 
@@ -209,6 +209,10 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             account.setUser(user);
             account.setPassword(encoder.encode(req.password()));
             account.setStatus(AccountStatus.PENDING); // reset lại trạng thái pending nếu cần
+            AccountProvider provider =AccountProvider.builder()
+                    .provider(AuthProvider.LOCAL)
+                    .account(account)
+                    .build();
             accountRepository.save(account);
 
             otpService.sendOtp(req.email(), req.name());
@@ -226,7 +230,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 .address(req.address() != null ? req.address() : null)
                 .build();
 
-
         Account account = Account.builder()
                 .email(req.email())
                 .password(encoder.encode(req.password()))
@@ -235,10 +238,16 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 .user(user)
                 .build();
 
-        // nhớ set ngược lại
-        user.setAccount(account);
+        AccountProvider provider = AccountProvider.builder()
+                .provider(AuthProvider.LOCAL)
+                .account(account)
+                .build();
 
+
+        user.setAccount(account);
+        account.setProviders(List.of(provider));
         accountRepository.save(account);
+
 
         otpService.sendOtp(req.email(), req.name());
         return account.getId();

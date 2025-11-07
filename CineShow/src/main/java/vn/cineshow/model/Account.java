@@ -47,9 +47,6 @@ public class Account extends AbstractEntity implements Serializable, UserDetails
     @OneToMany(mappedBy = "account", cascade = CascadeType.ALL)
     List<AccountProvider> providers;
 
-    @OneToMany(mappedBy = "account", cascade = CascadeType.ALL)
-    List<OtpCode> otpCodes;
-
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         if (roles == null) {

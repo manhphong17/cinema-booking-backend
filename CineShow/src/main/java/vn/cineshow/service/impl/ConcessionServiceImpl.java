@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import vn.cineshow.dto.request.concession.ConcessionAddRequest;
 import vn.cineshow.dto.request.concession.ConcessionUpdateRequest;
 import vn.cineshow.dto.response.concession.ConcessionResponse;
+import vn.cineshow.dto.response.concession.ConcessionSimpleResponse;
 import vn.cineshow.dto.response.concession.ConcessionTypeResponse;
 import vn.cineshow.enums.ConcessionStatus;
 import vn.cineshow.enums.ConcessionTypeStatus;
@@ -24,6 +25,8 @@ import vn.cineshow.repository.ConcessionTypeRepository;
 import vn.cineshow.service.ConcessionService;
 
 import java.io.IOException;
+import java.util.List;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -256,5 +259,16 @@ class ConcessionServiceImpl implements ConcessionService {
         concessionRepository.save(concession);
     }
 
+    @Override
+    public List<ConcessionSimpleResponse> getConcessionsByIds(List<Long> ids) {
+        List<Concession> concessions = concessionRepository.findActiveConcessionsByIds(ids);
 
+        return concessions.stream()
+                .map(c -> ConcessionSimpleResponse.builder()
+                        .concessionId(c.getId())
+                        .name(c.getName())
+                        .price(c.getPrice())
+                        .build())
+                .collect(Collectors.toList());
+    }
 }

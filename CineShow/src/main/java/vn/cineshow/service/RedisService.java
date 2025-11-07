@@ -18,4 +18,5 @@ public interface RedisService {
 
     long getTTL(String key);
 
+    void expire(String key, java.time.Duration duration);
 }

@@ -35,6 +35,11 @@ public enum ErrorCode {
     SEAT_TYPE_NOT_FOUND(1030, "Seat type not found"),
     ROOM_TYPE_NOT_FOUND(1031, "Room type not found"),
     TICKET_PRICE_NOT_FOUND(1032, "Ticket price not found"),
+    ORDER_SESSION_NOT_FOUND(1033, "Order-session not found"),
+    USER_NOT_FOUND(1034, "User not found"),
+    TICKET_NOT_FOUND(1035, "Ticket not found"),
+    PAYMENT_METHOD_NOT_FOUND(1036, "Payment method not found"),
+    PAYMENT_URL_GENERATION_FAILED(1037, "Payment URL generation failed"),
 
     SHOW_TIME_NOT_FOUND(3001, "Show time not found"),
     MOVIE_BANNER_NOT_FOUND(3001, "Movie banner not found"),

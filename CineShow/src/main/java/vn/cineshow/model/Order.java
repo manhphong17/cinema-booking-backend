@@ -24,22 +24,22 @@ public class Order extends AbstractEntity implements Serializable {
     @Column(columnDefinition = "decimal(10,2) DEFAULT 0.00")
     Double totalPrice;
 
+    @Column(columnDefinition = "decimal(10,2) DEFAULT 0.00")
+    Double discount;
+
     @Enumerated(EnumType.STRING)
     OrderStatus orderStatus; //PENDING, COMPLETED, CANCELED
 
     @Column(nullable = false, unique = true)
     String code;
 
-    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "order")
-    private List<Payment> payments;
+    @OneToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.EAGER, mappedBy = "order")
+    private Payment payment;
 
-    @OneToMany(cascade = {CascadeType.PERSIST, CascadeType.REMOVE}, fetch = FetchType.LAZY, mappedBy = "order")
+    @OneToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE} , fetch = FetchType.EAGER, mappedBy = "order")
     private List<OrderConcession> orderConcession;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    Voucher voucher;
-
-    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "order")
+    @OneToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.EAGER, mappedBy = "order")
     private List<Ticket> tickets;
 
     @PrePersist

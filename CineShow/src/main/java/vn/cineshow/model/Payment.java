@@ -3,12 +3,7 @@ package vn.cineshow.model;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -28,7 +23,7 @@ import vn.cineshow.enums.PaymentStatus;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class Payment extends AbstractEntity implements Serializable {
 
-    @ManyToOne
+    @OneToOne
     Order order;
 
     @ManyToOne

@@ -19,6 +19,7 @@ spring:
 #      ssl:
 #        enabled: false
 
+
 #  Redis Upstash
   data:
     redis:
@@ -143,18 +144,24 @@ spring.servlet.multipart.max-request-size: 10MB
 #    org.springframework.transaction: DEBUG
 #    org.hibernate.engine.jdbc.spi.SqlExceptionHelper: WARN
 
-#
-#vnpay:
-#  tmn-code: ME5W6VFG
-#  hash-secret: ${VNPAY_HASH_SECRET}
-#  pay-url: https://sandbox.vnpayment.vn/paymentv2/vpcpay.html
-#  return-url: https://yourdomain.com/api/payment/return
-#  timeout: 6
+
+vnpay:
+  tmn-code: ME5W6VFG
+  hash-secret: ${VNPAY_HASH_SECRET}
+  pay-url: https://sandbox.vnpayment.vn/paymentv2/vpcpay.html
+  return-url: http://localhost:3000/booking/confirmation
+  version: 2.1.0
+  timeout: 7
+  command: pay
 
 booking:
   ttl:
-    default: 1200    # 10 phút - chọn ghế
-    payment: 1200   # 20 phút - thanh toán
+    default: 360    # 6 phút - chọn ghế
+    payment: 600    #10 ' giữ ghế cho thanh toán
+
+
+    
+
 
 
 

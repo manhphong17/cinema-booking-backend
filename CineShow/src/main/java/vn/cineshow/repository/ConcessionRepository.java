@@ -10,6 +10,8 @@ import vn.cineshow.enums.ConcessionStatus;
 import vn.cineshow.enums.StockStatus;
 import vn.cineshow.model.Concession;
 
+import java.util.List;
+
 public interface ConcessionRepository extends JpaRepository<Concession, Long> {
 
     @Query("""
@@ -31,6 +33,8 @@ public interface ConcessionRepository extends JpaRepository<Concession, Long> {
 
     long countByConcessionType_Id(Long concessionTypeId);
 
+    @Query("SELECT c FROM Concession c WHERE c.id IN :ids AND c.concessionStatus = vn.cineshow.enums.ConcessionStatus.ACTIVE")
+    List<Concession> findActiveConcessionsByIds(@Param("ids") List<Long> ids);
 }
 
 
