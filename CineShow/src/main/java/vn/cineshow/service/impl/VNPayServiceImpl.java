@@ -10,7 +10,6 @@ import org.springframework.transaction.annotation.Transactional;
 import vn.cineshow.config.VNPayProperties;
 import vn.cineshow.dto.redis.OrderSessionDTO;
 import vn.cineshow.dto.request.payment.CheckoutRequest;
-import vn.cineshow.dto.response.payment.PaymentMethodDTO;
 import vn.cineshow.enums.OrderStatus;
 import vn.cineshow.enums.PaymentStatus;
 import vn.cineshow.enums.TicketStatus;
@@ -129,7 +128,10 @@ public class VNPayServiceImpl implements VNPayService {
             try {
                 // ----  Cập nhật TTL cho OrderSession và SeatHold nếu tồn tại ----
                 if (redisService.exists(orderSessionKey)) {
+                    OrderSessionDTO session = redisService.get(orderSessionKey, OrderSessionDTO.class);
+
                     redisService.expire(orderSessionKey, Duration.ofSeconds(HOLD_DURATION));
+                    redisService.save(orderSessionKey, session, HOLD_DURATION);
                     log.info("[REDIS TTL][ORDER_SESSION] Extended TTL for key={} to {} seconds", orderSessionKey, HOLD_DURATION);
                 } else {
                     log.warn("[REDIS TTL][ORDER_SESSION] Key not found, cannot extend TTL: {}", orderSessionKey);
@@ -362,13 +364,12 @@ public class VNPayServiceImpl implements VNPayService {
             log.info("===== VNPay Return URL Callback =====");
             log.info("Params: {}", params);
 
-            // 3️⃣  Checksum validation
+            // 1  Checksum validation
             if (!isValidChecksum(params)) {
                 response.put("RspCode", "97");
                 response.put("Message", "Invalid Checksum");
                 return response;
             }
-
 
             // 2. Lấy thông tin giao dịch
             String txnRef = params.get("vnp_TxnRef");
