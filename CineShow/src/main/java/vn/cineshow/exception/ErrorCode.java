@@ -74,7 +74,17 @@ public enum ErrorCode {
     SHOWTIME_PASSED(3107, "Suất chiếu đã diễn ra"),
     
     //Password
-    PASSWORD_TOO_WEAK(1020, "Mật khẩu quá yếu");
+    PASSWORD_TOO_WEAK(1020, "Mật khẩu quá yếu"),
+
+
+    // ===== THEATER (mới, 4001–4010) =====
+    THEATER_NOT_FOUND(4001, "Theater details not found"),
+    THEATER_INVALID_EMAIL(4002, "Invalid theater contact email"),
+    THEATER_INVALID_PHONE(4003, "Invalid theater phone number"),
+    THEATER_INVALID_URL(4004, "Invalid theater URL"),
+    THEATER_INVALID_OPEN_CLOSE(4005, "closeTime must be after openTime (or enable overnight)"),
+    THEATER_BANNER_UPLOAD_FAILED(4006, "Theater banner upload failed"),
+    THEATER_CONFLICT_VERSION(4007, "Theater details were updated by another user");
     private final int code;
     private final String message;
 
