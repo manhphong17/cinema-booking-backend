@@ -8,7 +8,10 @@ import vn.cineshow.dto.request.seat.SeatTypeCreateRequest;
 import vn.cineshow.dto.request.seat.SeatTypeUpdateRequest;
 import vn.cineshow.dto.response.seat.seat_type.SeatTypeDTO;
 import vn.cineshow.dto.response.seat.seat_type.SeatTypeResponse;
+import vn.cineshow.exception.AppException;
+import vn.cineshow.exception.ErrorCode;
 import vn.cineshow.model.SeatType;
+import vn.cineshow.repository.SeatRepository;
 import vn.cineshow.repository.SeatTypeRepository;
 import vn.cineshow.service.SeatTypeService;
 
@@ -21,6 +24,7 @@ import java.util.stream.Collectors;
 public class SeatTypeServiceImpl implements SeatTypeService {
 
     private final SeatTypeRepository seatTypeRepository;
+    private final SeatRepository seatRepository;
 
     @Override
     @Transactional(readOnly = true)
@@ -44,8 +48,6 @@ public class SeatTypeServiceImpl implements SeatTypeService {
                 .build();
     }
 
-    private final SeatTypeRepository repo;
-
     private SeatTypeResponse map(SeatType e) {
         return SeatTypeResponse.builder()
                 .id(e.getId())
@@ -57,7 +59,7 @@ public class SeatTypeServiceImpl implements SeatTypeService {
 
     @Override @Transactional(readOnly = true)
     public List<SeatTypeResponse> findAll(Boolean onlyActive) {
-        var list = repo.findAll();
+        var list = seatTypeRepository.findAll();
         if (Boolean.TRUE.equals(onlyActive)) {
             list = list.stream().filter(st -> Boolean.TRUE.equals(st.getActive())).toList();
         }
@@ -66,31 +68,31 @@ public class SeatTypeServiceImpl implements SeatTypeService {
 
     @Override @Transactional(readOnly = true)
     public SeatTypeResponse findById(Long id) {
-        var e = repo.findById(id).orElseThrow(() -> new IllegalArgumentException("SeatType not found"));
+        var e = seatTypeRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.SEAT_TYPE_NOT_FOUND));
         return map(e);
     }
 
     @Override
     public SeatTypeResponse create(SeatTypeCreateRequest req) {
-        if (req.getName() == null || req.getName().isBlank()) throw new IllegalArgumentException("Name is required");
+        if (req.getName() == null || req.getName().isBlank()) throw new AppException(ErrorCode.INVALID_PARAMETER);
         var name = req.getName().trim();
-        if (repo.existsByNameIgnoreCase(name)) throw new IllegalArgumentException("Name already exists");
+        if (seatTypeRepository.existsByNameIgnoreCase(name)) throw new AppException(ErrorCode.SEAT_TYPE_ALREADY_EXISTED);
 
         var e = SeatType.builder()
                 .name(name)
                 .description(req.getDescription())
                 .active(req.getActive() == null ? true : req.getActive())
                 .build();
-        repo.save(e);
+        seatTypeRepository.save(e);
         return map(e);
     }
 
     @Override
     public SeatTypeResponse update(Long id, SeatTypeUpdateRequest req) {
-        var e = repo.findById(id).orElseThrow(() -> new IllegalArgumentException("SeatType not found"));
-        if (req.getName() == null || req.getName().isBlank()) throw new IllegalArgumentException("Name is required");
+        var e = seatTypeRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.SEAT_TYPE_NOT_FOUND));
+        if (req.getName() == null || req.getName().isBlank()) throw new AppException(ErrorCode.INVALID_PARAMETER);
         var newName = req.getName().trim();
-        if (repo.existsByNameIgnoreCaseAndIdNot(newName, id)) throw new IllegalArgumentException("Name already exists");
+        if (seatTypeRepository.existsByNameIgnoreCaseAndIdNot(newName, id)) throw new AppException(ErrorCode.SEAT_TYPE_ALREADY_EXISTED);
 
         e.setName(newName);
         e.setDescription(req.getDescription());
@@ -100,11 +102,11 @@ public class SeatTypeServiceImpl implements SeatTypeService {
 
     @Override
     public SeatTypeResponse patch(Long id, SeatTypeUpdateRequest req) {
-        var e = repo.findById(id).orElseThrow(() -> new IllegalArgumentException("SeatType not found"));
+        var e = seatTypeRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.SEAT_TYPE_NOT_FOUND));
         if (req.getName() != null) {
             var newName = req.getName().trim();
-            if (newName.isBlank()) throw new IllegalArgumentException("Name cannot be blank");
-            if (repo.existsByNameIgnoreCaseAndIdNot(newName, id)) throw new IllegalArgumentException("Name already exists");
+            if (newName.isBlank()) throw new AppException(ErrorCode.INVALID_PARAMETER);
+            if (seatTypeRepository.existsByNameIgnoreCaseAndIdNot(newName, id)) throw new AppException(ErrorCode.SEAT_TYPE_ALREADY_EXISTED);
             e.setName(newName);
         }
         if (req.getDescription() != null) e.setDescription(req.getDescription());
@@ -112,8 +114,16 @@ public class SeatTypeServiceImpl implements SeatTypeService {
         return map(e);
     }
 
-    @Override public void delete(Long id) { repo.deleteById(id); }
+    @Override public void delete(Long id) {
+        if (!seatTypeRepository.existsById(id)) {
+            throw new AppException(ErrorCode.SEAT_TYPE_NOT_FOUND);
+        }
+        if (!seatRepository.findBySeatType_Id(id).isEmpty()) {
+            throw new AppException(ErrorCode.SEAT_TYPE_IN_USE);
+        }
+        seatTypeRepository.deleteById(id);
+    }
 
-    @Override public SeatTypeResponse activate(Long id)   { var e = repo.findById(id).orElseThrow(() -> new IllegalArgumentException("SeatType not found")); e.setActive(true);  return map(e); }
-    @Override public SeatTypeResponse deactivate(Long id) { var e = repo.findById(id).orElseThrow(() -> new IllegalArgumentException("SeatType not found")); e.setActive(false); return map(e); }
+    @Override public SeatTypeResponse activate(Long id)   { var e = seatTypeRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.SEAT_TYPE_NOT_FOUND)); e.setActive(true);  return map(e); }
+    @Override public SeatTypeResponse deactivate(Long id) { var e = seatTypeRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.SEAT_TYPE_NOT_FOUND)); e.setActive(false); return map(e); }
 }

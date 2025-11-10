@@ -41,6 +41,13 @@ public enum ErrorCode {
     PAYMENT_METHOD_NOT_FOUND(1036, "Payment method not found"),
     PAYMENT_URL_GENERATION_FAILED(1037, "Payment URL generation failed"),
 
+    SEAT_TYPE_ALREADY_EXISTED(1038, "Seat type with the same name already exists"),
+    SEAT_TYPE_IN_USE(1039, "Seat type is in use and cannot be deleted"),
+    ROOM_TYPE_ALREADY_EXISTED(1040, "Room type with the same name already exists"),
+    ROOM_TYPE_IN_USE(1041, "Room type is in use and cannot be deleted"),
+    ROOM_ALREADY_EXISTED(1042, "Room with the same name already exists"),
+    ROOM_IN_USE(1043, "Room is in use and cannot be deleted"),
+
     SHOW_TIME_NOT_FOUND(3001, "Show time not found"),
     MOVIE_BANNER_NOT_FOUND(3001, "Movie banner not found"),
 

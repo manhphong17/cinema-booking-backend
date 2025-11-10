@@ -1,6 +1,6 @@
 server:
   port: 8885
-
+  address: 0.0.0.0
 spring:
   application:
     name: PHT Cinema VN
