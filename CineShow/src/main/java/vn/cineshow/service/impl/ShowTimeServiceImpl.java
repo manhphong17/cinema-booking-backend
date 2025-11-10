@@ -1,6 +1,8 @@
 package vn.cineshow.service.impl;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import lombok.extern.slf4j.XSlf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -34,6 +36,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class ShowTimeServiceImpl implements ShowTimeService {
 
     // Chấp nhận: "yyyy-MM-dd", "yyyy-MM-ddTHH:mm", "yyyy-MM-dd HH:mm:ss.SSSSSS", v.v.
@@ -95,7 +98,10 @@ public class ShowTimeServiceImpl implements ShowTimeService {
     @Override
     @Transactional
     public ShowTimeResponse createShowTime(CreateShowTimeRequest req) {
-        // 1) Load entities
+        log.info("🎬 [CREATE SHOWTIME] Start create showtime: movieId={}, roomId={}, subtitleId={}, start={}, end={}",
+                req.getMovieId(), req.getRoomId(), req.getSubtitleId(), req.getStartTime(), req.getEndTime());
+
+                // 1) Load entities
         Movie movie = movieRepo.findById(req.getMovieId())
                 .orElseThrow(() -> new AppException(ErrorCode.MOVIE_NOT_FOUND));
         Room room = roomRepo.findById(req.getRoomId())
@@ -106,8 +112,11 @@ public class ShowTimeServiceImpl implements ShowTimeService {
         LocalDateTime start = req.getStartTime();
         LocalDateTime end = req.getEndTime();
 
+        log.info("✅ Entities loaded: movie='{}', room='{}'", movie.getName(), room.getName());
+
         // 2) Validate room status
         if (room.getStatus() == RoomStatus.INACTIVE || room.getStatus() == RoomStatus.MAINTENANCE) {
+            log.warn("❌ Room {} is not active. Status={}", room.getName(), room.getStatus());
             throw new AppException(ErrorCode.ROOM_INACTIVE);
         }
 
@@ -115,6 +124,8 @@ public class ShowTimeServiceImpl implements ShowTimeService {
         int durationMinutes = movie.getDuration();
         LocalDateTime minEnd = start.plusMinutes(durationMinutes);
         if (!end.isAfter(minEnd)) {
+            log.warn("❌ EndTime invalid. Expected after {}, got {}", minEnd, req.getEndTime());
+
             throw new AppException(ErrorCode.INVALID_ENDTIME);
         }
 
@@ -131,6 +142,8 @@ public class ShowTimeServiceImpl implements ShowTimeService {
             // Nếu có audit field:
             // movie.setUpdatedAt(LocalDateTime.now());
             movieRepo.save(movie); // Hibernate sẽ flush trong transaction; gọi save để rõ ràng
+            log.info("🎞️ Movie {} status updated to PLAYING", movie.getName());
+
         }
 
         // 5) Persist showtime
@@ -145,9 +158,18 @@ public class ShowTimeServiceImpl implements ShowTimeService {
         // st.setIsDeleted(false);
 
         ShowTime saved = showTimeRepository.save(st);
+        log.info("💾 Showtime saved successfully: id={}, room={}, start={}", saved.getId(), room.getName(), saved.getStartTime());
+
 
         // 6) create seat-showtime
-        createSeatForShowTime(saved);
+        try {
+            createSeatForShowTime(saved);
+        } catch (Exception e) {
+            log.error("🔥 Failed to create seats for showtime {}: {}", saved.getId(), e.getMessage(), e);
+        }
+
+
+        log.info("🎉 Showtime creation completed successfully: id={}", saved.getId());
 
         return ShowTimeResponse.builder()
                 .id(saved.getId())

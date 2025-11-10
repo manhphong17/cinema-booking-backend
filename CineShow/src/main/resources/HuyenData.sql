@@ -40,6 +40,6 @@ INSERT INTO cineshow.holidays (id, created_at, updated_at, day_of_month, descrip
 INSERT INTO payment_methods (method_name, payment_code, is_active, created_at, updated_at, image_url)
 VALUES
     ('Thanh toán quét mã QR', 'VNPAYQR', 1, NOW(), NOW(),'/vnpay-logo.png'),
-    ('Thẻ ATM - Tài khoản ngân hàng nội địa', 'VNBANK', 1, NOW(), NOW()'/vnpay-logo.png'),
+    ('Thẻ ATM - Tài khoản ngân hàng nội địa', 'VNBANK', 1, NOW(), NOW(),'/vnpay-logo.png'),
     ('Thẻ thanh toán quốc tế', 'INTCARD', 1, NOW(), NOW(),'/vnpay-logo.png'),
     ('Tiền mặt', 'CASH', 1, NOW(), NOW(),'/cash.png');
