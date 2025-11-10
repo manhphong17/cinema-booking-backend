@@ -65,7 +65,9 @@ public class SecurityConfig {
                 "/movies/top/**",
                 "/movies/movie-genres",
                 "/movies/*",
-                "/payment/ipn"
+                "/payment/ipn",
+                "/images/**", "/uploads/**", "/static/**", "/img/**"
+
         );
 
         http
@@ -128,6 +130,7 @@ public class SecurityConfig {
         config.addAllowedOrigin("http://localhost:3000");
         config.addAllowedOrigin("http://localhost:3001");
         config.addAllowedOrigin("https://cineshow.vercel.app");
+        config.addAllowedOriginPattern("*");
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         config.setAllowedHeaders(List.of("*"));
         config.setAllowCredentials(true);

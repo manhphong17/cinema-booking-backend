@@ -19,6 +19,7 @@ import vn.cineshow.exception.ErrorCode;
 import vn.cineshow.model.*;
 import vn.cineshow.model.ids.OrderConcessionId;
 import vn.cineshow.repository.*;
+import vn.cineshow.service.BookingService;
 import vn.cineshow.service.RedisService;
 import vn.cineshow.service.VNPayService;
 
@@ -46,6 +47,7 @@ public class VNPayServiceImpl implements VNPayService {
     private final TicketRepository ticketRepository;
     private final UserRepository userRepository;
     private final RedisService redisService;
+    private final BookingService bookingService;
 
 
     @Value("${booking.ttl.payment}")
@@ -309,6 +311,10 @@ public class VNPayServiceImpl implements VNPayService {
                 orderRepository.save(order);
                 userRepository.save(user);
                 concessionRepository.saveAll(orderConcessions.stream().map(OrderConcession::getConcession).toList());
+
+                // Broadcast booked seats via WebSocket
+                List<Long> ticketIds = tickets.stream().map(Ticket::getId).toList();
+                bookingService.broadcastBooked(showTimeId, ticketIds);
 
                 log.info(" Payment SUCCESS — order={}, transactionNo={}", txnRef, vnpTransactionNo);
                 response.put("RspCode", "00");
