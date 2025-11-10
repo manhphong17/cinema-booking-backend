@@ -1,7 +1,7 @@
+// File: src/main/java/vn/cineshow/dto/response/seat/SeatMatrixResponse.java
 package vn.cineshow.dto.response.seat;
 
 import lombok.*;
-import lombok.experimental.FieldDefaults;
 import vn.cineshow.dto.response.room.RoomDTO;
 
 import java.util.List;
@@ -10,8 +10,7 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@FieldDefaults(level = AccessLevel.PRIVATE)
 public class SeatMatrixResponse {
-    RoomDTO room;
-    List<List<SeatCellDTO>> matrix;
+    private RoomDTO room;
+    private List<List<SeatCellDTO>> matrix; // may contain null if a seat is missing in DB
 }

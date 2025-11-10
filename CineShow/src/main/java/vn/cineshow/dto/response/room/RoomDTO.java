@@ -22,7 +22,6 @@ public class RoomDTO {
 
     String status;      // "ACTIVE" | "INACTIVE"
     String description;
-    String screenType;
 
     LocalDateTime createdAt;
     LocalDateTime updatedAt;

@@ -1,3 +1,5 @@
+// File: src/main/java/vn/cineshow/repository/SeatRepository.java
+
 package vn.cineshow.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -19,6 +21,13 @@ public interface SeatRepository extends JpaRepository<Seat, Long> {
 
     Optional<Seat> findByRoom_IdAndRowAndColumn(Long roomId, String row, String column);
 
+    Optional<Seat> findByRoomIdAndRowAndColumn(Long roomId, String row, String column);
+
+    long countByRoomId(Long roomId);
+
+    void deleteByRoomId(Long roomId);
+
+    List<Seat> findAllByRoomId(Long roomId);
 
     List<Seat> findByRoom(Room room);
 

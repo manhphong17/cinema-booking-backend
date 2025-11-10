@@ -9,10 +9,12 @@ import vn.cineshow.dto.response.PageResponse;
 import vn.cineshow.dto.response.room.RoomDTO;
 import vn.cineshow.dto.response.room.room_type.RoomTypeDTO;
 import vn.cineshow.enums.RoomStatus;
+import vn.cineshow.enums.SeatStatus;
 import vn.cineshow.model.Room;
 import vn.cineshow.model.RoomType;
 import vn.cineshow.repository.RoomRepository;
 import vn.cineshow.repository.RoomTypeRepository;
+import vn.cineshow.repository.SeatRepository;
 import vn.cineshow.service.RoomService;
 
 import java.util.*;
@@ -24,6 +26,7 @@ public class RoomServiceImpl implements RoomService {
 
     private final RoomRepository roomRepository;
     private final RoomTypeRepository roomTypeRepository;
+    private final SeatRepository seatRepository;
 
     private static final int DEFAULT_PAGE_NO = 0;
     private static final int DEFAULT_PAGE_SIZE = 20;
@@ -90,14 +93,15 @@ public class RoomServiceImpl implements RoomService {
         entity.setRoomType(roomType);
         entity.setRows(request.getRows());
         entity.setColumns(request.getColumns());
-        entity.setCapacity(calcCapacity(request.getRows(), request.getColumns()));
-
+        
         // String -> Enum
         entity.setStatus(RoomStatus.valueOf(request.getStatus().trim().toUpperCase()));
 
         entity.setDescription(request.getDescription());
 
         Room saved = roomRepository.save(entity);
+        entity.setCapacity((int) seatRepository.findByRoom(saved).stream().filter(s -> s.getStatus() == SeatStatus.AVAILABLE).count());
+        
         return toDTO(saved);
     }
 
@@ -116,7 +120,7 @@ public class RoomServiceImpl implements RoomService {
         entity.setName(request.getName());
         entity.setRows(request.getRows());
         entity.setColumns(request.getColumns());
-        entity.setCapacity(calcCapacity(request.getRows(), request.getColumns()));
+        entity.setCapacity((int) seatRepository.findByRoom(entity).stream().filter(s -> s.getStatus() == SeatStatus.AVAILABLE).count());
 
         // String -> Enum
         entity.setStatus(RoomStatus.valueOf(request.getStatus().trim().toUpperCase()));
@@ -136,12 +140,6 @@ public class RoomServiceImpl implements RoomService {
     }
 
     /* ===== Helpers ===== */
-
-    private int calcCapacity(Integer rows, Integer columns) {
-        int r = rows == null ? 0 : rows;
-        int c = columns == null ? 0 : columns;
-        return Math.max(0, r) * Math.max(0, c);
-    }
 
     private Sort parseSort(String sortBy) {
         if (sortBy == null || sortBy.isBlank()) return Sort.by(Sort.Order.desc("createdAt"));
@@ -163,7 +161,6 @@ public class RoomServiceImpl implements RoomService {
         if (rt != null) {
             rtDTO = RoomTypeDTO.builder()
                     .id(rt.getId())
-//                    .code(rt.getCode())
                     .name(rt.getName())
                     .description(rt.getDescription())
                     .build();

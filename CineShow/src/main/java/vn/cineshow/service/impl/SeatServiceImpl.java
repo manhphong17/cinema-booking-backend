@@ -103,11 +103,16 @@ public class SeatServiceImpl implements SeatService {
             if (r <= 0 || c <= 0 || r > rows || c > cols) continue;
 
             SeatType st = s.getSeatType();
-            SeatTypeDTO seatTypeDTO = (st == null) ? null : SeatTypeDTO.builder()
-                    .id(st.getId())
-                    .name(st.getName())
-                    .description(st.getDescription())
-                    .build();
+            SeatTypeDTO seatTypeDTO = null;
+            if (s.getStatus() == SeatStatus.BLOCKED) {
+                seatTypeDTO = SeatTypeDTO.builder().id(-1L).build();
+            } else if (st != null) {
+                seatTypeDTO = SeatTypeDTO.builder()
+                        .id(st.getId())
+                        .name(st.getName())
+                        .description(st.getDescription())
+                        .build();
+            }
 
             String rowLabel = toRowLabel(r);
             SeatCellDTO cell = SeatCellDTO.builder()
@@ -118,7 +123,7 @@ public class SeatServiceImpl implements SeatService {
                     .number(c)
                     .seatType(seatTypeDTO)
                     .status(s.getStatus() == null ? null : s.getStatus().name())
-                    .isBlocked(Boolean.FALSE)
+                    .isBlocked(s.getStatus() == SeatStatus.BLOCKED)
                     .note(null)
                     .build();
 
@@ -164,12 +169,17 @@ public class SeatServiceImpl implements SeatService {
                     String k = key(String.valueOf(r), String.valueOf(c));
                     Seat found = existingMap.get(k);
 
-                    SeatType type = seatTypeRepository.findById(cellReq.getSeatTypeId())
-                            .orElseThrow(() -> new IllegalArgumentException("SeatType không tồn tại: " + cellReq.getSeatTypeId()));
+                    SeatType type = null;
+                    if (cellReq.getSeatTypeId() != -1) {
+                        type = seatTypeRepository.findById(cellReq.getSeatTypeId())
+                                .orElseThrow(() -> new IllegalArgumentException("SeatType không tồn tại: " + cellReq.getSeatTypeId()));
+                    }
 
                     // String -> Enum (mặc định ACTIVE)
                     SeatStatus desiredStatus = SeatStatus.AVAILABLE;
-                    if (cellReq.getStatus() != null && !cellReq.getStatus().isBlank()) {
+                    if (cellReq.getSeatTypeId() == -1) {
+                        desiredStatus = SeatStatus.BLOCKED;
+                    } else if (cellReq.getStatus() != null && !cellReq.getStatus().isBlank()) {
                         try {
                             desiredStatus = SeatStatus.valueOf(cellReq.getStatus().trim().toUpperCase());
                         } catch (IllegalArgumentException ignored) { /* giữ ACTIVE */ }
@@ -189,7 +199,7 @@ public class SeatServiceImpl implements SeatService {
                     } else {
                         boolean changed = false;
 
-                        if (found.getSeatType() == null || !found.getSeatType().getId().equals(type.getId())) {
+                        if (type != null && (found.getSeatType() == null || !found.getSeatType().getId().equals(type.getId()))) {
                             found.setSeatType(type);
                             changed = true;
                         }
