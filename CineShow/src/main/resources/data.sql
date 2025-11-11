@@ -45,7 +45,7 @@ INSERT INTO movies (name, description, duration, release_date, poster_url, banne
                     director, actor, status, language_id, country_id, is_deleted, created_at, updated_at, is_featured)
 VALUES ('Avatar: The Way of Water',
         'Đặt hơn một thập kỷ sau các sự kiện của phần phim đầu tiên, Avatar: The Way of Water bắt đầu kể câu chuyện về gia đình Sully, những rắc rối theo sau họ, những nỗ lực họ làm để bảo vệ lẫn nhau, những trận chiến họ đấu tranh để sống sót, và những bi kịch họ phải chịu đựng.',
-        192, '2022-12-16', 'https://example.com/posters/avatar2.jpg', 'https://example.com/banners/avatar2_banner.jpg',
+        192, '2022-12-16', 'https://d28ic9z7shvx92.cloudfront.net/uploads/22e41ad9-094f-47b8-bc22-b49e420ec06c-71RuciRiJ3L._AC_UF1000,1000_QL80_.jpg', 'https://example.com/banners/avatar2_banner.jpg',
         'https://youtube.com/watch?v=d9MyW72ELq0', 13, 'James Cameron',
         'Sam Worthington, Zoe Saldana, Sigourney Weaver', 'PLAYING', 1, 1, false, NOW(), NOW(), false),
        ('Top Gun: Maverick',
@@ -1157,7 +1157,7 @@ VALUES ('Standard', 'Ghế tiêu chuẩn', NOW(), NOW(),1),
 
 -- Rooms
 INSERT INTO rooms (name, room_type_id, status, created_at, updated_at,rows_count, columns_count)
-VALUES ('Phòng 1', 1, 'ACTIVE', NOW(), NOW(),10,12),
+VALUES ('Phòng 6', 1, 'ACTIVE', NOW(), NOW(),10,12),
        ('Phòng 2', 1, 'ACTIVE', NOW(), NOW(),10,12),
        ('Phòng 3', 2, 'ACTIVE', NOW(), NOW(),10,12),
        ('Phòng 4', 3, 'ACTIVE', NOW(), NOW(),10,12),
@@ -1283,16 +1283,6 @@ VALUES
 ('2024-12-20 14:00:00', '2024-12-20 17:00:00', 4, 2, 1, NOW(), NOW());
 
 
--- Payment Methods
-INSERT INTO payment_methods (method_code, method_name, is_active, created_at, updated_at)
-VALUES ('CASH', 'Tiền mặt', true, NOW(), NOW()),
-       ('BANK_TRANSFER', 'Chuyển khoản ngân hàng', true, NOW(), NOW()),
-       ('CREDIT_CARD', 'Thẻ tín dụng', true, NOW(), NOW()),
-       ('DEBIT_CARD', 'Thẻ ghi nợ', true, NOW(), NOW()),
-       ('E_WALLET', 'Ví điện tử', true, NOW(), NOW()),
-       ('MOMO', 'Ví MoMo', true, NOW(), NOW()),
-       ('ZALOPAY', 'Ví ZaloPay', true, NOW(), NOW()),
-       ('VNPAY', 'VNPay', true, NOW(), NOW());
 
 -- Sample Orders
 INSERT INTO orders (user_id, total_price, order_status, created_at, updated_at)

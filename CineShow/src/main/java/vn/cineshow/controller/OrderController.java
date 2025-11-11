@@ -21,9 +21,7 @@ import vn.cineshow.dto.response.order.OrderQrPayloadResponse;
 import vn.cineshow.enums.OrderStatus;
 import vn.cineshow.exception.AppException;
 import vn.cineshow.exception.ErrorCode;
-import vn.cineshow.model.Order;
-import vn.cineshow.model.Seat;
-import vn.cineshow.model.Ticket;
+import vn.cineshow.model.*;
 import vn.cineshow.repository.OrderRepository;
 import vn.cineshow.service.OrderQueryService;
 
@@ -80,220 +78,227 @@ public class OrderController {
     }
 
     //FIX //chưa test
-//    @GetMapping("/{id}")
-//    @Transactional(readOnly = true)
-//    public OrderDetailResponse getOne(@PathVariable("id") Long id) {
-//        Order o = orderRepository.findOneById(id)
-//                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found"));
-//
-//        // ===== local helpers (chỉ dùng trong method này) =====
-//        java.util.function.Predicate<String> notBlank = s -> s != null && !s.isBlank();
-//        java.util.function.Function<Object, String> asString = v -> (v == null) ? null : String.valueOf(v);
-//
-//        // Lấy code từ Ticket mà không cần biết getter chính xác (getCode / getTicketCode / getQrCode / getReservationCode)
-//        java.util.function.Function<Ticket, String> safeTicketCode = (Ticket t) -> {
-//            if (t == null) return null;
-//            String[] methods = {"getCode", "getTicketCode", "getQrCode", "getReservationCode"};
-//            for (String m : methods) {
-//                try {
-//                    var md = t.getClass().getMethod(m);
-//                    String val = asString.apply(md.invoke(t));
-//                    if (notBlank.test(val)) return val;
-//                } catch (Exception ignore) {}
-//            }
-//            return null;
-//        };
-//
-//        // Lấy tên phương thức thanh toán: ưu tiên methodName, fallback code/methodCode/name
-//        java.util.function.Function<Object, String> safePaymentMethodName = (Object pm) -> {
-//            if (pm == null) return null;
-//            String[] methods = {"getMethodName", "getName", "getCode", "getMethodCode", "name"};
-//            for (String m : methods) {
-//                try {
-//                    var md = pm.getClass().getMethod(m);
-//                    String val = asString.apply(md.invoke(pm));
-//                    if (notBlank.test(val)) return val;
-//                } catch (Exception ignore) {}
-//            }
-//            return null;
-//        };
-//        // ===== end helpers =====
-//
-//        String movie = safeMovieName(o);
-//        LocalDateTime start = resolveShowtimeStart(o);
-//        LocalDateTime end = resolveShowtimeEnd(o);
-//        String room = safeRoomName(o);
-//        List<String> seats = (o.getTickets() == null)
-//                ? List.of()
-//                : o.getTickets().stream().map(this::safeSeatLabel).toList();
-//
-//        // --- reservationCode: ưu tiên từ Ticket, nếu trống thì lấy từ payments (transactionNo/txnRef) ---
-//        String reservationCode = null;
-//        if (o.getTickets() != null && !o.getTickets().isEmpty()) {
-//            Ticket t = pickPrimaryTicket(o);
-//            reservationCode = safeTicketCode.apply(t); // thay vì t.getCode()
-//        }
-//        if (!notBlank.test(reservationCode) && o.getPayments() != null && !o.getPayments().isEmpty()) {
-//            reservationCode = o.getPayments().stream()
-//                    .map(p -> {
-//                        String txNo = asString.apply(p.getTransactionNo()); // có thể là Long/Integer
-//                        String ref  = asString.apply(p.getTxnRef());        // thường là String
-//                        return notBlank.test(txNo) ? txNo : ref;
-//                    })
-//                    .filter(notBlank)
-//                    .findFirst()
-//                    .orElse(null);
-//        }
-//
-//        // --- paymentMethods: ưu tiên methodName, fallback code/methodCode/name ---
-//        List<String> paymentMethods = (o.getPayments() == null) ? List.of()
-//                : o.getPayments().stream()
-//                .map(p -> safePaymentMethodName.apply(p.getMethod()))
-//                .filter(notBlank)
-//                .distinct()
-//                .toList();
-//
-//        return OrderDetailResponse.builder()
-//                .orderId(o.getId())
-//                .createdAt(o.getCreatedAt())
-//                .userName(o.getUser() != null ? o.getUser().getName() : null)
-//
-//                // NEW: trả về mã đơn hàng
-//                .orderCode(o.getCode())
-//
-//                .bookingCode(reservationCode)
-//                .movieName(movie)
-//                .roomName(room)
-//                .showtimeStart(start)
-//                .showtimeEnd(end)
-//                .seats(seats)
-//                .totalPrice(o.getTotalPrice())
-//                .orderStatus(o.getOrderStatus() != null ? o.getOrderStatus().name() : null)
-//                .reservationCode(reservationCode)
-//                .paymentMethods(paymentMethods)
-//                .qrAvailable(true)
-//                .qrExpired(false)
-//                .regenerateAllowed(false)
-//                .qrJwt(null)
-//                .qrImageUrl(null)
-//                .graceMinutes(null)
-//                .build();
-//    }
+    @GetMapping("/{id}")
+    @Transactional(readOnly = true)
+    public OrderDetailResponse getOne(@PathVariable("id") Long id) {
+        Order o = orderRepository.findOneById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found"));
+
+        // ===== local helpers (chỉ dùng trong method này) =====
+        java.util.function.Predicate<String> notBlank = s -> s != null && !s.isBlank();
+        java.util.function.Function<Object, String> asString = v -> (v == null) ? null : String.valueOf(v);
+
+        // Lấy code từ Ticket mà không cần biết getter chính xác (getCode / getTicketCode / getQrCode / getReservationCode)
+        java.util.function.Function<Ticket, String> safeTicketCode = (Ticket t) -> {
+            if (t == null) return null;
+            String[] methods = {"getCode", "getTicketCode", "getQrCode", "getReservationCode"};
+            for (String m : methods) {
+                try {
+                    var md = t.getClass().getMethod(m);
+                    String val = asString.apply(md.invoke(t));
+                    if (notBlank.test(val)) return val;
+                } catch (Exception ignore) {}
+            }
+            return null;
+        };
+
+        // Lấy tên phương thức thanh toán: ưu tiên methodName, fallback code/methodCode/name
+        java.util.function.Function<Object, String> safePaymentMethodName = (Object pm) -> {
+            if (pm == null) return null;
+            String[] methods = {"getMethodName", "getName", "getCode", "getMethodCode", "name"};
+            for (String m : methods) {
+                try {
+                    var md = pm.getClass().getMethod(m);
+                    String val = asString.apply(md.invoke(pm));
+                    if (notBlank.test(val)) return val;
+                } catch (Exception ignore) {}
+            }
+            return null;
+        };
+        // ===== end helpers =====
+
+        String movie = safeMovieName(o);
+        LocalDateTime start = resolveShowtimeStart(o);
+        LocalDateTime end = resolveShowtimeEnd(o);
+        String room = safeRoomName(o);
+        List<String> seats = (o.getTickets() == null)
+                ? List.of()
+                : o.getTickets().stream().map(this::safeSeatLabel).toList();
+
+        // --- reservationCode: ưu tiên từ Ticket, nếu trống thì lấy từ payments (transactionNo/txnRef) ---
+        String reservationCode = null;
+        if (o.getTickets() != null && !o.getTickets().isEmpty()) {
+            Ticket t = pickPrimaryTicket(o);
+            reservationCode = safeTicketCode.apply(t); // thay vì t.getCode()
+        }
+        if (!notBlank.test(reservationCode) && o.getPayment() != null) {
+            Payment p = o.getPayment(); // chỉ 1 payment, không phải list
+
+            String txNo = asString.apply(p.getTransactionNo()); // có thể là Long/Integer
+            String ref  = asString.apply(p.getTxnRef());        // thường là String
+
+            if (notBlank.test(txNo)) {
+                reservationCode = txNo;
+            } else if (notBlank.test(ref)) {
+                reservationCode = ref;
+            }
+        }
+
+        // --- paymentMethods: ưu tiên methodName, fallback code/methodCode/name ---
+        List<String> paymentMethods;
+        if (o.getPayment() == null) {
+            paymentMethods = List.of();
+        } else {
+            Payment p = o.getPayment();
+            String method = safePaymentMethodName.apply(p.getMethod());
+            paymentMethods = notBlank.test(method) ? List.of(method) : List.of();
+        }
+
+        return OrderDetailResponse.builder()
+                .orderId(o.getId())
+                .createdAt(o.getCreatedAt())
+                .userName(o.getUser() != null ? o.getUser().getName() : null)
+
+                // NEW: trả về mã đơn hàng
+                .orderCode(o.getCode())
+
+                .bookingCode(reservationCode)
+                .movieName(movie)
+                .roomName(room)
+                .showtimeStart(start)
+                .showtimeEnd(end)
+                .seats(seats)
+                .totalPrice(o.getTotalPrice())
+                .orderStatus(o.getOrderStatus() != null ? o.getOrderStatus().name() : null)
+                .reservationCode(reservationCode)
+                .paymentMethods(paymentMethods)
+                .qrAvailable(true)
+                .qrExpired(false)
+                .regenerateAllowed(false)
+                .qrJwt(null)
+                .qrImageUrl(null)
+                .graceMinutes(null)
+                .build();
+    }
 
 
 
 
-//    @GetMapping("/{id}/qr-payload")
-//    @Transactional(readOnly = true)
-//    public OrderQrPayloadResponse getQrPayload(@PathVariable("id") Long id) {
-//        Order o = orderRepository.findOneById(id)
-//                .orElseThrow(() -> new org.springframework.web.server.ResponseStatusException(
-//                        org.springframework.http.HttpStatus.NOT_FOUND, "Order not found"));
-//
-//        // ====== business guards (tùy bạn xử lý bằng AppException/ErrorCode) ======
-//        // ví dụ: nếu đã hủy / chưa thanh toán thì không phát QR
-//        if (o.getOrderStatus() == OrderStatus.CANCELED) {
-//            throw new AppException(ErrorCode.ORDER_CANCELED);
-//        }
-//
-//        // ====== gather data (KHÔNG dùng ticket.code) ======
-//        String movie = safeMovieName(o);
-//        String room  = safeRoomName(o);
-//        LocalDateTime start = resolveShowtimeStart(o);
-//        LocalDateTime end   = resolveShowtimeEnd(o);
-//        List<String> seats = (o.getTickets() == null) ? List.of()
-//                : o.getTickets().stream().map(this::safeSeatLabel).toList();
-//
-//        // reservationCode: ưu tiên payment.transactionNo / txnRef; nếu không có thì dùng order.code
-//        String reservationCode = null;
-//        if (o.getPayments() != null && !o.getPayments().isEmpty()) {
-//            reservationCode = o.getPayments().stream()
-//                    .map(p -> {
-//                        if (p.getTransactionNo() != null && !p.getTransactionNo().isBlank()) return p.getTransactionNo();
-//                        if (p.getTxnRef() != null && !p.getTxnRef().isBlank()) return p.getTxnRef();
-//                        return null;
-//                    })
-//                    .filter(Objects::nonNull)
-//                    .findFirst().orElse(null);
-//        }
-//        if (reservationCode == null || reservationCode.isBlank()) {
-//            reservationCode = o.getCode() != null ? o.getCode() : String.valueOf(o.getId());
-//        }
-//
-//        // ====== payload json (order-level) ======
-//        int graceMinutes = 30; // có thể load từ config
-//        long exp = Instant.now().plusSeconds(graceMinutes * 60L).getEpochSecond();
-//        String nonce = UUID.randomUUID().toString();
-//
-//        Map<String, Object> payload = new LinkedHashMap<>();
-//        payload.put("ver", 1); // versioning
-//        payload.put("nonce", nonce);
-//        payload.put("exp", exp);
-//
-//        Map<String, Object> orderInfo = new LinkedHashMap<>();
-//        orderInfo.put("orderId", o.getId());
-//        orderInfo.put("orderCode", o.getCode());
-//        orderInfo.put("reservationCode", reservationCode);
-//        orderInfo.put("status", o.getOrderStatus() != null ? o.getOrderStatus().name() : null);
-//        payload.put("order", orderInfo);
-//
-//        Map<String, Object> show = new LinkedHashMap<>();
-//        show.put("movie", movie);
-//        show.put("room", room);
-//        show.put("start", start != null ? start.toString() : null);
-//        show.put("end", end != null ? end.toString() : null);
-//        payload.put("showtime", show);
-//
-//        payload.put("seats", seats); // ví dụ ["I7","I8","I9"]
-//
-//        // ====== ký JWT tối giản (HS256) từ payload ======
-//        String jwt = createHs256Jwt(payload);
-//
-//        // ====== derive additional fields for response ======
-//        List<String> ticketCodes = List.of();
-//        List<String> paymentMethods = (o.getPayments() == null) ? List.of()
-//                : o.getPayments().stream()
-//                .map(p -> {
-//                    Object m = p.getMethod();
-//                    return (m != null) ? String.valueOf(m) : null;
-//                })
-//                .filter(Objects::nonNull)
-//                .distinct()
-//                .toList();
-//        Instant qrExpiryAt = Instant.ofEpochSecond(exp);
-//        String payloadJson = toJson(payload);
-//
-//        return OrderQrPayloadResponse.builder()
-//                .orderId(o.getId())
-//                .userId(o.getUser() != null ? o.getUser().getId() : null)
-//                .createdAt(o.getCreatedAt())
-//                .totalPrice(o.getTotalPrice())
-//                .status(o.getOrderStatus() != null ? o.getOrderStatus().name() : null)
-//                .orderCode(o.getCode())
-//                .reservationCode(reservationCode)
-//
-//                .movieName(movie)
-//                .roomName(room)
-//                .showtimeStart(start)
-//                .showtimeEnd(end)
-//
-//                .seats(seats)
-//                .ticketCodes(ticketCodes)          // có thể là List.of()
-//                .paymentMethods(paymentMethods)    // nếu bạn đã tính
-//
-//                .qrAvailable(true)
-//                .qrExpired(false)
-//                .regenerateAllowed(true)
-//                .graceMinutes(graceMinutes)
-//                .qrExpiryAt(qrExpiryAt)            // Instant bạn tính sẵn
-//                .qrJwt(jwt)
-//                .qrImageUrl(null)
-//                .payloadJson(payloadJson)
-//
-//                .nonce(nonce)
-//                .version(1)
-//                .build();
-//    }
+    @GetMapping("/{id}/qr-payload")
+    @Transactional(readOnly = true)
+    public OrderQrPayloadResponse getQrPayload(@PathVariable("id") Long id) {
+        Order o = orderRepository.findOneById(id)
+                .orElseThrow(() -> new org.springframework.web.server.ResponseStatusException(
+                        org.springframework.http.HttpStatus.NOT_FOUND, "Order not found"));
+
+        // ====== business guards (tùy bạn xử lý bằng AppException/ErrorCode) ======
+        // ví dụ: nếu đã hủy / chưa thanh toán thì không phát QR
+        if (o.getOrderStatus() == OrderStatus.CANCELED) {
+            throw new AppException(ErrorCode.ORDER_CANCELED);
+        }
+
+        // ====== gather data (KHÔNG dùng ticket.code) ======
+        String movie = safeMovieName(o);
+        String room  = safeRoomName(o);
+        LocalDateTime start = resolveShowtimeStart(o);
+        LocalDateTime end   = resolveShowtimeEnd(o);
+        List<String> seats = (o.getTickets() == null) ? List.of()
+                : o.getTickets().stream().map(this::safeSeatLabel).toList();
+
+        // reservationCode: ưu tiên payment.transactionNo / txnRef; nếu không có thì dùng order.code
+        String reservationCode = null;
+        Payment payment = o.getPayment(); // vì getPayment() trả về 1 đối tượng, không phải list
+
+        if (payment != null) {
+            if (payment.getTransactionNo() != null && !payment.getTransactionNo().isBlank()) {
+                reservationCode = payment.getTransactionNo();
+            } else if (payment.getTxnRef() != null && !payment.getTxnRef().isBlank()) {
+                reservationCode = payment.getTxnRef();
+            }
+        }
+
+// fallback nếu vẫn chưa có
+        if (reservationCode == null || reservationCode.isBlank()) {
+            reservationCode = o.getCode() != null ? o.getCode() : String.valueOf(o.getId());
+        }
+
+
+        // ====== payload json (order-level) ======
+        int graceMinutes = 30; // có thể load từ config
+        long exp = Instant.now().plusSeconds(graceMinutes * 60L).getEpochSecond();
+        String nonce = UUID.randomUUID().toString();
+
+        Map<String, Object> payload = new LinkedHashMap<>();
+        payload.put("ver", 1); // versioning
+        payload.put("nonce", nonce);
+        payload.put("exp", exp);
+
+        Map<String, Object> orderInfo = new LinkedHashMap<>();
+        orderInfo.put("orderId", o.getId());
+        orderInfo.put("orderCode", o.getCode());
+        orderInfo.put("reservationCode", reservationCode);
+        orderInfo.put("status", o.getOrderStatus() != null ? o.getOrderStatus().name() : null);
+        payload.put("order", orderInfo);
+
+        Map<String, Object> show = new LinkedHashMap<>();
+        show.put("movie", movie);
+        show.put("room", room);
+        show.put("start", start != null ? start.toString() : null);
+        show.put("end", end != null ? end.toString() : null);
+        payload.put("showtime", show);
+
+        payload.put("seats", seats); // ví dụ ["I7","I8","I9"]
+
+        // ====== ký JWT tối giản (HS256) từ payload ======
+        String jwt = createHs256Jwt(payload);
+
+        // ====== derive additional fields for response ======
+        List<String> ticketCodes = List.of();
+
+        List<String> paymentMethods;
+        if (o.getPayment() == null || o.getPayment().getMethod() == null) {
+            paymentMethods = List.of();
+        } else {
+            PaymentMethod method = o.getPayment().getMethod();
+            String methodName = String.valueOf(method.getMethodName());
+            paymentMethods = List.of(methodName);
+        }
+
+        Instant qrExpiryAt = Instant.ofEpochSecond(exp);
+        String payloadJson = toJson(payload);
+
+
+        return OrderQrPayloadResponse.builder()
+                .orderId(o.getId())
+                .userId(o.getUser() != null ? o.getUser().getId() : null)
+                .createdAt(o.getCreatedAt())
+                .totalPrice(o.getTotalPrice())
+                .status(o.getOrderStatus() != null ? o.getOrderStatus().name() : null)
+                .orderCode(o.getCode())
+                .reservationCode(reservationCode)
+
+                .movieName(movie)
+                .roomName(room)
+                .showtimeStart(start)
+                .showtimeEnd(end)
+
+                .seats(seats)
+                .ticketCodes(ticketCodes)          // có thể là List.of()
+                .paymentMethods(paymentMethods)    // nếu bạn đã tính
+
+                .qrAvailable(true)
+                .qrExpired(false)
+                .regenerateAllowed(true)
+                .graceMinutes(graceMinutes)
+                .qrExpiryAt(qrExpiryAt)            // Instant bạn tính sẵn
+                .qrJwt(jwt)
+                .qrImageUrl(null)
+                .payloadJson(payloadJson)
+
+                .nonce(nonce)
+                .version(1)
+                .build();
+    }
 
     /* ======================= Helpers ======================= */
 
