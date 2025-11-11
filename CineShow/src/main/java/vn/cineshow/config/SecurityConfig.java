@@ -30,7 +30,7 @@ public class SecurityConfig {
     private final CustomizeRequestFilter requestFilter;
     private final CustomOAuth2SuccessHandler customOAuth2SuccessHandler;
 
-    @Value("${sendgrid.api-key}")
+    @Value("${spring.sendgrid.api-key}")
     private String sendGridKey;
 
     @Bean
