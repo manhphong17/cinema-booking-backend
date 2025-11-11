@@ -8,7 +8,10 @@ import vn.cineshow.dto.request.room.RoomTypeCreateRequest;
 import vn.cineshow.dto.request.room.RoomTypeUpdateRequest;
 import vn.cineshow.dto.response.room.room_type.RoomTypeDTO;
 import vn.cineshow.dto.response.room.room_type.RoomTypeResponse;
+import vn.cineshow.exception.AppException;
+import vn.cineshow.exception.ErrorCode;
 import vn.cineshow.model.RoomType;
+import vn.cineshow.repository.RoomRepository;
 import vn.cineshow.repository.RoomTypeRepository;
 import vn.cineshow.service.RoomTypeService;
 
@@ -21,6 +24,8 @@ import java.util.stream.Collectors;
 public class RoomTypeServiceImpl implements RoomTypeService {
 
     private final RoomTypeRepository roomTypeRepository;
+    private final RoomRepository roomRepository;
+
 
     @Override
     @Transactional(readOnly = true)
@@ -30,16 +35,11 @@ public class RoomTypeServiceImpl implements RoomTypeService {
         return entities.stream()
                 .map(rt -> RoomTypeDTO.builder()
                         .id(rt.getId())
-//                        .code(rt.getCode())
                         .name(rt.getName())
                         .description(rt.getDescription())
                         .build())
                 .collect(Collectors.toList());
     }
-
-
-
-    private final RoomTypeRepository repo;
 
     private RoomTypeResponse map(RoomType e) {
         return RoomTypeResponse.builder()
@@ -52,7 +52,7 @@ public class RoomTypeServiceImpl implements RoomTypeService {
 
     @Override @Transactional(readOnly = true)
     public List<RoomTypeResponse> findAll(Boolean onlyActive) {
-        var list = repo.findAll();
+        var list = roomTypeRepository.findAll();
         if (Boolean.TRUE.equals(onlyActive)) {
             list = list.stream().filter(rt -> Boolean.TRUE.equals(rt.getActive())).toList();
         }
@@ -61,33 +61,33 @@ public class RoomTypeServiceImpl implements RoomTypeService {
 
     @Override @Transactional(readOnly = true)
     public RoomTypeResponse findById(Long id) {
-        var e = repo.findById(id).orElseThrow(() -> new IllegalArgumentException("RoomType not found"));
+        var e = roomTypeRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.ROOM_TYPE_NOT_FOUND));
         return map(e);
     }
 
     @Override
     @Transactional
     public RoomTypeResponse create(RoomTypeCreateRequest req) {
-        if (req.getName() == null || req.getName().isBlank()) throw new IllegalArgumentException("Name is required");
+        if (req.getName() == null || req.getName().isBlank()) throw new AppException(ErrorCode.INVALID_PARAMETER);
         var name = req.getName().trim();
-        if (repo.existsByNameIgnoreCase(name)) throw new IllegalArgumentException("Name already exists");
+        if (roomTypeRepository.existsByNameIgnoreCase(name)) throw new AppException(ErrorCode.ROOM_TYPE_ALREADY_EXISTED);
 
         var e = RoomType.builder()
                 .name(name)
                 .description(req.getDescription())
                 .active(req.getActive() == null ? true : req.getActive())
                 .build();
-        repo.save(e);
+        roomTypeRepository.save(e);
         return map(e);
     }
 
     @Override
     @Transactional
     public RoomTypeResponse update(Long id, RoomTypeUpdateRequest req) {
-        var e = repo.findById(id).orElseThrow(() -> new IllegalArgumentException("RoomType not found"));
-        if (req.getName() == null || req.getName().isBlank()) throw new IllegalArgumentException("Name is required");
+        var e = roomTypeRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.ROOM_TYPE_NOT_FOUND));
+        if (req.getName() == null || req.getName().isBlank()) throw new AppException(ErrorCode.INVALID_PARAMETER);
         var newName = req.getName().trim();
-        if (repo.existsByNameIgnoreCaseAndIdNot(newName, id)) throw new IllegalArgumentException("Name already exists");
+        if (roomTypeRepository.existsByNameIgnoreCaseAndIdNot(newName, id)) throw new AppException(ErrorCode.ROOM_TYPE_ALREADY_EXISTED);
 
         e.setName(newName);
         e.setDescription(req.getDescription());
@@ -98,11 +98,11 @@ public class RoomTypeServiceImpl implements RoomTypeService {
     @Override
     @Transactional
     public RoomTypeResponse patch(Long id, RoomTypeUpdateRequest req) {
-        var e = repo.findById(id).orElseThrow(() -> new IllegalArgumentException("RoomType not found"));
+        var e = roomTypeRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.ROOM_TYPE_NOT_FOUND));
         if (req.getName() != null) {
             var newName = req.getName().trim();
-            if (newName.isBlank()) throw new IllegalArgumentException("Name cannot be blank");
-            if (repo.existsByNameIgnoreCaseAndIdNot(newName, id)) throw new IllegalArgumentException("Name already exists");
+            if (newName.isBlank()) throw new AppException(ErrorCode.INVALID_PARAMETER);
+            if (roomTypeRepository.existsByNameIgnoreCaseAndIdNot(newName, id)) throw new AppException(ErrorCode.ROOM_TYPE_ALREADY_EXISTED);
             e.setName(newName);
         }
         if (req.getDescription() != null) e.setDescription(req.getDescription());
@@ -110,8 +110,16 @@ public class RoomTypeServiceImpl implements RoomTypeService {
         return map(e);
     }
 
-    @Override @Transactional public void delete(Long id) { repo.deleteById(id); }
+    @Override @Transactional public void delete(Long id) {
+        if (!roomTypeRepository.existsById(id)) {
+            throw new AppException(ErrorCode.ROOM_TYPE_NOT_FOUND);
+        }
+        if (roomRepository.findByRoomType_Id(id, Sort.unsorted()) != null) {
+            throw new AppException(ErrorCode.ROOM_TYPE_IN_USE);
+        }
+        roomTypeRepository.deleteById(id);
+    }
 
-    @Override @Transactional public RoomTypeResponse activate(Long id)   { var e = repo.findById(id).orElseThrow(() -> new IllegalArgumentException("RoomType not found")); e.setActive(true);  return map(e); }
-    @Override @Transactional public RoomTypeResponse deactivate(Long id) { var e = repo.findById(id).orElseThrow(() -> new IllegalArgumentException("RoomType not found")); e.setActive(false); return map(e); }
+    @Override @Transactional public RoomTypeResponse activate(Long id)   { var e = roomTypeRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.ROOM_TYPE_NOT_FOUND)); e.setActive(true);  return map(e); }
+    @Override @Transactional public RoomTypeResponse deactivate(Long id) { var e = roomTypeRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.ROOM_TYPE_NOT_FOUND)); e.setActive(false); return map(e); }
 }

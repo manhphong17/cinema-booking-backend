@@ -107,7 +107,7 @@ public class ApplicationInitializer {
         AccountCreationRequest manager = new AccountCreationRequest(EMAIL_OPERATION, PASSWORD_OPERATION, "Operations Manager", "Hai Phong");
         AccountCreationRequest manager2 = new AccountCreationRequest(EMAIL_BUSINESS, PASSWORD_BUSINESS, "Business Manager", "Hai Duong");
 
-        createAccountIfNotExists(admin, UserRole.ADMIN.name(), UserRole.CUSTOMER.name());
+        createAccountIfNotExists(admin, UserRole.ADMIN.name(), UserRole.BUSINESS.name(), UserRole.CUSTOMER.name());
         createAccountIfNotExists(customer, UserRole.CUSTOMER.name());
         createAccountIfNotExists(staff, UserRole.STAFF.name(), UserRole.CUSTOMER.name());
         createAccountIfNotExists(manager, UserRole.OPERATION.name(), UserRole.CUSTOMER.name());
@@ -115,32 +115,38 @@ public class ApplicationInitializer {
     }
 
     void createAccountIfNotExists(AccountCreationRequest request, String... roleNames) {
-        if (accountRepository.findByEmail(request.getEmail()).isPresent()) {
-            log.warn("Account already exists: {}", request.getEmail());
-            return;
-        }
-
         Set<Role> roles = Arrays.stream(roleNames)
                 .map(name -> roleRepository.findByRoleName(name)
                         .orElseThrow(() -> new ResourceNotFoundException("Role not found: " + name)))
                 .collect(Collectors.toSet());
 
-        User user = User.builder()
-                .name(request.getName())
-                .address(request.getAddress())
-                .loyalPoint(0)
-                .build();
+        accountRepository.findAccountByEmail(request.getEmail())
+                .ifPresentOrElse(existing -> {
+                    boolean updated = existing.getRoles().addAll(roles);
+                    if (updated) {
+                        accountRepository.save(existing);
+                        log.info("Updated roles for existing account: {}", request.getEmail());
+                    } else {
+                        log.warn("Account already exists with required roles: {}", request.getEmail());
+                    }
+                }, () -> {
+                    User user = User.builder()
+                            .name(request.getName())
+                            .address(request.getAddress())
+                            .loyalPoint(0)
+                            .build();
 
-        Account account = Account.builder()
-                .email(request.getEmail())
-                .password(passwordEncoder.encode(request.getPassword()))
-                .roles(roles)
-                .user(user)
-                .status(AccountStatus.ACTIVE)
-                .build();
+                    Account account = Account.builder()
+                            .email(request.getEmail())
+                            .password(passwordEncoder.encode(request.getPassword()))
+                            .roles(roles)
+                            .user(user)
+                            .status(AccountStatus.ACTIVE)
+                            .build();
 
-        user.setAccount(account);
-        accountRepository.save(account);
-        log.info("Created account: {}", request.getEmail());
+                    user.setAccount(account);
+                    accountRepository.save(account);
+                    log.info("Created account: {}", request.getEmail());
+                });
     }
 }
