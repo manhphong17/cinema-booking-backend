@@ -402,11 +402,23 @@ public class VNPayServiceImpl implements VNPayService {
 
             // 4. Xử lý hiển thị
             if ("00".equals(responseCode) && "00".equals(transactionStatus)) {
-                response.put("status", "SUCCESS");
-                response.put("message", "Thanh toán thành công");
+                boolean dbCompleted =
+                        order.getOrderStatus() == OrderStatus.COMPLETED &&
+                                payment.getPaymentStatus() == PaymentStatus.COMPLETED;
+
+                if (dbCompleted) {
+                    response.put("status", "SUCCESS");
+                    response.put("message", "Thanh toán thành công");
+                } else {
+                    // VNPay claims success but DB not updated yet (IPN not received)
+                    log.warn("Return URL success but DB not updated — txnRef={}, orderStatus={}, paymentStatus={}",
+                            txnRef, order.getOrderStatus(), payment.getPaymentStatus());
+                    response.put("status", "FAILED");
+                    response.put("message", "Thanh toán không thành công hoặc đã hết hạn thanh toán");
+                }
             } else {
                 response.put("status", "FAILED");
-                response.put("message", "Thanh toán không thành công hoặc đã hết hạn");
+                response.put("message", "Thanh toán không thành công hoặc đã hết hạn thanh toán");
             }
             response.put("orderCode", payment.getTxnRef());
 
