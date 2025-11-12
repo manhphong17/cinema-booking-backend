@@ -7,6 +7,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
+import jakarta.servlet.http.Cookie;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
@@ -14,7 +16,6 @@ import org.springframework.stereotype.Component;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -35,10 +36,15 @@ import vn.cineshow.service.RefreshTokenService;
 @RequiredArgsConstructor
 public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler {
 
-    private static final String REDIRECT_URI_HOME = "http://localhost:3000/home";
-    private static final String REDIRECT_URI_ADMIN = "http://localhost:3000/admin";
-    private static final String REDIRECT_URI_OPERATOR = "http://localhost:3000/operator-manager/dashboard";
-    private static final String REDIRECT_URI_BUSINESS = "http://localhost:3000/business-manager/dashboard";
+    @Value("${spring.security.oauth2.REDIRECT_URI_HOME}")
+    private String REDIRECT_URI_HOME;
+    @Value("${spring.security.oauth2.REDIRECT_URI_ADMIN}")
+    private String REDIRECT_URI_ADMIN;
+    @Value("${spring.security.oauth2.REDIRECT_URI_OPERATOR}")
+    private String REDIRECT_URI_OPERATOR;
+    @Value("${spring.security.oauth2.REDIRECT_URI_BUSINESS}")
+    private String REDIRECT_URI_BUSINESS;
+
     private final JWTService jwtService;
     private final AccountRepository accountRepository;
     private final RoleRepository roleRepository;
@@ -204,6 +210,14 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
         // If login from customer form (google-user) -> always redirect to home
         String redirectUri = REDIRECT_URI_HOME; // Default to home
         
+
+        
+        if (REDIRECT_URI_HOME == null || REDIRECT_URI_HOME.isEmpty()) {
+            System.err.println("ERROR: REDIRECT_URI_HOME is null or empty!");
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "OAuth2 redirect URI not configured");
+            return;
+        }
+        
         if ("google-admin".equals(registrationId)) {
             // Admin form: redirect based on user's role
             if (roleNames.contains("ADMIN")) {
@@ -222,6 +236,8 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
         }
         
         String redirectUrl = redirectUri + "?token=" + accessToken;
+
+        
         response.sendRedirect(redirectUrl);
     }
 

@@ -1,12 +1,30 @@
 package vn.cineshow.service.impl;
 
 
-import jakarta.servlet.http.HttpServletRequest;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.text.SimpleDateFormat;
+import java.time.Duration;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.StringJoiner;
+import java.util.TimeZone;
+import java.util.stream.Collectors;
+
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import jakarta.servlet.http.HttpServletRequest;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import vn.cineshow.config.VNPayProperties;
 import vn.cineshow.dto.redis.OrderSessionDTO;
 import vn.cineshow.dto.request.payment.CheckoutRequest;
@@ -15,22 +33,24 @@ import vn.cineshow.enums.PaymentStatus;
 import vn.cineshow.enums.TicketStatus;
 import vn.cineshow.exception.AppException;
 import vn.cineshow.exception.ErrorCode;
-import vn.cineshow.model.*;
+import vn.cineshow.model.Concession;
+import vn.cineshow.model.Order;
+import vn.cineshow.model.OrderConcession;
+import vn.cineshow.model.Payment;
+import vn.cineshow.model.PaymentMethod;
+import vn.cineshow.model.Ticket;
+import vn.cineshow.model.User;
 import vn.cineshow.model.ids.OrderConcessionId;
-import vn.cineshow.repository.*;
+import vn.cineshow.repository.ConcessionRepository;
+import vn.cineshow.repository.OrderConcessionRepository;
+import vn.cineshow.repository.OrderRepository;
+import vn.cineshow.repository.PaymentMethodRepository;
+import vn.cineshow.repository.PaymentRepository;
+import vn.cineshow.repository.TicketRepository;
+import vn.cineshow.repository.UserRepository;
 import vn.cineshow.service.BookingService;
 import vn.cineshow.service.RedisService;
 import vn.cineshow.service.VNPayService;
-
-import javax.crypto.Mac;
-import javax.crypto.spec.SecretKeySpec;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
-import java.text.SimpleDateFormat;
-import java.time.Duration;
-import java.time.LocalDateTime;
-import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor

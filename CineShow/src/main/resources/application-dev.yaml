@@ -58,7 +58,10 @@ spring:
             authorization-uri: https://accounts.google.com/o/oauth2/v2/auth
             token-uri: https://oauth2.googleapis.com/token
             user-name-attribute: sub
-
+      REDIRECT_URI_HOME: "http://localhost:3000/home"
+      REDIRECT_URI_ADMIN: "http://localhost:3000/admin"
+      REDIRECT_URI_OPERATOR: "http://localhost:3000/operator-manager/dashboard"
+      REDIRECT_URI_BUSINESS: "http://localhost:3000/business-manager/dashboard"
 
   devtools:
     add-properties: true
@@ -98,7 +101,7 @@ spring:
     properties:
       hibernate:
         format_sql: true
-        dialect: org.hibernate.dialect.MySQLDialect
+        dialect: org.hibernate.dialect.MySQL8Dialect
 
   sendgrid:
     api-key: "${SENDGRID_API_KEY}"
@@ -106,7 +109,7 @@ spring:
 
 app:
   frontend:
-    verify-url: "https://cinema.com/verify"   # URL frontend để verify OTP
+    verify-url: "http://localhost:3000/verify"   # URL frontend để verify OTP
   sendgrid:
     otp-template-id: "d-71a24bbc41824c0495bc166a115275a0"   # Template ID cho OTP
 

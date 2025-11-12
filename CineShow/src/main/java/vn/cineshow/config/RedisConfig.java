@@ -1,47 +1,121 @@
 package vn.cineshow.config;
 
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import io.lettuce.core.ClientOptions;
+import io.lettuce.core.SocketOptions;
+import io.lettuce.core.TimeoutOptions;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
+import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
+import org.springframework.data.redis.connection.lettuce.LettuceClientConfiguration;
+import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.listener.KeyExpirationEventMessageListener;
-import org.springframework.data.redis.listener.RedisMessageListenerContainer;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 
-import java.util.Map;
+import jakarta.annotation.PostConstruct;
+import java.time.Duration;
 
 @Configuration
 @Slf4j
 public class RedisConfig {
+
+    @Value("${spring.data.redis.host}")
+    private String redisHost;
+
+    @Value("${spring.data.redis.port}")
+    private int redisPort;
+
+    @Value("${spring.data.redis.username:}")
+    private String redisUsername;
+
+    @Value("${spring.data.redis.password:}")
+    private String redisPassword;
+
+    @Value("${spring.data.redis.ssl.enabled:false}")
+    private boolean sslEnabled;
+
+    @Bean
+    public RedisConnectionFactory redisConnectionFactory() {
+        log.info("🔴 Connecting to Redis: {}:{} (SSL: {})", redisHost, redisPort, sslEnabled);
+
+        // Base configuration
+        RedisStandaloneConfiguration config = new RedisStandaloneConfiguration();
+        config.setHostName(redisHost);
+        config.setPort(redisPort);
+        if (!redisUsername.isEmpty()) config.setUsername(redisUsername);
+        if (!redisPassword.isEmpty()) config.setPassword(redisPassword);
+
+        // Socket and timeout settings
+        SocketOptions socketOptions = SocketOptions.builder()
+                .connectTimeout(Duration.ofSeconds(10))
+                .keepAlive(true)
+                .build();
+
+        TimeoutOptions timeoutOptions = TimeoutOptions.builder()
+                .fixedTimeout(Duration.ofSeconds(10))
+                .build();
+
+        ClientOptions clientOptions = ClientOptions.builder()
+                .socketOptions(socketOptions)
+                .timeoutOptions(timeoutOptions)
+                .autoReconnect(true)
+                .build();
+
+        // Lettuce client config
+        LettuceClientConfiguration.LettuceClientConfigurationBuilder clientConfigBuilder =
+                LettuceClientConfiguration.builder()
+                        .clientOptions(clientOptions)
+                        .commandTimeout(Duration.ofSeconds(10));
+
+        // SSL for ElastiCache
+        if (sslEnabled) {
+            log.info("🔒 SSL enabled for Redis connection (AWS ElastiCache)");
+            clientConfigBuilder.useSsl().disablePeerVerification(); // <--- Bỏ verify chứng chỉ AWS
+        } else {
+            log.info("⚪ SSL disabled for Redis connection");
+        }
+
+        LettuceConnectionFactory factory = new LettuceConnectionFactory(config, clientConfigBuilder.build());
+        factory.setValidateConnection(true);
+
+        try {
+            factory.afterPropertiesSet();
+            log.info("✅ RedisConnectionFactory initialized successfully");
+        } catch (Exception e) {
+            log.error("❌ Failed to initialize RedisConnectionFactory: {}", e.getMessage(), e);
+            throw e;
+        }
+
+        return factory;
+    }
 
     @Bean
     public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory factory) {
         RedisTemplate<String, Object> template = new RedisTemplate<>();
         template.setConnectionFactory(factory);
 
-        // Key serializer: lưu key dạng text
+        // Key serializers
         template.setKeySerializer(new StringRedisSerializer());
         template.setHashKeySerializer(new StringRedisSerializer());
 
-        // Configure ObjectMapper to support Java 8 date/time
+        // Object mapper config
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.registerModule(new JavaTimeModule());
         objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-
-        // Enable default typing to preserve class information
         objectMapper.activateDefaultTyping(
                 objectMapper.getPolymorphicTypeValidator(),
                 ObjectMapper.DefaultTyping.NON_FINAL,
-                com.fasterxml.jackson.annotation.JsonTypeInfo.As.PROPERTY
+                JsonTypeInfo.As.PROPERTY
         );
 
-        // Value serializer: lưu value dạng JSON với type information
+        // Value serializer
         GenericJackson2JsonRedisSerializer serializer = new GenericJackson2JsonRedisSerializer(objectMapper);
         template.setValueSerializer(serializer);
         template.setHashValueSerializer(serializer);
@@ -50,65 +124,18 @@ public class RedisConfig {
         return template;
     }
 
-    @Bean
-    public RedisMessageListenerContainer redisMessageListenerContainer(RedisConnectionFactory factory) {
-        RedisMessageListenerContainer container = new RedisMessageListenerContainer();
-        container.setConnectionFactory(factory);
-        return container;
+    @PostConstruct
+    public void testRedisConnection() {
+        try {
+            LettuceConnectionFactory factory = (LettuceConnectionFactory) redisConnectionFactory();
+            factory.afterPropertiesSet();
+
+            RedisTemplate<String, Object> redisTemplate = redisTemplate(factory);
+            redisTemplate.opsForValue().set("test:ping", "pong");
+            String value = (String) redisTemplate.opsForValue().get("test:ping");
+            log.info("🟢 Redis test write OK: {}", value);
+        } catch (Exception e) {
+            log.error("🔴 Redis test write FAILED: {}", e.getMessage(), e);
+        }
     }
-
-    // Message when ttl expired
-    @Bean
-    public KeyExpirationEventMessageListener keyExpirationListener(
-            RedisMessageListenerContainer container,
-            SimpMessagingTemplate messagingTemplate) {
-        KeyExpirationEventMessageListener listener = new KeyExpirationEventMessageListener(container) {
-            @Override
-            public void onMessage(org.springframework.data.redis.connection.Message message, byte[] pattern) {
-                String expiredKey = message.toString();
-                log.info("[Redis Expiration] Key expired: {}", expiredKey);
-
-                // Chỉ xử lý các key seatHold
-                if (!expiredKey.startsWith("seatHold:showtime:")) {
-                    return;
-                }
-
-                // Parse key: seatHold:showtime:{showtimeId}:user:{userId}
-                String[] parts = expiredKey.split(":");
-                if (parts.length < 5) {
-                    log.warn("[Redis Expiration] Invalid key format: {}", expiredKey);
-                    return;
-                }
-
-                try {
-                    long showtimeId = Long.parseLong(parts[2]);
-                    long userId = Long.parseLong(parts[4]);
-
-                    log.info("[Redis Expiration] SeatHold expired -> showtimeId={}, userId={}", showtimeId, userId);
-
-                    // Gửi message với format giống như broadcast trong BookingServiceImpl
-                    // Frontend đang subscribe vào /topic/seat/{showtimeId} và expect format:
-                    // {seats: [], status: "EXPIRED", userId: number, showtimeId: number}
-                    messagingTemplate.convertAndSend(
-                            "/topic/seat/" + showtimeId,
-                            Map.of(
-                                    "seats", java.util.Collections.emptyList(), // Empty list vì key đã hết hạn
-                                    "status", "EXPIRED",
-                                    "userId", userId,
-                                    "showtimeId", showtimeId
-                            )
-                    );
-
-                    log.info("[Redis Expiration] Sent EXPIRED message to /topic/seat/{} for userId={}", showtimeId, userId);
-                } catch (NumberFormatException e) {
-                    log.error("[Redis Expiration] Failed to parse showtimeId or userId from key: {}", expiredKey, e);
-                }
-            }
-        };
-
-        // Bắt buộc phải set listener vào container
-        container.addMessageListener(listener, new org.springframework.data.redis.listener.PatternTopic("__keyevent@*__:expired"));
-        return listener;
-    }
-
 }
