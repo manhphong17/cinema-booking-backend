@@ -1,9 +1,8 @@
-// File: src/main/java/vn/cineshow/repository/SeatRepository.java
-
 package vn.cineshow.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
+import vn.cineshow.enums.SeatStatus;
 import vn.cineshow.model.Room;
 import vn.cineshow.model.Seat;
 
@@ -21,14 +20,13 @@ public interface SeatRepository extends JpaRepository<Seat, Long> {
 
     Optional<Seat> findByRoom_IdAndRowAndColumn(Long roomId, String row, String column);
 
-    Optional<Seat> findByRoomIdAndRowAndColumn(Long roomId, String row, String column);
+
+    List<Seat> findByRoom(Room room);
+
+    List<Seat> findBySeatType_Id(Long seatTypeId);
 
     long countByRoomId(Long roomId);
 
-    void deleteByRoomId(Long roomId);
-
-    List<Seat> findAllByRoomId(Long roomId);
-
-    List<Seat> findByRoom(Room room);
+    long countByRoomIdAndStatus(Long roomId, SeatStatus status);
 
 }

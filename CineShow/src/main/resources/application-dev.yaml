@@ -58,7 +58,10 @@ spring:
             authorization-uri: https://accounts.google.com/o/oauth2/v2/auth
             token-uri: https://oauth2.googleapis.com/token
             user-name-attribute: sub
-
+      REDIRECT_URI_HOME: "http://localhost:3000/home"
+      REDIRECT_URI_ADMIN: "http://localhost:3000/admin"
+      REDIRECT_URI_OPERATOR: "http://localhost:3000/operator-manager/dashboard"
+      REDIRECT_URI_BUSINESS: "http://localhost:3000/business-manager/dashboard"
 
   devtools:
     add-properties: true
@@ -68,13 +71,28 @@ spring:
       enabled: true
       path: /h2-console
 
+#  datasource:
+#    url: jdbc:mysql://cineshow-db.cxg2yw8kealb.ap-southeast-1.rds.amazonaws.com:3306/cineshow?useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC
+#    username: admin
+#    password: Bimatcuaphong
+#    driver-class-name: com.mysql.cj.jdbc.Driver
+#    hikari:
+#      maximum-pool-size: 15          # Tăng lên 15 connection để xử lý nhiều request đồng thời
+#      minimum-idle: 5                # Tăng lên 5 connection sẵn sàng
+#      idle-timeout: 300000           # 5 phút không dùng -> đóng
+#      max-lifetime: 1200000          # 20 phút -> đóng và tạo mới
+#      connection-timeout: 60000      # Tăng lên 60s timeout (AWS RDS có thể chậm do network latency)
+#      validation-timeout: 10000       # Tăng lên 10s cho việc kiểm tra connection
+#      pool-name: HikariPool-CineShow
+#      # Tối ưu cho AWS RDS: thêm các tham số để giảm latency
+#      connection-test-query: SELECT 1
+#      leak-detection-threshold: 60000 # Phát hiện connection leak sau 60s
+
   datasource:
     url: jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_NAME:cineshow}?useUnicode=true&characterEncoding=UTF-8&createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Ho_Chi_Minh
     username: ${DB_USER:root}
     password: ${DB_PASS:}
     driver-class-name: com.mysql.cj.jdbc.Driver
-
-
 
   jpa:
     hibernate:
@@ -83,32 +101,15 @@ spring:
     properties:
       hibernate:
         format_sql: true
-        dialect: org.hibernate.dialect.MySQLDialect
+        dialect: org.hibernate.dialect.MySQL8Dialect
 
-
-  #  datasource:
-  #    url: jdbc:sqlserver://${DB_HOST:}:${DB_PORT:1433};databaseName=${DB_NAME:CineShow};encrypt=true;trustServerCertificate=true
-  #    username: ${DB_USER:}
-  #    password: ${DB_PASS:}
-  #    driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
-  #
-  #  jpa:
-  #    database-platform: org.hibernate.dialect.SQLServerDialect
-  #    hibernate:
-  #      ddl-auto: update
-  #    show-sql: true
-  #    properties:
-  #      hibernate:
-  #        format_sql: true
-  #        dialect: org.hibernate.dialect.SQLServerDialect
   sendgrid:
-    api-key: ${SENDGRID_API_KEY}
+    api-key: "${SENDGRID_API_KEY}"
     from-email: "manhphongchy17@gmail.com"
-
 
 app:
   frontend:
-    verify-url: "https://cinema.com/verify"   # URL frontend để verify OTP
+    verify-url: "http://localhost:3000/verify"   # URL frontend để verify OTP
   sendgrid:
     otp-template-id: "d-71a24bbc41824c0495bc166a115275a0"   # Template ID cho OTP
 
