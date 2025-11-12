@@ -8,6 +8,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import vn.cineshow.dto.request.room.RoomTypeCreateRequest;
 import vn.cineshow.dto.request.room.RoomTypeUpdateRequest;
+import vn.cineshow.dto.response.room.room_type.RoomTypeResponse;
 import vn.cineshow.service.RoomTypeService;
 
 import java.net.URI;
@@ -36,7 +37,7 @@ public class RoomTypeController {
     @PreAuthorize("hasAuthority('OPERATION')")
     public ResponseEntity<?> create(@Valid @RequestBody RoomTypeCreateRequest req) {
         var dto = service.create(req);
-        return ResponseEntity.created(URI.create("/api/room-types/" + dto.getId())).body(dto);
+        return ResponseEntity.created(URI.create("/api/room-types/" )).body(dto); //+ dto.getId()
     }
 
     @PutMapping("/{id}")
