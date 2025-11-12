@@ -1,6 +1,9 @@
 package vn.cineshow.controller;
 import org.springframework.beans.factory.annotation.Value;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -14,10 +17,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 import vn.cineshow.dto.request.order.OrderCreatedAtSearchRequest;
 import vn.cineshow.dto.request.order.OrderListRequest;
-import vn.cineshow.dto.response.order.OrderDetailResponse;
-import vn.cineshow.dto.response.order.OrderListItemResponse;
-import vn.cineshow.dto.response.order.OrderListResponse;
-import vn.cineshow.dto.response.order.OrderQrPayloadResponse;
+import vn.cineshow.dto.response.ResponseData;
+import vn.cineshow.dto.response.order.*;
 import vn.cineshow.enums.OrderStatus;
 import vn.cineshow.exception.AppException;
 import vn.cineshow.exception.ErrorCode;
@@ -29,6 +30,7 @@ import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -493,4 +495,32 @@ public class OrderController {
         String col = t.getSeat().getColumn();
         return (row != null ? row : "") + (col != null ? col : "");
     }
+
+    @GetMapping("/sales")
+    @PreAuthorize("hasAnyAuthority('BUSINESS')")
+    public ResponseData<Map<String, Object>> getOrdersByStatusAndDate(
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size
+    ) {
+        Map<String, Object> data = orderQueryService.getOrdersByStatus(status, date, page, size);
+
+        // lấy Page<OrderResponse> từ data
+        Page<OrderResponse> ordersPage = (Page<OrderResponse>) data.get("orders");
+
+        if (ordersPage == null || ordersPage.isEmpty()) {
+            return new ResponseData<>(
+                    HttpStatus.NOT_FOUND.value(),
+                    "Không tìm thấy đơn hàng phù hợp trong ngày " + (date != null ? date : LocalDate.now())
+            );
+        }
+
+        return new ResponseData<>(
+                HttpStatus.OK.value(),
+                "Fetched orders successfully",
+                data // chứa cả "orders" và "summary"
+        );
+    }
+
 }

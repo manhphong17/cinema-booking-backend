@@ -5,11 +5,13 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import vn.cineshow.dto.response.BDashbroad.MonthlyStatsDTO;
 import vn.cineshow.dto.response.BDashbroad.TopProductDTO;
+import vn.cineshow.enums.OrderStatus;
 import vn.cineshow.model.Order;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 
+import java.time.LocalDate;
 import java.time.YearMonth;
 import java.util.List;
 import java.util.Optional;
@@ -118,5 +120,53 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     ORDER BY SUM(oc.quantity) DESC
 """)
     List<TopProductDTO> findTopProductsOfCurrentMonth(Pageable pageable);
+
+    @Query("""
+    SELECT o FROM Order o
+    LEFT JOIN FETCH o.user
+    LEFT JOIN FETCH o.payment
+    WHERE (:status IS NULL OR o.orderStatus = :status)
+      AND o.createdAt BETWEEN :startOfDay AND :endOfDay
+    ORDER BY o.createdAt DESC
+""")
+    Page<Order> findAllByStatusAndDateRange(@Param("status") OrderStatus status,
+                                            @Param("startOfDay") LocalDateTime startOfDay,
+                                            @Param("endOfDay") LocalDateTime endOfDay,
+                                            Pageable pageable);
+
+
+
+    @Query("""
+    SELECT SUM(o.totalPrice)
+    FROM Order o
+    WHERE o.orderStatus = 'COMPLETED'
+      AND o.createdAt BETWEEN :start AND :end
+""")
+    Double getRevenueByDate(@Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
+
+    @Query("""
+    SELECT COUNT(t)
+    FROM Ticket t
+    WHERE t.order.orderStatus = 'COMPLETED'
+      AND t.createdAt BETWEEN :start AND :end
+""")
+    Long getTicketsByDate(@Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
+
+    @Query("""
+    SELECT COUNT(o)
+    FROM Order o
+    WHERE o.orderStatus = 'COMPLETED'
+      AND o.createdAt BETWEEN :start AND :end
+""")
+    Long getCompletedOrdersByDate(@Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
+
+    @Query("""
+    SELECT COALESCE(SUM(oc.quantity), 0)
+    FROM OrderConcession oc
+    WHERE oc.order.orderStatus = 'COMPLETED'
+      AND oc.order.createdAt BETWEEN :start AND :end
+""")
+    Long getConcessionSoldByDate(@Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
+
 
 }
