@@ -15,6 +15,9 @@ public interface PaymentMethodRepository extends JpaRepository<PaymentMethod, In
     @Query("SELECT DISTINCT pm.methodName FROM PaymentMethod pm WHERE pm.isActive = true AND pm.methodName <> 'Tiền mặt'")
     List<String> findDistinctMethodNames();
 
+    @Query("SELECT DISTINCT pm.methodName FROM PaymentMethod pm WHERE pm.isActive = true ")
+    List<String> findDistinctAllMethodNames();
+
 
     //  Lấy danh sách ngân hàng thuộc methodName cụ thể
     List<PaymentMethod> findByMethodName(String methodName);

@@ -10,7 +10,6 @@ import vn.cineshow.dto.redis.OrderSessionRequest;
 import vn.cineshow.dto.request.booking.SeatSelectRequest;
 import vn.cineshow.dto.response.booking.*;
 import vn.cineshow.dto.response.payment.PaymentMethodDTO;
-import vn.cineshow.enums.SeatStatus;
 import vn.cineshow.enums.TicketStatus;
 import vn.cineshow.exception.AppException;
 import vn.cineshow.exception.ErrorCode;
@@ -305,6 +304,11 @@ public class BookingServiceImpl implements BookingService {
         return paymentMethodRepository.findDistinctMethodNames();
     }
 
+    @Override
+    public List<String> getDistinctAllMethodNames() {
+        return paymentMethodRepository.findDistinctAllMethodNames();
+    }
+
     // Find all banks by methodName
     @Override
     public List<PaymentMethodDTO> getPaymentMethodsByName(String methodName) {
@@ -317,5 +321,6 @@ public class BookingServiceImpl implements BookingService {
                         .build())
                 .collect(Collectors.toList());
     }
+
 
 }

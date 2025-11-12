@@ -164,6 +164,17 @@ public class BookingController {
         );
     }
 
+    // Lấy danh sách phương thức thanh toán chính
+    @GetMapping("/payment-methods/all-distinct/")
+    public ResponseData<List<String>> getDistinctAllMethodNames() {
+        List<String> distinctNames = bookingService.getDistinctAllMethodNames();
+        return new ResponseData<>(
+                HttpStatus.OK.value(),
+                "Lấy danh sách nhóm phương thức thanh toán thành công",
+                distinctNames
+        );
+    }
+
     // Lấy chi tiết các ngân hàng theo methodName
     @GetMapping("/payment-methods/{methodName}")
     public ResponseData<List<PaymentMethodDTO>> getPaymentMethodsByName(
