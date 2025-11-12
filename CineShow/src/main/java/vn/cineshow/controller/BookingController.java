@@ -1,9 +1,11 @@
 package vn.cineshow.controller;
 
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import lombok.*;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,8 +18,6 @@ import org.springframework.web.bind.annotation.RestController;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import lombok.AccessLevel;
-import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 
@@ -36,6 +36,8 @@ import vn.cineshow.service.OrderSessionService;
 import vn.cineshow.service.SeatHoldService;
 import java.util.Arrays;
 import java.util.stream.Collectors;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 
 
 @RestController
@@ -104,7 +106,7 @@ public class BookingController {
     )
     @GetMapping("/show-times/{showtimeId}/users/{userId}/seat-hold")
     public ResponseData<?> getCurrentSeatHold(@PathVariable Long showtimeId,
-                                               @PathVariable Long userId) {
+                                              @PathVariable Long userId) {
         log.info("Request get current seat hold - showtimeId: {}, userId: {}", showtimeId, userId);
         SeatHold seatHold = seatHoldService.getCurrentHold(showtimeId, userId);
         log.info("Response get current seat hold: {}", seatHold);
@@ -151,14 +153,43 @@ public class BookingController {
         return new ResponseData<>(HttpStatus.OK.value(), "Get ticket details successfully", result);
     }
 
-    @GetMapping("/payment-methods")
-    public ResponseData<List<PaymentMethodDTO>> getPaymentMethods() {
-        List<PaymentMethodDTO> methods = bookingService.getActivePaymentMethods();
+    // Lấy danh sách phương thức thanh toán chính
+    @GetMapping("/payment-methods/distinct")
+    public ResponseData<List<String>> getDistinctMethodNames() {
+        List<String> distinctNames = bookingService.getDistinctMethodNames();
         return new ResponseData<>(
                 HttpStatus.OK.value(),
-                "Lấy danh sách phương thức thanh toán thành công",
-                methods
+                "Lấy danh sách nhóm phương thức thanh toán thành công",
+                distinctNames
         );
     }
 
+    // Lấy chi tiết các ngân hàng theo methodName
+    @GetMapping("/payment-methods/{methodName}")
+    public ResponseData<List<PaymentMethodDTO>> getPaymentMethodsByName(
+            @PathVariable String methodName) {
+
+        try {
+            //  Giải mã UTF-8 path parameter
+            String decodedName = URLDecoder.decode(methodName, StandardCharsets.UTF_8);
+            log.info("Decoded methodName = {}", decodedName); // test log xem in ra có dấu tiếng Việt chưa
+
+
+            List<PaymentMethodDTO> methods = bookingService.getPaymentMethodsByName(decodedName);
+            return new ResponseData<>(
+                    HttpStatus.OK.value(),
+                    "Lấy danh sách ngân hàng theo phương thức thành công",
+                    methods
+            );
+
+        } catch (Exception e) {
+            return new ResponseData<>(
+                    HttpStatus.BAD_REQUEST.value(),
+                    "Không thể xử lý tên phương thức thanh toán",
+                    null
+            );
+        }
+
+
+    }
 }

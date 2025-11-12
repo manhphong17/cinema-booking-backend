@@ -301,14 +301,21 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public List<PaymentMethodDTO> getActivePaymentMethods() {
-        List<PaymentMethod> methods = paymentMethodRepository.findByIsActiveTrue();
+    public List<String> getDistinctMethodNames() {
+        return paymentMethodRepository.findDistinctMethodNames();
+    }
+
+    // Find all banks by methodName
+    @Override
+    public List<PaymentMethodDTO> getPaymentMethodsByName(String methodName) {
+        List<PaymentMethod> methods = paymentMethodRepository.findByMethodName(methodName);
         return methods.stream()
                 .map(m -> PaymentMethodDTO.builder()
-                        .paymentName(m.getMethodName())
+                        .paymentName(m.getBankName() != null ? m.getBankName() : m.getMethodName())
                         .paymentCode(m.getPaymentCode())
                         .imageUrl(m.getImageUrl())
                         .build())
                 .collect(Collectors.toList());
     }
+
 }

@@ -37,16 +37,16 @@ import java.util.stream.Collectors;
 @Slf4j
 public class VNPayServiceImpl implements VNPayService {
 
-    private final PaymentRepository paymentRepository;
-    private final VNPayProperties vnpayProperties;
+    private final PaymentRepository paymentRepository; //
+    private final VNPayProperties vnpayProperties;//
     private final OrderRepository orderRepository;
-    private final OrderConcessionRepository orderConcessionRepository;
-    private final ConcessionRepository concessionRepository;
-    private final PaymentMethodRepository paymentMethodRepository;
-    private final TicketRepository ticketRepository;
-    private final UserRepository userRepository;
-    private final RedisService redisService;
-    private final BookingService bookingService;
+    private final OrderConcessionRepository orderConcessionRepository; //
+    private final ConcessionRepository concessionRepository; //
+    private final PaymentMethodRepository paymentMethodRepository; //
+    private final TicketRepository ticketRepository; //
+    private final UserRepository userRepository;//
+    private final RedisService redisService; //
+    private final BookingService bookingService; //
 
 
     @Value("${booking.ttl.payment}")
@@ -326,6 +326,8 @@ public class VNPayServiceImpl implements VNPayService {
                 payment.setTransactionNo(vnpTransactionNo);
                 payment.setPaymentStatus(PaymentStatus.FAILED);
                 order.setOrderStatus(OrderStatus.CANCELED);
+                orderRepository.save(order);
+                paymentRepository.save(payment);
                 log.warn("Payment FAILED — order={}, code={}", txnRef, responseCode);
                 response.put("RspCode", "00");
                 response.put("Message", "Confirm Success");
@@ -381,6 +383,7 @@ public class VNPayServiceImpl implements VNPayService {
             String txnRef = params.get("vnp_TxnRef");
             String responseCode = params.get("vnp_ResponseCode");
             String transactionStatus = params.get("vnp_TransactionStatus");
+            String vnpTransactionNo = params.get("vnp_TransactionNo");
 
             Payment payment = (Payment) paymentRepository.findByTxnRef(txnRef).orElse(null);
             if (payment == null) {
@@ -421,8 +424,6 @@ public class VNPayServiceImpl implements VNPayService {
                 response.put("message", "Thanh toán không thành công hoặc đã hết hạn thanh toán");
             }
             response.put("orderCode", payment.getTxnRef());
-
-            log.info(" Return URL processed successfully for txnRef={}", txnRef);
             return response;
 
         } catch (Exception e) {

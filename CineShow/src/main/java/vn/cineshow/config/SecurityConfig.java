@@ -63,6 +63,7 @@ public class SecurityConfig {
                 "/ws-native/**",
                 "/movies/banners",
                 "/movies/top/**",
+                "/bookings/movies/**",
                 "/movies/movie-genres",
                 "/movies/*",
                 "/payment/ipn",
