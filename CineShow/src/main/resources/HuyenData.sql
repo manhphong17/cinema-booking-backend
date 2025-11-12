@@ -38,8 +38,27 @@ INSERT INTO cineshow.holidays (id, created_at, updated_at, day_of_month, descrip
 
 
 INSERT INTO payment_methods (method_name, payment_code, is_active, created_at, updated_at, image_url)
+VALUE ('Tiền mặt', 'CASH', 1, NOW(), NOW(),'/cash.png');
+
+INSERT INTO payment_methods (created_at, updated_at, image_url, is_active, method_name, payment_code, bank_name)
 VALUES
-    ('Thanh toán quét mã QR', 'VNPAYQR', 1, NOW(), NOW(),'/vnpay-logo.png'),
-    ('Thẻ ATM - Tài khoản ngân hàng nội địa', 'VNBANK', 1, NOW(), NOW()'/vnpay-logo.png'),
-    ('Thẻ thanh toán quốc tế', 'INTCARD', 1, NOW(), NOW(),'/vnpay-logo.png'),
-    ('Tiền mặt', 'CASH', 1, NOW(), NOW(),'/cash.png');
+    (NOW(), NOW(), '/vib.svg', 1, 'Thẻ ATM - Tài khoản ngân hàng nội địa', 'VIB', 'VIB'),
+    (NOW(), NOW(), '/scb.svg', 1, 'Thẻ ATM - Tài khoản ngân hàng nội địa', 'SCB', 'Ngân hàng SCB'),
+    (NOW(), NOW(), '/msb.svg', 1, 'Thẻ ATM - Tài khoản ngân hàng nội địa', 'MSBANK', 'Ngân hàng MSBANK'),
+    (NOW(), NOW(), '/namabank.svg', 1, 'Thẻ ATM - Tài khoản ngân hàng nội địa', 'NAMABANK', 'Ngân hàng NamABank'),
+    (NOW(), NOW(), '/vietinbank.svg', 1, 'Thẻ ATM - Tài khoản ngân hàng nội địa', 'VIETINBANK', 'Ngân hàng Vietinbank'),
+    (NOW(), NOW(), '/vietcombank.svg', 1, 'Thẻ ATM - Tài khoản ngân hàng nội địa', 'VIETCOMBANK', 'Ngân hàng VCB'),
+    (NOW(), NOW(), '/hdbank.svg', 1, 'Thẻ ATM - Tài khoản ngân hàng nội địa', 'HDBANK', 'Ngân hàng HDBank'),
+    (NOW(), NOW(), '/tpbank.svg', 1, 'Thẻ ATM - Tài khoản ngân hàng nội địa', 'TPBANK', 'Ngân hàng TPBank'),
+    (NOW(), NOW(), '/bidv.svg', 1, 'Thẻ ATM - Tài khoản ngân hàng nội địa', 'BIDV', 'Ngân hàng BIDV'),
+    (NOW(), NOW(), '/techcomban.svg', 1, 'Thẻ ATM - Tài khoản ngân hàng nội địa', 'TECHCOMBANK', 'Ngân hàng Techcombank'),
+    (NOW(), NOW(), '/vpbank.svg', 1, 'Thẻ ATM - Tài khoản ngân hàng nội địa', 'VPBANK', 'Ngân hàng VPBank'),
+    (NOW(), NOW(), '/agribank.svg', 1, 'Thẻ ATM - Tài khoản ngân hàng nội địa', 'AGRIBANK', 'Ngân hàng Agribank'),
+    (NOW(), NOW(), '/mbbank.svg', 1, 'Thẻ ATM - Tài khoản ngân hàng nội địa', 'MBBANK', 'Ngân hàng MBBank'),
+    (NOW(), NOW(), '/acb.svg', 1, 'Thẻ ATM - Tài khoản ngân hàng nội địa', 'ACB', 'Ngân hàng ACB'),
+    (NOW(), NOW(), '/ivb.svg', 1, 'Thẻ ATM - Tài khoản ngân hàng nội địa', 'IVB', 'Ngân hàng IVB'),
+    (NOW(), NOW(), '/shb.svg', 1, 'Thẻ ATM - Tài khoản ngân hàng nội địa', 'SHB', 'Ngân hàng SHB'),
+    (NOW(), NOW(), '/visa.svg', 1, 'Thẻ thanh toán quốc tế', 'VISA', 'VISA'),
+    (NOW(), NOW(), '/mastercard.svg', 1, 'Thẻ thanh toán quốc tế', 'MASTERCARD', 'MASTERCARD'),
+    (NOW(), NOW(), '/jbc.svg', 1, 'Thẻ thanh toán quốc tế', 'JCB', 'JCB'),
+    (NOW(), NOW(), '/unionpay.svg', 1, 'Thẻ thanh toán quốc tế', 'UPI', 'UPI');

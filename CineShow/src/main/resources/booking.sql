@@ -1017,10 +1017,8 @@ VALUES (1, '2025-01-01 00:42:14', '2025-01-01 00:07:29', 'DELETED',
        (12, '2025-01-01 00:38:56', '2025-01-01 00:38:56', 'ACTIVE', 'nachos', 'nachos', 78000, 'IN_STOCK', 102,
         'https://d28ic9z7shvx92.cloudfront.net/uploads/40746e11-28bd-439b-aeb7-b84b95b1850c-image-base64.jpg', 2),
        (13, '2025-01-01 00:44:51', '2025-01-01 00:22:07', 'INACTIVE', 'mát lạnh', 'Spirte 300ml', 20000, 'IN_STOCK',
-        150, 'https://d28ic9z7shvx92.cloudfront.net/uploads/99747049-dab2-43b3-8170-7e4cec095bf7-image-base64.jpg', 1),
-       (14, '2025-01-01 00:35:51', '2025-01-01 00:35:51', 'ACTIVE', 'test', 'test', 10, 'IN_STOCK', 10,
-        'https://d28ic9z7shvx92.cloudfront.net/uploads/c49e9b89-1a23-4e55-8260-8f5776d05f30-Screenshot 2024-05-28 090323.png',
-        1);
+        150, 'https://d28ic9z7shvx92.cloudfront.net/uploads/99747049-dab2-43b3-8170-7e4cec095bf7-image-base64.jpg', 1)
+  ;
 
 INSERT INTO cineshow.holidays (id, created_at, updated_at, day_of_month, description, holiday_date, is_recurring,
                                month_of_year)
@@ -1037,3 +1035,9 @@ VALUES (16, '2025-10-19 11:55:19.014997', '2025-10-19 11:55:19.014997', NULL, 'm
        (33, '2025-10-19 16:38:13.319874', '2025-10-19 16:38:13.319874', 1, 'tết thiếu nhi', NULL, 1, 6),
        (35, '2025-10-19 17:49:33.809065', '2025-10-19 17:49:33.809065', 31, 'ko ngày gì', '2025-01-31', 0, NULL);
 
+INSERT INTO payment_methods (method_name, payment_code, is_active, created_at, updated_at, image_url)
+VALUES
+    ('Thanh toán quét mã QR', 'VNPAYQR', 1, NOW(), NOW(),'/vnpay-logo.png'),
+    ('Thẻ ATM - Tài khoản ngân hàng nội địa', 'VNBANK', 1, NOW(), NOW(),'/vnpay-logo.png'),
+    ('Thẻ thanh toán quốc tế', 'INTCARD', 1, NOW(), NOW(),'/vnpay-logo.png'),
+    ('Tiền mặt', 'CASH', 1, NOW(), NOW(),'/cash.png');

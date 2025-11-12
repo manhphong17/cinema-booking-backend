@@ -1,3 +1,5 @@
+// File: src/main/java/vn/cineshow/dto/request/seat/SeatInitRequest.java
+
 package vn.cineshow.dto.request.seat;
 
 import jakarta.validation.constraints.Min;

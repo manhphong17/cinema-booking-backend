@@ -12,12 +12,23 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) { //STOMP: Simple Text Oriented Messaging Protocol
         registry.addEndpoint("/ws")              // endpoint de client connect
-                .setAllowedOriginPatterns("http://localhost:3000", "http://localhost:3001")   // allows CORS
+                .setAllowedOriginPatterns(
+                        "http://localhost:3000", 
+                        "http://localhost:3001", 
+                        "https://manhphong.io.vn",
+                        "https://api.manhphong.io.vn",
+                        "https://cineshow.vercel.app"
+                )   // allows CORS
                 .withSockJS();                   // fallback SockJS- tuỳ chọn dự phòng cho  các trình duyệt không hỗ trợ websocket
 
         registry.addEndpoint("/ws-native")
-                .setAllowedOriginPatterns("*")
-                .setAllowedOrigins("https://websocketking.com", "http://localhost:3000", "*");
+                .setAllowedOriginPatterns(
+                        "http://localhost:3000", 
+                        "http://localhost:3001", 
+                        "https://manhphong.io.vn",
+                        "https://api.manhphong.io.vn",
+                        "https://cineshow.vercel.app"
+                );
 
     }
 

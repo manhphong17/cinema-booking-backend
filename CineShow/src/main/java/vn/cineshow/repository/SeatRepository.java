@@ -2,6 +2,7 @@ package vn.cineshow.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
+import vn.cineshow.enums.SeatStatus;
 import vn.cineshow.model.Room;
 import vn.cineshow.model.Seat;
 
@@ -21,5 +22,11 @@ public interface SeatRepository extends JpaRepository<Seat, Long> {
 
 
     List<Seat> findByRoom(Room room);
+
+    List<Seat> findBySeatType_Id(Long seatTypeId);
+
+    long countByRoomId(Long roomId);
+
+    long countByRoomIdAndStatus(Long roomId, SeatStatus status);
 
 }

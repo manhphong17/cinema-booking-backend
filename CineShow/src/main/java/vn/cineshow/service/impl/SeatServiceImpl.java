@@ -10,6 +10,8 @@ import vn.cineshow.dto.response.seat.SeatCellDTO;
 import vn.cineshow.dto.response.seat.SeatMatrixResponse;
 import vn.cineshow.dto.response.seat.seat_type.SeatTypeDTO;
 import vn.cineshow.enums.SeatStatus;
+import vn.cineshow.exception.AppException;
+import vn.cineshow.exception.ErrorCode;
 import vn.cineshow.model.Room;
 import vn.cineshow.model.RoomType;
 import vn.cineshow.model.Seat;
@@ -37,14 +39,13 @@ public class SeatServiceImpl implements SeatService {
     @Override
     @Transactional
     public int initSeats(Long roomId, SeatInitRequest request) {
-        Room room = roomRepository.findById(roomId).orElse(null);
-        if (room == null) return 0;
+        Room room = roomRepository.findById(roomId).orElseThrow(() -> new AppException(ErrorCode.ROOM_NOT_FOUND));
 
         seatRepository.deleteByRoom_Id(roomId);
         seatRepository.flush();
 
         SeatType defaultType = seatTypeRepository.findById(request.getDefaultSeatTypeId())
-                .orElseThrow(() -> new IllegalArgumentException("SeatType không tồn tại"));
+                .orElseThrow(() -> new AppException(ErrorCode.SEAT_TYPE_NOT_FOUND));
 
         int rows = request.getRows();
         int cols = request.getColumns();
@@ -65,7 +66,7 @@ public class SeatServiceImpl implements SeatService {
 
         room.setRows(rows);
         room.setColumns(cols);
-        room.setCapacity(rows * cols);
+        room.setCapacity(batch.size()); // All seats are available initially
         roomRepository.save(room);
 
         return batch.size();
@@ -77,8 +78,7 @@ public class SeatServiceImpl implements SeatService {
     @Override
     @Transactional(readOnly = true)
     public SeatMatrixResponse getSeatMatrix(Long roomId) {
-        Room room = roomRepository.findById(roomId).orElse(null);
-        if (room == null) return null;
+        Room room = roomRepository.findById(roomId).orElseThrow(() -> new AppException(ErrorCode.ROOM_NOT_FOUND));
 
         // Lấy ghế theo row/column (String) đã sắp xếp
         List<Seat> seats = seatRepository.findByRoom_IdOrderByRowAscColumnAsc(roomId);
@@ -103,11 +103,16 @@ public class SeatServiceImpl implements SeatService {
             if (r <= 0 || c <= 0 || r > rows || c > cols) continue;
 
             SeatType st = s.getSeatType();
-            SeatTypeDTO seatTypeDTO = (st == null) ? null : SeatTypeDTO.builder()
-                    .id(st.getId())
-                    .name(st.getName())
-                    .description(st.getDescription())
-                    .build();
+            SeatTypeDTO seatTypeDTO = null;
+            if (s.getStatus() == SeatStatus.BLOCKED) {
+                seatTypeDTO = SeatTypeDTO.builder().id(-1L).build();
+            } else if (st != null) {
+                seatTypeDTO = SeatTypeDTO.builder()
+                        .id(st.getId())
+                        .name(st.getName())
+                        .description(st.getDescription())
+                        .build();
+            }
 
             String rowLabel = toRowLabel(r);
             SeatCellDTO cell = SeatCellDTO.builder()
@@ -118,7 +123,7 @@ public class SeatServiceImpl implements SeatService {
                     .number(c)
                     .seatType(seatTypeDTO)
                     .status(s.getStatus() == null ? null : s.getStatus().name())
-                    .isBlocked(Boolean.FALSE)
+                    .isBlocked(s.getStatus() == SeatStatus.BLOCKED)
                     .note(null)
                     .build();
 
@@ -138,7 +143,7 @@ public class SeatServiceImpl implements SeatService {
     @Transactional
     public Map<String, Integer> saveSeatMatrix(Long roomId, SeatMatrixRequest request) {
         Room room = roomRepository.findById(roomId)
-                .orElseThrow(() -> new IllegalArgumentException("Room không tồn tại"));
+                .orElseThrow(() -> new AppException(ErrorCode.ROOM_NOT_FOUND));
 
         List<Seat> existing = seatRepository.findByRoom_Id(roomId);
         Map<String, Seat> existingMap = existing.stream()
@@ -164,12 +169,17 @@ public class SeatServiceImpl implements SeatService {
                     String k = key(String.valueOf(r), String.valueOf(c));
                     Seat found = existingMap.get(k);
 
-                    SeatType type = seatTypeRepository.findById(cellReq.getSeatTypeId())
-                            .orElseThrow(() -> new IllegalArgumentException("SeatType không tồn tại: " + cellReq.getSeatTypeId()));
+                    SeatType type = null;
+                    if (cellReq.getSeatTypeId() != -1) {
+                        type = seatTypeRepository.findById(cellReq.getSeatTypeId())
+                                .orElseThrow(() -> new AppException(ErrorCode.SEAT_TYPE_NOT_FOUND));
+                    }
 
                     // String -> Enum (mặc định ACTIVE)
                     SeatStatus desiredStatus = SeatStatus.AVAILABLE;
-                    if (cellReq.getStatus() != null && !cellReq.getStatus().isBlank()) {
+                    if (cellReq.getSeatTypeId() == -1) {
+                        desiredStatus = SeatStatus.BLOCKED;
+                    } else if (cellReq.getStatus() != null && !cellReq.getStatus().isBlank()) {
                         try {
                             desiredStatus = SeatStatus.valueOf(cellReq.getStatus().trim().toUpperCase());
                         } catch (IllegalArgumentException ignored) { /* giữ ACTIVE */ }
@@ -189,7 +199,7 @@ public class SeatServiceImpl implements SeatService {
                     } else {
                         boolean changed = false;
 
-                        if (found.getSeatType() == null || !found.getSeatType().getId().equals(type.getId())) {
+                        if (type != null && (found.getSeatType() == null || !found.getSeatType().getId().equals(type.getId()))) {
                             found.setSeatType(type);
                             changed = true;
                         }
@@ -219,9 +229,9 @@ public class SeatServiceImpl implements SeatService {
         if (!Objects.equals(room.getRows(), newRows) || !Objects.equals(room.getColumns(), newCols)) {
             room.setRows(newRows);
             room.setColumns(newCols);
-            room.setCapacity(newRows * newCols);
-            roomRepository.save(room);
         }
+        room.setCapacity((int) seatRepository.countByRoomIdAndStatus(room.getId(), SeatStatus.AVAILABLE));
+        roomRepository.save(room);
 
         Map<String, Integer> result = new HashMap<>();
         result.put("updated", updated);
@@ -237,9 +247,9 @@ public class SeatServiceImpl implements SeatService {
     @Transactional
     public int bulkUpdateSeatType(Long roomId, BulkTypeRequest request) {
         Room room = roomRepository.findById(roomId)
-                .orElseThrow(() -> new IllegalArgumentException("Room không tồn tại"));
+                .orElseThrow(() -> new AppException(ErrorCode.ROOM_NOT_FOUND));
         SeatType type = seatTypeRepository.findById(request.getSeatTypeId())
-                .orElseThrow(() -> new IllegalArgumentException("SeatType không tồn tại"));
+                .orElseThrow(() -> new AppException(ErrorCode.SEAT_TYPE_NOT_FOUND));
 
         List<Seat> toSave = new ArrayList<>();
         for (SeatPosition pos : request.getTargets()) {
@@ -260,7 +270,7 @@ public class SeatServiceImpl implements SeatService {
     @Transactional
     public int bulkBlockSeats(Long roomId, BulkBlockRequest request) {
         Room room = roomRepository.findById(roomId)
-                .orElseThrow(() -> new IllegalArgumentException("Room không tồn tại"));
+                .orElseThrow(() -> new AppException(ErrorCode.ROOM_NOT_FOUND));
 
         boolean block = Boolean.TRUE.equals(request.getBlocked());
         List<Seat> toSave = new ArrayList<>();
@@ -277,7 +287,11 @@ public class SeatServiceImpl implements SeatService {
                     });
         }
 
-        if (!toSave.isEmpty()) seatRepository.saveAll(toSave);
+        if (!toSave.isEmpty()) {
+            seatRepository.saveAll(toSave);
+            room.setCapacity((int) seatRepository.countByRoomIdAndStatus(room.getId(), SeatStatus.AVAILABLE));
+            roomRepository.save(room);
+        }
         return toSave.size();
     }
 

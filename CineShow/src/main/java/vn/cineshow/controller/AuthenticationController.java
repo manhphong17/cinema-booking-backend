@@ -1,5 +1,18 @@
 package vn.cineshow.controller;
 
+import java.time.Duration;
+import java.util.Optional;
+
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseCookie;
+import org.springframework.web.bind.annotation.CookieValue;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
@@ -7,12 +20,10 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseCookie;
-import org.springframework.web.bind.annotation.*;
-import vn.cineshow.dto.request.*;
 import vn.cineshow.dto.request.EmailRegisterRequest;
+import vn.cineshow.dto.request.ForgotPasswordRequest;
+import vn.cineshow.dto.request.OtpVerifyDTO;
+import vn.cineshow.dto.request.ResetPasswordRequest;
 import vn.cineshow.dto.request.SignInRequest;
 import vn.cineshow.dto.response.ResponseData;
 import vn.cineshow.dto.response.SignInResponse;
@@ -23,9 +34,6 @@ import vn.cineshow.service.AccountService;
 import vn.cineshow.service.AuthenticationService;
 import vn.cineshow.service.OtpService;
 import vn.cineshow.service.UserService;
-
-import java.time.Duration;
-import java.util.Optional;
 
 @RestController
 @RequiredArgsConstructor
@@ -81,6 +89,34 @@ public class AuthenticationController {
         return new ResponseData<>(HttpStatus.OK.value(),
                 "Token refreshed successfully",
                 tokenResponse
+        );
+    }
+
+    @Operation(summary = "Logout", description = "Logout user and delete refresh token")
+    @PostMapping("/log-out")
+    public ResponseData<String> logout(
+            @CookieValue(value = "refreshToken", required = false) String refreshToken,
+            HttpServletResponse response) {
+        log.info("Logout request received");
+        
+        // Delete refresh token from database
+        authenticationService.logout(refreshToken);
+        
+        // Delete refresh token cookie by setting maxAge to 0
+        ResponseCookie cookie = ResponseCookie.from("refreshToken", "")
+                .httpOnly(true)
+                .secure(false)
+                .path("/")
+                .maxAge(Duration.ofSeconds(0))  // Delete cookie immediately
+                .sameSite("Lax")
+                .build();
+        
+        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+        log.info("Refresh token deleted and cookie cleared for logout");
+        
+        return new ResponseData<>(HttpStatus.OK.value(),
+                "Logout successful",
+                null
         );
     }
 
@@ -145,7 +181,7 @@ public class AuthenticationController {
     // Quên mật khẩu → gửi OTP
     @PostMapping("/forgot-password")
     public ResponseData<?> forgotPassword(@RequestBody @Valid ForgotPasswordRequest request) {
-        boolean sent = accountService.forgotPassword(request);
+        boolean sent = authenticationService.forgotPassword(request);
         if (!sent) {
             return new ResponseData<>(HttpStatus.BAD_REQUEST.value(),
                     "Email not found or OTP could not be sent", null);
@@ -157,7 +193,7 @@ public class AuthenticationController {
     // B3: Verify OTP khi reset password
     @PostMapping("/verify-otp-reset")
     public ResponseData<VerifyOtpResetResponse> verifyOtpReset(@RequestBody @Valid OtpVerifyDTO req) {
-        Optional<String> tokenOpt = accountService.verifyOtpForReset(req.email(), req.otpCode());
+        Optional<String> tokenOpt = authenticationService.verifyOtpForReset(req.email(), req.otpCode());
         if (!tokenOpt.isPresent()) {
             return new ResponseData<>(HttpStatus.BAD_REQUEST.value(), "Invalid or expired OTP", null);
         }
@@ -169,7 +205,7 @@ public class AuthenticationController {
     // B4: Đặt lại mật khẩu bằng OTP
     @PostMapping("/reset-password")
     public ResponseData<?> resetPassword(@RequestBody @Valid ResetPasswordRequest request) {
-        boolean success = accountService.resetPassword(request);
+        boolean success = authenticationService.resetPassword(request);
         if (!success) {
             return new ResponseData<>(HttpStatus.BAD_REQUEST.value(),
                     "Invalid OTP or expired", null);

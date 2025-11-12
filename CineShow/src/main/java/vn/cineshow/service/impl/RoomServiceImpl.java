@@ -9,10 +9,13 @@ import vn.cineshow.dto.response.PageResponse;
 import vn.cineshow.dto.response.room.RoomDTO;
 import vn.cineshow.dto.response.room.room_type.RoomTypeDTO;
 import vn.cineshow.enums.RoomStatus;
+import vn.cineshow.exception.AppException;
+import vn.cineshow.exception.ErrorCode;
 import vn.cineshow.model.Room;
 import vn.cineshow.model.RoomType;
 import vn.cineshow.repository.RoomRepository;
 import vn.cineshow.repository.RoomTypeRepository;
+import vn.cineshow.repository.SeatRepository;
 import vn.cineshow.service.RoomService;
 
 import java.util.*;
@@ -24,6 +27,7 @@ public class RoomServiceImpl implements RoomService {
 
     private final RoomRepository roomRepository;
     private final RoomTypeRepository roomTypeRepository;
+    private final SeatRepository seatRepository;
 
     private static final int DEFAULT_PAGE_NO = 0;
     private static final int DEFAULT_PAGE_SIZE = 20;
@@ -76,47 +80,48 @@ public class RoomServiceImpl implements RoomService {
     public RoomDTO getRoomDetail(Long roomId) {
         return roomRepository.findById(roomId)
                 .map(this::toDTO)
-                .orElse(null);
+                .orElseThrow(() -> new AppException(ErrorCode.ROOM_NOT_FOUND));
     }
 
     @Override
     @Transactional
     public RoomDTO createRoom(RoomRequest request) {
+        if (roomRepository.existsByNameIgnoreCase(request.getName())) {
+            throw new AppException(ErrorCode.ROOM_ALREADY_EXISTED);
+        }
         RoomType roomType = roomTypeRepository.findById(request.getRoomTypeId())
-                .orElseThrow(() -> new IllegalArgumentException("RoomType không tồn tại"));
+                .orElseThrow(() -> new AppException(ErrorCode.ROOM_TYPE_NOT_FOUND));
 
         Room entity = new Room();
         entity.setName(request.getName());
         entity.setRoomType(roomType);
         entity.setRows(request.getRows());
         entity.setColumns(request.getColumns());
-        entity.setCapacity(calcCapacity(request.getRows(), request.getColumns()));
-
+        
         // String -> Enum
         entity.setStatus(RoomStatus.valueOf(request.getStatus().trim().toUpperCase()));
 
         entity.setDescription(request.getDescription());
 
         Room saved = roomRepository.save(entity);
+        
         return toDTO(saved);
     }
 
     @Override
     @Transactional
     public RoomDTO updateRoom(Long roomId, RoomRequest request) {
-        Room entity = roomRepository.findById(roomId).orElse(null);
-        if (entity == null) return null;
+        Room entity = roomRepository.findById(roomId).orElseThrow(() -> new AppException(ErrorCode.ROOM_NOT_FOUND));
 
         if (request.getRoomTypeId() != null) {
             RoomType roomType = roomTypeRepository.findById(request.getRoomTypeId())
-                    .orElseThrow(() -> new IllegalArgumentException("RoomType không tồn tại"));
+                    .orElseThrow(() -> new AppException(ErrorCode.ROOM_TYPE_NOT_FOUND));
             entity.setRoomType(roomType);
         }
 
         entity.setName(request.getName());
         entity.setRows(request.getRows());
         entity.setColumns(request.getColumns());
-        entity.setCapacity(calcCapacity(request.getRows(), request.getColumns()));
 
         // String -> Enum
         entity.setStatus(RoomStatus.valueOf(request.getStatus().trim().toUpperCase()));
@@ -130,18 +135,17 @@ public class RoomServiceImpl implements RoomService {
     @Override
     @Transactional
     public boolean deleteRoom(Long roomId) {
-        if (!roomRepository.existsById(roomId)) return false;
+        if (!roomRepository.existsById(roomId)) {
+            throw new AppException(ErrorCode.ROOM_NOT_FOUND);
+        }
+        if (roomRepository.findByRoomType_Id(roomId, Sort.unsorted()) != null) {
+            throw new AppException(ErrorCode.ROOM_IN_USE);
+        }
         roomRepository.deleteById(roomId);
         return true;
     }
 
     /* ===== Helpers ===== */
-
-    private int calcCapacity(Integer rows, Integer columns) {
-        int r = rows == null ? 0 : rows;
-        int c = columns == null ? 0 : columns;
-        return Math.max(0, r) * Math.max(0, c);
-    }
 
     private Sort parseSort(String sortBy) {
         if (sortBy == null || sortBy.isBlank()) return Sort.by(Sort.Order.desc("createdAt"));
@@ -163,7 +167,6 @@ public class RoomServiceImpl implements RoomService {
         if (rt != null) {
             rtDTO = RoomTypeDTO.builder()
                     .id(rt.getId())
-//                    .code(rt.getCode())
                     .name(rt.getName())
                     .description(rt.getDescription())
                     .build();

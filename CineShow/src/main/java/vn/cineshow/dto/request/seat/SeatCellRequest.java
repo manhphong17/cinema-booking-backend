@@ -1,3 +1,5 @@
+// File: src/main/java/vn/cineshow/dto/request/seat/SeatCellRequest.java
+
 package vn.cineshow.dto.request.seat;
 
 import jakarta.validation.constraints.Min;
@@ -12,20 +14,18 @@ import lombok.experimental.FieldDefaults;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class SeatCellRequest {
-    Long id;                       // null -> tạo mới
+    Long id;
 
     @NotNull @Min(1)
-    Integer rowIndex;              // 1..rows
+    Integer rowIndex;
 
     @NotNull @Min(1)
-    Integer columnIndex;           // 1..columns
+    Integer columnIndex;
 
     @NotNull
     Long seatTypeId;
 
-    @NotBlank                  // "ACTIVE" | "INACTIVE" | "BLOCKED"
+    @NotBlank
     String status;
 
-    Boolean isBlocked;         // true/false
-    String note;               // có thể null
 }

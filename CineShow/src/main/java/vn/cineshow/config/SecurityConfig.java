@@ -30,7 +30,7 @@ public class SecurityConfig {
     private final CustomizeRequestFilter requestFilter;
     private final CustomOAuth2SuccessHandler customOAuth2SuccessHandler;
 
-    @Value("${sendgrid.api-key}")
+    @Value("${spring.sendgrid.api-key}")
     private String sendGridKey;
 
     @Bean
@@ -63,9 +63,13 @@ public class SecurityConfig {
                 "/ws-native/**",
                 "/movies/banners",
                 "/movies/top/**",
+                "/bookings/movies/**",
                 "/movies/movie-genres",
                 "/movies/*",
-                "/payment/ipn"
+                "/payment/ipn",
+                "/images/**", "/uploads/**", "/static/**", "/img/**",
+                "/bookings/movies/**"
+
         );
 
         http
@@ -79,21 +83,9 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
-//<<<<<<< HEAD
-//                                "/auth/**",
-//                                "/oauth2/**",
-//                                "/swagger-ui/**",
-//                                "/v3/api-docs/**",
-//                                "/public/**",
-//                                "/actuator/**",
-//                                "/ws/**",// Cho phép handshake WebSocket
-//                                "/ws-native/**",
-//                                "/payment/ipn"
-//                                ).permitAll()
-//=======
+
                                 publicEndpoints.toArray(new String[0])
                         ).permitAll()
-//>>>>>>> 46f8b4af6fb6819d1d23649bc1c02ce60654500d
                         .anyRequest().authenticated()
                 )
 
@@ -125,9 +117,11 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
+        config.addAllowedOrigin("https://manhphong.io.vn");
+        config.addAllowedOrigin("https://api.manhphong.io.vn");
+        config.addAllowedOrigin("https://cineshow.vercel.app");
         config.addAllowedOrigin("http://localhost:3000");
         config.addAllowedOrigin("http://localhost:3001");
-        config.addAllowedOrigin("https://cineshow.vercel.app");
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         config.setAllowedHeaders(List.of("*"));
         config.setAllowCredentials(true);
@@ -136,4 +130,5 @@ public class SecurityConfig {
         source.registerCorsConfiguration("/**", config);
         return source;
     }
+
 }

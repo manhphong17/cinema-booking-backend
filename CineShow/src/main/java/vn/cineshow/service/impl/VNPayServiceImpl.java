@@ -1,51 +1,72 @@
 package vn.cineshow.service.impl;
 
 
-import jakarta.servlet.http.HttpServletRequest;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.text.SimpleDateFormat;
+import java.time.Duration;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.StringJoiner;
+import java.util.TimeZone;
+import java.util.stream.Collectors;
+
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import jakarta.servlet.http.HttpServletRequest;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import vn.cineshow.config.VNPayProperties;
 import vn.cineshow.dto.redis.OrderSessionDTO;
 import vn.cineshow.dto.request.payment.CheckoutRequest;
-import vn.cineshow.dto.response.payment.PaymentMethodDTO;
 import vn.cineshow.enums.OrderStatus;
 import vn.cineshow.enums.PaymentStatus;
 import vn.cineshow.enums.TicketStatus;
 import vn.cineshow.exception.AppException;
 import vn.cineshow.exception.ErrorCode;
-import vn.cineshow.model.*;
+import vn.cineshow.model.Concession;
+import vn.cineshow.model.Order;
+import vn.cineshow.model.OrderConcession;
+import vn.cineshow.model.Payment;
+import vn.cineshow.model.PaymentMethod;
+import vn.cineshow.model.Ticket;
+import vn.cineshow.model.User;
 import vn.cineshow.model.ids.OrderConcessionId;
-import vn.cineshow.repository.*;
+import vn.cineshow.repository.ConcessionRepository;
+import vn.cineshow.repository.OrderConcessionRepository;
+import vn.cineshow.repository.OrderRepository;
+import vn.cineshow.repository.PaymentMethodRepository;
+import vn.cineshow.repository.PaymentRepository;
+import vn.cineshow.repository.TicketRepository;
+import vn.cineshow.repository.UserRepository;
+import vn.cineshow.service.BookingService;
 import vn.cineshow.service.RedisService;
 import vn.cineshow.service.VNPayService;
-
-import javax.crypto.Mac;
-import javax.crypto.spec.SecretKeySpec;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
-import java.text.SimpleDateFormat;
-import java.time.Duration;
-import java.time.LocalDateTime;
-import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class VNPayServiceImpl implements VNPayService {
 
-    private final PaymentRepository paymentRepository;
-    private final VNPayProperties vnpayProperties;
+    private final PaymentRepository paymentRepository; //
+    private final VNPayProperties vnpayProperties;//
     private final OrderRepository orderRepository;
-    private final OrderConcessionRepository orderConcessionRepository;
-    private final ConcessionRepository concessionRepository;
-    private final PaymentMethodRepository paymentMethodRepository;
-    private final TicketRepository ticketRepository;
-    private final UserRepository userRepository;
-    private final RedisService redisService;
+    private final OrderConcessionRepository orderConcessionRepository; //
+    private final ConcessionRepository concessionRepository; //
+    private final PaymentMethodRepository paymentMethodRepository; //
+    private final TicketRepository ticketRepository; //
+    private final UserRepository userRepository;//
+    private final RedisService redisService; //
+    private final BookingService bookingService; //
 
 
     @Value("${booking.ttl.payment}")
@@ -129,7 +150,10 @@ public class VNPayServiceImpl implements VNPayService {
             try {
                 // ----  Cập nhật TTL cho OrderSession và SeatHold nếu tồn tại ----
                 if (redisService.exists(orderSessionKey)) {
+                    OrderSessionDTO session = redisService.get(orderSessionKey, OrderSessionDTO.class);
+
                     redisService.expire(orderSessionKey, Duration.ofSeconds(HOLD_DURATION));
+                    redisService.save(orderSessionKey, session, HOLD_DURATION);
                     log.info("[REDIS TTL][ORDER_SESSION] Extended TTL for key={} to {} seconds", orderSessionKey, HOLD_DURATION);
                 } else {
                     log.warn("[REDIS TTL][ORDER_SESSION] Key not found, cannot extend TTL: {}", orderSessionKey);
@@ -310,6 +334,10 @@ public class VNPayServiceImpl implements VNPayService {
                 userRepository.save(user);
                 concessionRepository.saveAll(orderConcessions.stream().map(OrderConcession::getConcession).toList());
 
+                // Broadcast booked seats via WebSocket
+                List<Long> ticketIds = tickets.stream().map(Ticket::getId).toList();
+                bookingService.broadcastBooked(showTimeId, ticketIds);
+
                 log.info(" Payment SUCCESS — order={}, transactionNo={}", txnRef, vnpTransactionNo);
                 response.put("RspCode", "00");
                 response.put("Message", "Confirm Success");
@@ -318,6 +346,8 @@ public class VNPayServiceImpl implements VNPayService {
                 payment.setTransactionNo(vnpTransactionNo);
                 payment.setPaymentStatus(PaymentStatus.FAILED);
                 order.setOrderStatus(OrderStatus.CANCELED);
+                orderRepository.save(order);
+                paymentRepository.save(payment);
                 log.warn("Payment FAILED — order={}, code={}", txnRef, responseCode);
                 response.put("RspCode", "00");
                 response.put("Message", "Confirm Success");
@@ -362,18 +392,18 @@ public class VNPayServiceImpl implements VNPayService {
             log.info("===== VNPay Return URL Callback =====");
             log.info("Params: {}", params);
 
-            // 3️⃣  Checksum validation
+            // 1  Checksum validation
             if (!isValidChecksum(params)) {
                 response.put("RspCode", "97");
                 response.put("Message", "Invalid Checksum");
                 return response;
             }
 
-
             // 2. Lấy thông tin giao dịch
             String txnRef = params.get("vnp_TxnRef");
             String responseCode = params.get("vnp_ResponseCode");
             String transactionStatus = params.get("vnp_TransactionStatus");
+            String vnpTransactionNo = params.get("vnp_TransactionNo");
 
             Payment payment = (Payment) paymentRepository.findByTxnRef(txnRef).orElse(null);
             if (payment == null) {
@@ -395,15 +425,25 @@ public class VNPayServiceImpl implements VNPayService {
 
             // 4. Xử lý hiển thị
             if ("00".equals(responseCode) && "00".equals(transactionStatus)) {
-                response.put("status", "SUCCESS");
-                response.put("message", "Thanh toán thành công");
+                boolean dbCompleted =
+                        order.getOrderStatus() == OrderStatus.COMPLETED &&
+                                payment.getPaymentStatus() == PaymentStatus.COMPLETED;
+
+                if (dbCompleted) {
+                    response.put("status", "SUCCESS");
+                    response.put("message", "Thanh toán thành công");
+                } else {
+                    // VNPay claims success but DB not updated yet (IPN not received)
+                    log.warn("Return URL success but DB not updated — txnRef={}, orderStatus={}, paymentStatus={}",
+                            txnRef, order.getOrderStatus(), payment.getPaymentStatus());
+                    response.put("status", "FAILED");
+                    response.put("message", "Thanh toán không thành công hoặc đã hết hạn thanh toán");
+                }
             } else {
                 response.put("status", "FAILED");
-                response.put("message", "Thanh toán không thành công hoặc đã hết hạn");
+                response.put("message", "Thanh toán không thành công hoặc đã hết hạn thanh toán");
             }
             response.put("orderCode", payment.getTxnRef());
-
-            log.info(" Return URL processed successfully for txnRef={}", txnRef);
             return response;
 
         } catch (Exception e) {
