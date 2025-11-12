@@ -244,9 +244,11 @@
                             <jvmFlag>-Xms512m</jvmFlag>
                             <jvmFlag>-Xmx1024m</jvmFlag>
                             <jvmFlag>-Dspring.profiles.active=prod</jvmFlag>
+                            <jvmFlag>-Duser.timezone=Asia/Ho_Chi_Minh</jvmFlag>
                         </jvmFlags>
                         <environment>
                             <SPRING_PROFILES_ACTIVE>prod</SPRING_PROFILES_ACTIVE>
+                            <TZ>Asia/Ho_Chi_Minh</TZ>
                         </environment>
                     </container>
 
