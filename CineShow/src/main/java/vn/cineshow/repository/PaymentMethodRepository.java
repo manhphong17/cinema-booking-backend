@@ -1,6 +1,7 @@
 package vn.cineshow.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import vn.cineshow.model.PaymentMethod;
 
@@ -11,6 +12,11 @@ import java.util.Optional;
 public interface PaymentMethodRepository extends JpaRepository<PaymentMethod, Integer> {
     Optional<PaymentMethod> findByPaymentCodeIgnoreCase(String paymentCode);
 
-    List<PaymentMethod> findByIsActiveTrue();
+    @Query("SELECT DISTINCT pm.methodName FROM PaymentMethod pm WHERE pm.isActive = true AND pm.methodName <> 'Tiền mặt'")
+    List<String> findDistinctMethodNames();
+
+
+    //  Lấy danh sách ngân hàng thuộc methodName cụ thể
+    List<PaymentMethod> findByMethodName(String methodName);
 
 }

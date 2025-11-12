@@ -28,5 +28,6 @@ public interface BookingService {
      */
     void broadcastBooked(Long showtimeId, List<Long> ticketIds);
 
-    List<PaymentMethodDTO> getActivePaymentMethods();
+    List<String> getDistinctMethodNames();
+    List<PaymentMethodDTO> getPaymentMethodsByName(String methodName); // mới
 }

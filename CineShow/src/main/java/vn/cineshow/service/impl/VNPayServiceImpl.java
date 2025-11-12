@@ -57,16 +57,16 @@ import vn.cineshow.service.VNPayService;
 @Slf4j
 public class VNPayServiceImpl implements VNPayService {
 
-    private final PaymentRepository paymentRepository;
-    private final VNPayProperties vnpayProperties;
+    private final PaymentRepository paymentRepository; //
+    private final VNPayProperties vnpayProperties;//
     private final OrderRepository orderRepository;
-    private final OrderConcessionRepository orderConcessionRepository;
-    private final ConcessionRepository concessionRepository;
-    private final PaymentMethodRepository paymentMethodRepository;
-    private final TicketRepository ticketRepository;
-    private final UserRepository userRepository;
-    private final RedisService redisService;
-    private final BookingService bookingService;
+    private final OrderConcessionRepository orderConcessionRepository; //
+    private final ConcessionRepository concessionRepository; //
+    private final PaymentMethodRepository paymentMethodRepository; //
+    private final TicketRepository ticketRepository; //
+    private final UserRepository userRepository;//
+    private final RedisService redisService; //
+    private final BookingService bookingService; //
 
 
     @Value("${booking.ttl.payment}")
@@ -346,6 +346,8 @@ public class VNPayServiceImpl implements VNPayService {
                 payment.setTransactionNo(vnpTransactionNo);
                 payment.setPaymentStatus(PaymentStatus.FAILED);
                 order.setOrderStatus(OrderStatus.CANCELED);
+                orderRepository.save(order);
+                paymentRepository.save(payment);
                 log.warn("Payment FAILED — order={}, code={}", txnRef, responseCode);
                 response.put("RspCode", "00");
                 response.put("Message", "Confirm Success");
@@ -401,6 +403,7 @@ public class VNPayServiceImpl implements VNPayService {
             String txnRef = params.get("vnp_TxnRef");
             String responseCode = params.get("vnp_ResponseCode");
             String transactionStatus = params.get("vnp_TransactionStatus");
+            String vnpTransactionNo = params.get("vnp_TransactionNo");
 
             Payment payment = (Payment) paymentRepository.findByTxnRef(txnRef).orElse(null);
             if (payment == null) {
@@ -422,15 +425,25 @@ public class VNPayServiceImpl implements VNPayService {
 
             // 4. Xử lý hiển thị
             if ("00".equals(responseCode) && "00".equals(transactionStatus)) {
-                response.put("status", "SUCCESS");
-                response.put("message", "Thanh toán thành công");
+                boolean dbCompleted =
+                        order.getOrderStatus() == OrderStatus.COMPLETED &&
+                                payment.getPaymentStatus() == PaymentStatus.COMPLETED;
+
+                if (dbCompleted) {
+                    response.put("status", "SUCCESS");
+                    response.put("message", "Thanh toán thành công");
+                } else {
+                    // VNPay claims success but DB not updated yet (IPN not received)
+                    log.warn("Return URL success but DB not updated — txnRef={}, orderStatus={}, paymentStatus={}",
+                            txnRef, order.getOrderStatus(), payment.getPaymentStatus());
+                    response.put("status", "FAILED");
+                    response.put("message", "Thanh toán không thành công hoặc đã hết hạn thanh toán");
+                }
             } else {
                 response.put("status", "FAILED");
-                response.put("message", "Thanh toán không thành công hoặc đã hết hạn");
+                response.put("message", "Thanh toán không thành công hoặc đã hết hạn thanh toán");
             }
             response.put("orderCode", payment.getTxnRef());
-
-            log.info(" Return URL processed successfully for txnRef={}", txnRef);
             return response;
 
         } catch (Exception e) {
