@@ -16,6 +16,7 @@ import vn.cineshow.model.RoomType;
 import vn.cineshow.repository.RoomRepository;
 import vn.cineshow.repository.RoomTypeRepository;
 import vn.cineshow.repository.SeatRepository;
+import vn.cineshow.repository.ShowTimeRepository;
 import vn.cineshow.service.RoomService;
 
 import java.util.*;
@@ -28,6 +29,7 @@ public class RoomServiceImpl implements RoomService {
     private final RoomRepository roomRepository;
     private final RoomTypeRepository roomTypeRepository;
     private final SeatRepository seatRepository;
+    private final ShowTimeRepository showTimeRepository;
 
     private static final int DEFAULT_PAGE_NO = 0;
     private static final int DEFAULT_PAGE_SIZE = 20;
@@ -113,6 +115,10 @@ public class RoomServiceImpl implements RoomService {
     public RoomDTO updateRoom(Long roomId, RoomRequest request) {
         Room entity = roomRepository.findById(roomId).orElseThrow(() -> new AppException(ErrorCode.ROOM_NOT_FOUND));
 
+        if (showTimeRepository.existsByRoom_Id(roomId)) {
+            throw new AppException(ErrorCode.ROOM_IN_USE);
+        }
+
         if (request.getRoomTypeId() != null) {
             RoomType roomType = roomTypeRepository.findById(request.getRoomTypeId())
                     .orElseThrow(() -> new AppException(ErrorCode.ROOM_TYPE_NOT_FOUND));
@@ -138,7 +144,7 @@ public class RoomServiceImpl implements RoomService {
         if (!roomRepository.existsById(roomId)) {
             throw new AppException(ErrorCode.ROOM_NOT_FOUND);
         }
-        if (roomRepository.findByRoomType_Id(roomId, Sort.unsorted()) != null) {
+        if (showTimeRepository.existsByRoom_Id(roomId)) {
             throw new AppException(ErrorCode.ROOM_IN_USE);
         }
         roomRepository.deleteById(roomId);

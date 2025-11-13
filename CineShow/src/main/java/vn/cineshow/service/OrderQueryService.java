@@ -1,11 +1,12 @@
 package vn.cineshow.service;
 
-public interface OrderQueryService {
-    /*OrderListResponse myOrders(Long currentUserId, Pageable pageable);
-    OrderDetailResponse getOrderDetail(Long orderId, Long currentUserId);
-    OrderDetailResponse regenerateQr(Long orderId, Long currentUserId, QrRegenerateRequest req);
-    byte[] buildEticketPdf(Long orderId, Long currentUserId);
-    void resendEmail(Long orderId, Long currentUserId);*/
-    //ResendEmailResponse resendETicket(Long orderId, String toEmail, String lang, Authentication auth);
+import java.time.LocalDate;
+import java.util.Map;
 
+public interface OrderQueryService {
+
+
+    Map<String, Object> getOrdersByStatus(String status, LocalDate date, int page, int size);
+
+    Map<String, Object> getDailySummary(LocalDate date);
 }

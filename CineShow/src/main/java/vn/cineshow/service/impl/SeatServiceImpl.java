@@ -19,6 +19,7 @@ import vn.cineshow.model.SeatType;
 import vn.cineshow.repository.RoomRepository;
 import vn.cineshow.repository.SeatRepository;
 import vn.cineshow.repository.SeatTypeRepository;
+import vn.cineshow.repository.ShowTimeRepository;
 import vn.cineshow.service.SeatService;
 
 import java.util.*;
@@ -31,6 +32,7 @@ public class SeatServiceImpl implements SeatService {
     private final RoomRepository roomRepository;
     private final SeatRepository seatRepository;
     private final SeatTypeRepository seatTypeRepository;
+    private final ShowTimeRepository showTimeRepository;
 
     /* =========================
        1) INIT
@@ -39,6 +41,9 @@ public class SeatServiceImpl implements SeatService {
     @Override
     @Transactional
     public int initSeats(Long roomId, SeatInitRequest request) {
+        if (showTimeRepository.existsByRoom_Id(roomId)) {
+            throw new AppException(ErrorCode.ROOM_IN_USE);
+        }
         Room room = roomRepository.findById(roomId).orElseThrow(() -> new AppException(ErrorCode.ROOM_NOT_FOUND));
 
         seatRepository.deleteByRoom_Id(roomId);
@@ -142,6 +147,9 @@ public class SeatServiceImpl implements SeatService {
     @Override
     @Transactional
     public Map<String, Integer> saveSeatMatrix(Long roomId, SeatMatrixRequest request) {
+        if (showTimeRepository.existsByRoom_Id(roomId)) {
+            throw new AppException(ErrorCode.ROOM_IN_USE);
+        }
         Room room = roomRepository.findById(roomId)
                 .orElseThrow(() -> new AppException(ErrorCode.ROOM_NOT_FOUND));
 
@@ -246,6 +254,9 @@ public class SeatServiceImpl implements SeatService {
     @Override
     @Transactional
     public int bulkUpdateSeatType(Long roomId, BulkTypeRequest request) {
+        if (showTimeRepository.existsByRoom_Id(roomId)) {
+            throw new AppException(ErrorCode.ROOM_IN_USE);
+        }
         Room room = roomRepository.findById(roomId)
                 .orElseThrow(() -> new AppException(ErrorCode.ROOM_NOT_FOUND));
         SeatType type = seatTypeRepository.findById(request.getSeatTypeId())
@@ -269,6 +280,9 @@ public class SeatServiceImpl implements SeatService {
     @Override
     @Transactional
     public int bulkBlockSeats(Long roomId, BulkBlockRequest request) {
+        if (showTimeRepository.existsByRoom_Id(roomId)) {
+            throw new AppException(ErrorCode.ROOM_IN_USE);
+        }
         Room room = roomRepository.findById(roomId)
                 .orElseThrow(() -> new AppException(ErrorCode.ROOM_NOT_FOUND));
 

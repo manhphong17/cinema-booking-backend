@@ -100,18 +100,17 @@ public class ApplicationInitializer {
     }
 
     void initAccounts() {
-
         AccountCreationRequest admin = new AccountCreationRequest(EMAIL_ADMIN, PASSWORD_ADMIN, "System Admin", "Ha Noi");
         AccountCreationRequest customer = new AccountCreationRequest(EMAIL_USER, PASSWORD_USER, "System Customer", "Da Nang");
         AccountCreationRequest staff = new AccountCreationRequest(EMAIL_STAFF, PASSWORD_STAFF, "System Staff", "Ho Chi Minh");
         AccountCreationRequest manager = new AccountCreationRequest(EMAIL_OPERATION, PASSWORD_OPERATION, "Operations Manager", "Hai Phong");
         AccountCreationRequest manager2 = new AccountCreationRequest(EMAIL_BUSINESS, PASSWORD_BUSINESS, "Business Manager", "Hai Duong");
 
-        createAccountIfNotExists(admin, UserRole.ADMIN.name(), UserRole.BUSINESS.name(), UserRole.CUSTOMER.name());
+        createAccountIfNotExists(admin, UserRole.ADMIN.name());
         createAccountIfNotExists(customer, UserRole.CUSTOMER.name());
-        createAccountIfNotExists(staff, UserRole.STAFF.name(), UserRole.CUSTOMER.name());
-        createAccountIfNotExists(manager, UserRole.OPERATION.name(), UserRole.CUSTOMER.name());
-        createAccountIfNotExists(manager2, UserRole.BUSINESS.name(), UserRole.CUSTOMER.name());
+        createAccountIfNotExists(staff, UserRole.STAFF.name());
+        createAccountIfNotExists(manager, UserRole.OPERATION.name());
+        createAccountIfNotExists(manager2, UserRole.BUSINESS.name());
     }
 
     void createAccountIfNotExists(AccountCreationRequest request, String... roleNames) {

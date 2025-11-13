@@ -36,7 +36,8 @@
     </dependencyManagement>
 
     <dependencies>
-        <!-- Core Starters -->
+        <!-- Giữ nguyên tất cả dependencies của bạn -->
+        <!-- (Không cắt ngắn ở đây để đảm bảo build ra kết quả tương tự hiện tại) -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-actuator</artifactId>
@@ -53,8 +54,6 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
-
-        <!-- Security -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-security</artifactId>
@@ -63,8 +62,6 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-oauth2-client</artifactId>
         </dependency>
-
-        <!-- JWT -->
         <dependency>
             <groupId>io.jsonwebtoken</groupId>
             <artifactId>jjwt-api</artifactId>
@@ -80,8 +77,6 @@
             <artifactId>jjwt-jackson</artifactId>
             <version>0.11.5</version>
         </dependency>
-
-        <!-- Databases -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-jpa</artifactId>
@@ -101,15 +96,11 @@
             <artifactId>h2</artifactId>
             <scope>runtime</scope>
         </dependency>
-
-        <!-- AWS S3 -->
         <dependency>
             <groupId>software.amazon.awssdk</groupId>
             <artifactId>s3</artifactId>
             <version>2.25.41</version>
         </dependency>
-
-        <!-- Redis -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-redis</artifactId>
@@ -118,14 +109,10 @@
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-pool2</artifactId>
         </dependency>
-
-        <!-- WebSocket -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-websocket</artifactId>
         </dependency>
-
-        <!-- JSON -->
         <dependency>
             <groupId>com.fasterxml.jackson.datatype</groupId>
             <artifactId>jackson-datatype-jsr310</artifactId>
@@ -134,45 +121,33 @@
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-core</artifactId>
         </dependency>
-
-        <!-- SendGrid -->
         <dependency>
             <groupId>com.sendgrid</groupId>
             <artifactId>sendgrid-java</artifactId>
             <version>4.10.3</version>
         </dependency>
-
-        <!-- Lombok -->
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <version>1.18.30</version>
             <optional>true</optional>
         </dependency>
-
-        <!-- OpenAPI -->
         <dependency>
             <groupId>org.springdoc</groupId>
             <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
             <version>2.8.11</version>
         </dependency>
-
-        <!-- DevTools -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-devtools</artifactId>
             <scope>runtime</scope>
             <optional>true</optional>
         </dependency>
-
         <dependency>
             <groupId>io.awspring.cloud</groupId>
             <artifactId>spring-cloud-aws-starter-secrets-manager</artifactId>
             <version>3.1.1</version>
         </dependency>
-
-
-        <!-- Testing -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
@@ -197,12 +172,14 @@
                 <spring.profiles.active>dev</spring.profiles.active>
             </properties>
         </profile>
+
         <profile>
             <id>test</id>
             <properties>
                 <spring.profiles.active>test</spring.profiles.active>
             </properties>
         </profile>
+
         <profile>
             <id>prod</id>
             <properties>
@@ -267,11 +244,16 @@
                             <jvmFlag>-Xms512m</jvmFlag>
                             <jvmFlag>-Xmx1024m</jvmFlag>
                             <jvmFlag>-Dspring.profiles.active=prod</jvmFlag>
+                            <jvmFlag>-Duser.timezone=Asia/Ho_Chi_Minh</jvmFlag>
                         </jvmFlags>
                         <environment>
                             <SPRING_PROFILES_ACTIVE>prod</SPRING_PROFILES_ACTIVE>
+                            <TZ>Asia/Ho_Chi_Minh</TZ>
                         </environment>
                     </container>
+
+                    <!-- Jib tự động copy từ target/classes, không cần extraDirectories -->
+                    <!-- Đảm bảo build với: mvn clean compile -Pprod jib:build -->
                 </configuration>
             </plugin>
         </plugins>

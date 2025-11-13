@@ -13,6 +13,7 @@ import vn.cineshow.exception.ErrorCode;
 import vn.cineshow.model.SeatType;
 import vn.cineshow.repository.SeatRepository;
 import vn.cineshow.repository.SeatTypeRepository;
+import vn.cineshow.repository.ShowTimeRepository;
 import vn.cineshow.service.SeatTypeService;
 
 import java.util.List;
@@ -25,6 +26,7 @@ public class SeatTypeServiceImpl implements SeatTypeService {
 
     private final SeatTypeRepository seatTypeRepository;
     private final SeatRepository seatRepository;
+    private final ShowTimeRepository showTimeRepository;
 
     @Override
     @Transactional(readOnly = true)
@@ -90,6 +92,9 @@ public class SeatTypeServiceImpl implements SeatTypeService {
     @Override
     public SeatTypeResponse update(Long id, SeatTypeUpdateRequest req) {
         var e = seatTypeRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.SEAT_TYPE_NOT_FOUND));
+        if (showTimeRepository.existsBySeatTypeId(id)) {
+            throw new AppException(ErrorCode.SEAT_TYPE_IN_USE);
+        }
         if (req.getName() == null || req.getName().isBlank()) throw new AppException(ErrorCode.INVALID_PARAMETER);
         var newName = req.getName().trim();
         if (seatTypeRepository.existsByNameIgnoreCaseAndIdNot(newName, id)) throw new AppException(ErrorCode.SEAT_TYPE_ALREADY_EXISTED);
@@ -103,6 +108,9 @@ public class SeatTypeServiceImpl implements SeatTypeService {
     @Override
     public SeatTypeResponse patch(Long id, SeatTypeUpdateRequest req) {
         var e = seatTypeRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.SEAT_TYPE_NOT_FOUND));
+        if (showTimeRepository.existsBySeatTypeId(id)) {
+            throw new AppException(ErrorCode.SEAT_TYPE_IN_USE);
+        }
         if (req.getName() != null) {
             var newName = req.getName().trim();
             if (newName.isBlank()) throw new AppException(ErrorCode.INVALID_PARAMETER);
@@ -118,6 +126,9 @@ public class SeatTypeServiceImpl implements SeatTypeService {
         if (!seatTypeRepository.existsById(id)) {
             throw new AppException(ErrorCode.SEAT_TYPE_NOT_FOUND);
         }
+        if (showTimeRepository.existsBySeatTypeId(id)) {
+            throw new AppException(ErrorCode.SEAT_TYPE_IN_USE);
+        }
         if (!seatRepository.findBySeatType_Id(id).isEmpty()) {
             throw new AppException(ErrorCode.SEAT_TYPE_IN_USE);
         }
@@ -125,5 +136,9 @@ public class SeatTypeServiceImpl implements SeatTypeService {
     }
 
     @Override public SeatTypeResponse activate(Long id)   { var e = seatTypeRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.SEAT_TYPE_NOT_FOUND)); e.setActive(true);  return map(e); }
-    @Override public SeatTypeResponse deactivate(Long id) { var e = seatTypeRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.SEAT_TYPE_NOT_FOUND)); e.setActive(false); return map(e); }
+    @Override public SeatTypeResponse deactivate(Long id) {
+        if (showTimeRepository.existsBySeatTypeId(id)) {
+            throw new AppException(ErrorCode.SEAT_TYPE_IN_USE);
+        }
+        var e = seatTypeRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.SEAT_TYPE_NOT_FOUND)); e.setActive(false); return map(e); }
 }
