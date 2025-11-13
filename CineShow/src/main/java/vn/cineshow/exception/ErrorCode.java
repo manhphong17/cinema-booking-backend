@@ -49,6 +49,7 @@ public enum ErrorCode {
     ROOM_TYPE_IN_USE(1041, "Room type is in use and cannot be deleted"),
     ROOM_ALREADY_EXISTED(1042, "Room with the same name already exists"),
     ROOM_IN_USE(1043, "Room is in use and cannot be deleted"),
+    ROOM_SIZE_EXCEEDED(1044, "Room size exceeds the maximum limit of 12 for rows and columns"),
 
     SHOW_TIME_NOT_FOUND(3001, "Show time not found"),
     MOVIE_BANNER_NOT_FOUND(3001, "Movie banner not found"),

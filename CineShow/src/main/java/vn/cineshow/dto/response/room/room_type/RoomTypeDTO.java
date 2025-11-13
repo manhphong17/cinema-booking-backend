@@ -12,5 +12,5 @@ public class RoomTypeDTO {
     Long id;
     String code;
     String name;
-    String description; // có thể null
+    String description;
 }
