@@ -88,6 +88,7 @@ class ConcessionServiceImpl implements ConcessionService {
 
 
     @Override
+    @Transactional
     public Long addConcession(ConcessionAddRequest concessionAddRequest) {
 
         String urlImage = null;
@@ -121,6 +122,7 @@ class ConcessionServiceImpl implements ConcessionService {
     }
 
     @Override
+    @Transactional
     public ConcessionResponse updateConcession(Long id, ConcessionUpdateRequest request) {
         //  1. Tìm sản phẩm theo ID
         Concession concession = concessionRepository.findById(id)
@@ -183,6 +185,7 @@ class ConcessionServiceImpl implements ConcessionService {
     }
 
     @Override
+    @Transactional
     public ConcessionResponse addStock(Long id, int quantityToAdd) {
         Concession concession = concessionRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.CONCESSION_NOT_FOUND));
@@ -217,6 +220,7 @@ class ConcessionServiceImpl implements ConcessionService {
     }
 
     @Override
+    @Transactional
     public ConcessionResponse updateConcessionStatus(Long id, ConcessionStatus status) {
         Concession concession = concessionRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.CONCESSION_NOT_FOUND));
@@ -260,6 +264,7 @@ class ConcessionServiceImpl implements ConcessionService {
     }
 
     @Override
+    @Transactional
     public List<ConcessionSimpleResponse> getConcessionsByIds(List<Long> ids) {
         List<Concession> concessions = concessionRepository.findActiveConcessionsByIds(ids);
 

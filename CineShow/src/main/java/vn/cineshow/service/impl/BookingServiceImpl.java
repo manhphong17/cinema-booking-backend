@@ -1,28 +1,5 @@
 package vn.cineshow.service.impl;
 
-import lombok.AccessLevel;
-import lombok.RequiredArgsConstructor;
-import lombok.experimental.FieldDefaults;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
-import org.springframework.stereotype.Service;
-import vn.cineshow.dto.redis.OrderSessionRequest;
-import vn.cineshow.dto.request.booking.SeatSelectRequest;
-import vn.cineshow.dto.response.booking.*;
-import vn.cineshow.dto.response.payment.PaymentMethodDTO;
-import vn.cineshow.enums.TicketStatus;
-import vn.cineshow.exception.AppException;
-import vn.cineshow.exception.ErrorCode;
-import vn.cineshow.model.*;
-import vn.cineshow.repository.MovieRepository;
-import vn.cineshow.repository.PaymentMethodRepository;
-import vn.cineshow.repository.ShowTimeRepository;
-import vn.cineshow.repository.TicketRepository;
-import vn.cineshow.service.BookingService;
-import vn.cineshow.service.OrderSessionService;
-import vn.cineshow.service.RedisService;
-import vn.cineshow.service.SeatHoldService;
-
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -32,11 +9,38 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.stereotype.Service;
+
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
+import vn.cineshow.dto.redis.OrderSessionRequest;
+import vn.cineshow.dto.request.booking.SeatSelectRequest;
 import vn.cineshow.dto.response.booking.BookingSeatsResponse;
 import vn.cineshow.dto.response.booking.SeatHold;
 import vn.cineshow.dto.response.booking.SeatTicketDTO;
 import vn.cineshow.dto.response.booking.ShowTimeResponse;
+import vn.cineshow.dto.response.booking.TicketDetailResponse;
 import vn.cineshow.dto.response.booking.TicketResponse;
+import vn.cineshow.dto.response.payment.PaymentMethodDTO;
+import vn.cineshow.enums.TicketStatus;
+import vn.cineshow.exception.AppException;
+import vn.cineshow.exception.ErrorCode;
+import vn.cineshow.model.PaymentMethod;
+import vn.cineshow.model.Room;
+import vn.cineshow.model.Seat;
+import vn.cineshow.model.ShowTime;
+import vn.cineshow.model.Ticket;
+import vn.cineshow.repository.MovieRepository;
+import vn.cineshow.repository.PaymentMethodRepository;
+import vn.cineshow.repository.ShowTimeRepository;
+import vn.cineshow.repository.TicketRepository;
+import vn.cineshow.service.BookingService;
+import vn.cineshow.service.OrderSessionService;
+import vn.cineshow.service.RedisService;
+import vn.cineshow.service.SeatHoldService;
 
 @Service
 @Slf4j(topic = "BOOKING-SERVICE")
@@ -84,9 +88,12 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public List<BookingSeatsResponse> getSeatsByShowTimeId(Long showTimeId) {
-        // 1.get Show time and ticket list in DB
-        ShowTime showTime = showTimeRepository.findById(showTimeId)
+        ShowTime showTime = showTimeRepository.findByIdFetchAll(showTimeId)
                 .orElseThrow(() -> new AppException(ErrorCode.SHOWTIME_NOT_FOUND));
+        
+        if (Boolean.TRUE.equals(showTime.getIsDeleted())) {
+            throw new AppException(ErrorCode.SHOWTIME_NOT_FOUND);
+        }
 
         List<TicketResponse> tickets = showTime.getTickets().stream()
                 .map(ticket -> TicketResponse.builder()
@@ -124,6 +131,7 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
+
     public void handleSeatAction(SeatSelectRequest req) {
         switch (req.getAction()) {
             case SELECT_SEAT -> handleSelectSeat(req);
