@@ -1,5 +1,6 @@
 package vn.cineshow.dto.request.room;
 
+import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -18,10 +19,10 @@ public class RoomRequest {
     @NotNull
     Long roomTypeId;
 
-    @NotNull @Min(1)
+    @NotNull @Min(1)@Max(12)
     Integer rows;
 
-    @NotNull @Min(1)
+    @NotNull @Min(1)@Max(12)
     Integer columns;
 
     @NotBlank // "ACTIVE" | "INACTIVE"
