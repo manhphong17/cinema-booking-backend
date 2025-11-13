@@ -550,11 +550,16 @@ public class PaymentServiceImplImpl implements PaymentServiceImpl {
     public void createCashPayment(CheckoutRequest checkoutRequest) {
         log.info(" Bắt đầu thanh toán CASH ");
 
+        // 1️⃣ Lấy user
+        User user = userRepository.findById(checkoutRequest.getUserId())
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+
         // 1️⃣ Tạo Order (KHÔNG gắn user, status COMPLETED)
         Order order = Order.builder()
                 .totalPrice(checkoutRequest.getTotalPrice())
                 .discount(checkoutRequest.getDiscount())
                 .orderStatus(OrderStatus.COMPLETED)
+                .user(user)
                 .build();
 
         // 2️⃣ Lấy danh sách Ticket và gán hai chiều + BOOKED
@@ -595,6 +600,7 @@ public class PaymentServiceImplImpl implements PaymentServiceImpl {
             }
             orderConcessionRepository.saveAll(orderConcessions);
         }
+        orderRepository.save(order);
 
 
         // 4️⃣ Tạo Payment (status COMPLETED)

@@ -23,6 +23,7 @@ public class OrderDetailResponse {
     LocalDateTime showtimeStart;
     LocalDateTime showtimeEnd;
     List<String> seats;
+    List<OrderConcessionItem> concessions;
     Double totalPrice;
     String orderStatus;
 
