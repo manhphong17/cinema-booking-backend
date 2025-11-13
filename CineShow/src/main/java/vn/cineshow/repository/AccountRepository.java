@@ -24,23 +24,23 @@ public interface AccountRepository extends JpaRepository<Account, Long> {
 
     // Count accounts updated today (proxy for login activity)
     @Query("SELECT COUNT(DISTINCT a.id) FROM Account a " +
-            "WHERE a.updatedAt >= :from AND a.updatedAt < :to AND a.isDeleted = false")
+           "WHERE a.updatedAt >= :from AND a.updatedAt < :to AND a.isDeleted = false")
     long countActiveAccountsBetween(@Param("from") LocalDateTime from, @Param("to") LocalDateTime to);
 
     // Count accounts created per day in a date range
     @Query(value = "SELECT CAST(a.created_at AS DATE) as date, COUNT(a.id) as count " +
-            "FROM accounts a " +
-            "WHERE a.created_at >= :from AND a.created_at < :to AND a.is_deleted = false " +
-            "GROUP BY CAST(a.created_at AS DATE) " +
-            "ORDER BY date ASC", nativeQuery = true)
+           "FROM accounts a " +
+           "WHERE a.created_at >= :from AND a.created_at < :to AND a.is_deleted = false " +
+           "GROUP BY CAST(a.created_at AS DATE) " +
+           "ORDER BY date ASC", nativeQuery = true)
     java.util.List<Object[]> countAccountsByDateRange(@Param("from") LocalDateTime from, @Param("to") LocalDateTime to);
 
     // Count accounts updated per day (proxy for login activity)
     @Query(value = "SELECT CAST(a.updated_at AS DATE) as date, COUNT(DISTINCT a.id) as count " +
-            "FROM accounts a " +
-            "WHERE a.updated_at >= :from AND a.updated_at < :to AND a.is_deleted = false " +
-            "GROUP BY CAST(a.updated_at AS DATE) " +
-            "ORDER BY date ASC", nativeQuery = true)
+           "FROM accounts a " +
+           "WHERE a.updated_at >= :from AND a.updated_at < :to AND a.is_deleted = false " +
+           "GROUP BY CAST(a.updated_at AS DATE) " +
+           "ORDER BY date ASC", nativeQuery = true)
     java.util.List<Object[]> countActiveAccountsByDateRange(@Param("from") LocalDateTime from, @Param("to") LocalDateTime to);
 
     // Find accounts with filter by created date and pagination
