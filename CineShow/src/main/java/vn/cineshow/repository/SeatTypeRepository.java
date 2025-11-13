@@ -9,6 +9,8 @@ import java.util.Optional;
 @Repository
 public interface SeatTypeRepository extends JpaRepository<SeatType, Long> {
 
+    Optional<SeatType> findFirstByOrderByIdAsc();
+
 //    Optional<SeatType> findByCode(String code);
 //
 //    Optional<SeatType> findByNameIgnoreCase(String name);

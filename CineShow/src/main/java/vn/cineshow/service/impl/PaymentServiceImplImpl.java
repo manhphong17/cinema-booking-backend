@@ -444,6 +444,7 @@ public class PaymentServiceImplImpl implements PaymentServiceImpl {
                 response.put("message", "Thanh toán không thành công hoặc đã hết hạn thanh toán");
             }
             response.put("orderCode", payment.getTxnRef());
+            response.put("orderId", order.getId()); // Add orderId to response
             return response;
 
         } catch (Exception e) {
@@ -548,13 +549,13 @@ public class PaymentServiceImplImpl implements PaymentServiceImpl {
     @Transactional
     @Override
     public void createCashPayment(CheckoutRequest checkoutRequest) {
-        log.info(" Bắt đầu thanh toán CASH ");
 
-        // 1️⃣ Lấy user
+        // 0 Lấy user
         User user = userRepository.findById(checkoutRequest.getUserId())
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+        log.info(" Bắt đầu thanh toán CASH ");
 
-        // 1️⃣ Tạo Order (KHÔNG gắn user, status COMPLETED)
+        // 1️⃣ Tạo Order (status COMPLETED)
         Order order = Order.builder()
                 .totalPrice(checkoutRequest.getTotalPrice())
                 .discount(checkoutRequest.getDiscount())
@@ -600,6 +601,7 @@ public class PaymentServiceImplImpl implements PaymentServiceImpl {
             }
             orderConcessionRepository.saveAll(orderConcessions);
         }
+
         orderRepository.save(order);
 
 
@@ -624,18 +626,21 @@ public class PaymentServiceImplImpl implements PaymentServiceImpl {
         // 5️⃣ Lưu toàn bộ
         orderRepository.save(order);
 
-
         // --- 6. Xóa key Redis (OrderSession + SeatHold) ---
         try {
-            String orderSessionKey = "order_session:" + checkoutRequest.getShowtimeId() + ":" + checkoutRequest.getUserId();
-            String seatHoldKey = "seat_hold:" + checkoutRequest.getShowtimeId() + ":" + checkoutRequest.getUserId();
+            String orderSessionKey = "orderSession:showtime:" + checkoutRequest.getShowtimeId()
+                    + ":userId:" + checkoutRequest.getUserId();
+
+            String seatHoldKey = "seatHold:showtime:" + checkoutRequest.getShowtimeId()
+                    + ":user:" + checkoutRequest.getUserId();
+
             redisService.delete(orderSessionKey);
             redisService.delete(seatHoldKey);
             log.info("Xóa key Redis: {}, {}", orderSessionKey, seatHoldKey);
+
         } catch (Exception e) {
             log.warn("Không thể xóa key Redis: {}", e.getMessage());
         }
-
         log.info(" Thanh toán CASH hoàn tất cho đơn hàng {}", order.getCode());
     }
 }

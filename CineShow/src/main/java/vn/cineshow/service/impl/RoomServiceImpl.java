@@ -9,17 +9,19 @@ import vn.cineshow.dto.response.PageResponse;
 import vn.cineshow.dto.response.room.RoomDTO;
 import vn.cineshow.dto.response.room.room_type.RoomTypeDTO;
 import vn.cineshow.enums.RoomStatus;
+import vn.cineshow.enums.SeatStatus;
 import vn.cineshow.exception.AppException;
 import vn.cineshow.exception.ErrorCode;
 import vn.cineshow.model.Room;
 import vn.cineshow.model.RoomType;
-import vn.cineshow.repository.RoomRepository;
-import vn.cineshow.repository.RoomTypeRepository;
-import vn.cineshow.repository.SeatRepository;
-import vn.cineshow.repository.ShowTimeRepository;
+import vn.cineshow.model.Seat;
+import vn.cineshow.model.SeatType;
+import vn.cineshow.repository.*;
 import vn.cineshow.service.RoomService;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -30,9 +32,11 @@ public class RoomServiceImpl implements RoomService {
     private final RoomTypeRepository roomTypeRepository;
     private final SeatRepository seatRepository;
     private final ShowTimeRepository showTimeRepository;
+    private final SeatTypeRepository seatTypeRepository;
 
     private static final int DEFAULT_PAGE_NO = 0;
     private static final int DEFAULT_PAGE_SIZE = 20;
+    private static final int MAX_ROOM_DIMENSION = 12;
 
     private static final Set<String> ALLOWED_SORT_FIELDS = Set.of(
             "name", "createdAt", "updatedAt", "rows", "columns", "capacity", "status"
@@ -88,6 +92,9 @@ public class RoomServiceImpl implements RoomService {
     @Override
     @Transactional
     public RoomDTO createRoom(RoomRequest request) {
+        if (request.getRows() > MAX_ROOM_DIMENSION || request.getColumns() > MAX_ROOM_DIMENSION) {
+            throw new AppException(ErrorCode.ROOM_SIZE_EXCEEDED);
+        }
         if (roomRepository.existsByNameIgnoreCase(request.getName())) {
             throw new AppException(ErrorCode.ROOM_ALREADY_EXISTED);
         }
@@ -106,6 +113,29 @@ public class RoomServiceImpl implements RoomService {
         entity.setDescription(request.getDescription());
 
         Room saved = roomRepository.save(entity);
+
+        SeatType defaultSeatType = seatTypeRepository.findFirstByOrderByIdAsc()
+                .orElseThrow(() -> new AppException(ErrorCode.SEAT_TYPE_NOT_FOUND));
+
+        int rows = request.getRows();
+        int cols = request.getColumns();
+
+        List<Seat> batch = new ArrayList<>(rows * cols);
+        for (int r = 1; r <= rows; r++) {
+            for (int c = 1; c <= cols; c++) {
+                Seat s = new Seat();
+                s.setRoom(saved);
+                s.setRow(String.valueOf(r));
+                s.setColumn(String.valueOf(c));
+                s.setSeatType(defaultSeatType);
+                s.setStatus(SeatStatus.AVAILABLE);
+                batch.add(s);
+            }
+        }
+        seatRepository.saveAll(batch);
+
+        saved.setCapacity(batch.size());
+        roomRepository.save(saved);
         
         return toDTO(saved);
     }
@@ -113,6 +143,9 @@ public class RoomServiceImpl implements RoomService {
     @Override
     @Transactional
     public RoomDTO updateRoom(Long roomId, RoomRequest request) {
+        if (request.getRows() > MAX_ROOM_DIMENSION || request.getColumns() > MAX_ROOM_DIMENSION) {
+            throw new AppException(ErrorCode.ROOM_SIZE_EXCEEDED);
+        }
         Room entity = roomRepository.findById(roomId).orElseThrow(() -> new AppException(ErrorCode.ROOM_NOT_FOUND));
 
         if (showTimeRepository.existsByRoom_Id(roomId)) {

@@ -71,6 +71,7 @@ public interface ShowTimeRepository extends JpaRepository<ShowTime, Long> {
                 SELECT CASE WHEN COUNT(st) > 0 THEN TRUE ELSE FALSE END
                 FROM ShowTime st
                 WHERE st.room.id = :roomId
+                  AND st.isDeleted = false
                   AND st.startTime < :end
                   AND st.endTime   > :start
             """)
@@ -84,6 +85,7 @@ public interface ShowTimeRepository extends JpaRepository<ShowTime, Long> {
                 FROM ShowTime st
                 WHERE st.room.id = :roomId
                   AND st.id <> :excludeId
+                  AND st.isDeleted = false
                   AND st.startTime < :end
                   AND st.endTime   > :start
             """)
@@ -125,6 +127,7 @@ public interface ShowTimeRepository extends JpaRepository<ShowTime, Long> {
             JOIN r.roomType rt
             JOIN s.tickets t
             WHERE s.movie.id = :movieId
+              AND s.isDeleted = false
               AND r.status = 'ACTIVE'
               AND FUNCTION('DATE', s.startTime) = :targetDate
               AND (:minStartTime IS NULL OR s.startTime > :minStartTime)
@@ -137,6 +140,7 @@ public interface ShowTimeRepository extends JpaRepository<ShowTime, Long> {
             @Param("movieId") Long movieId);
 
 
-    List<ShowTime> findByMovie_IdAndStartTime(Long movieId, LocalDateTime startTime);
+    @Query("SELECT st FROM ShowTime st WHERE st.movie.id = :movieId AND st.startTime = :startTime AND st.isDeleted = false")
+    List<ShowTime> findByMovie_IdAndStartTime(@Param("movieId") Long movieId, @Param("startTime") LocalDateTime startTime);
 
 }

@@ -271,12 +271,28 @@ public class ShowTimeServiceImpl implements ShowTimeService {
     @Transactional
     @Override
     public void softDelete(Long id) {
-        ShowTime st = showTimeRepository.findById(id)
+        // Sử dụng findByIdFetchAll để đảm bảo tìm thấy ngay cả khi đã bị soft delete
+        ShowTime st = showTimeRepository.findByIdFetchAll(id)
                 .orElseThrow(() -> new AppException(ErrorCode.SHOW_TIME_NOT_FOUND));
+        
+        // Kiểm tra xem đã bị xóa chưa
+        if (Boolean.TRUE.equals(st.getIsDeleted())) {
+            throw new AppException(ErrorCode.ALREADY_DELETED);
+        }
+        
+        // Kiểm tra xem có vé đã được đặt (BOOKED) không
+        Long bookedTickets = ticketRepository.countByShowTime_IdAndStatus(id, TicketStatus.BOOKED);
+        
+        if (bookedTickets != null && bookedTickets > 0) {
+            throw new ResponseStatusException(
+                HttpStatus.CONFLICT,
+                String.format("Không thể xóa suất chiếu vì đã có %d vé được đặt. Vui lòng hủy vé trước khi xóa suất chiếu.", bookedTickets)
+            );
+        }
+        
         st.setIsDeleted(true);
         showTimeRepository.save(st);
-        // có thể đã xoá mềm trước đó hoặc race condition
-
+        log.info("✅ Soft deleted showtime id={}", id);
     }
 
     @Override

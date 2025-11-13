@@ -8,6 +8,7 @@ import java.util.List;
 import lombok.*;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -93,6 +94,7 @@ public class BookingController {
                     "Used by frontend to display countdown when page reloads."
     )
     @GetMapping("/show-times/{showtimeId}/users/{userId}/seat-hold/ttl")
+    @PreAuthorize("hasAnyAuthority('CUSTOMER', 'STAFF')")
     public ResponseData<?> getSeatHoldTTL(@PathVariable Long showtimeId,
                                           @PathVariable Long userId) {
         long ttl = seatHoldService.getExpire(showtimeId, userId);
@@ -105,6 +107,7 @@ public class BookingController {
                     "Used by frontend to restore held seats when page reloads."
     )
     @GetMapping("/show-times/{showtimeId}/users/{userId}/seat-hold")
+    @PreAuthorize("hasAnyAuthority('CUSTOMER', 'STAFF')")
     public ResponseData<?> getCurrentSeatHold(@PathVariable Long showtimeId,
                                               @PathVariable Long userId) {
         log.info("Request get current seat hold - showtimeId: {}, userId: {}", showtimeId, userId);
@@ -119,6 +122,7 @@ public class BookingController {
                     "TTL will match order session to ensure synchronization."
     )
     @PostMapping("/order-session/concessions")
+    @PreAuthorize("hasAnyAuthority('CUSTOMER', 'STAFF')")
     public ResponseData<?> addConcessionListToOrderSession(@RequestBody @Valid ConcessionListRequest request) {
         orderSessionService.addOrUpdateCombos(request);
         return new ResponseData<>(HttpStatus.OK.value(), "Add concessions to order session successfully");
@@ -128,6 +132,7 @@ public class BookingController {
             summary = "Get current order session (tickets + concessions) from Redis",
             description = "Used by frontend payment page to restore user's selected seats and concessions before payment."
     )
+    @PreAuthorize("hasAnyAuthority('CUSTOMER', 'STAFF')")
     @GetMapping("/order-session")
     public ResponseData<?> getOrderSession(@RequestParam Long showtimeId,
                                            @RequestParam Long userId) {
@@ -143,6 +148,7 @@ public class BookingController {
     }
 
     @GetMapping("/tickets/details")
+    @PreAuthorize("hasAnyAuthority('CUSTOMER', 'STAFF')")
     public ResponseData<List<TicketDetailResponse>> getTicketDetails(@RequestParam("ids") String ids) {
         List<Long> idList = Arrays.stream(ids.split(","))
                 .map(String::trim)
@@ -155,6 +161,7 @@ public class BookingController {
 
     // Lấy danh sách phương thức thanh toán chính
     @GetMapping("/payment-methods/distinct")
+    @PreAuthorize("hasAnyAuthority('CUSTOMER', 'STAFF')")
     public ResponseData<List<String>> getDistinctMethodNames() {
         List<String> distinctNames = bookingService.getDistinctMethodNames();
         return new ResponseData<>(
@@ -177,6 +184,7 @@ public class BookingController {
 
     // Lấy chi tiết các ngân hàng theo methodName
     @GetMapping("/payment-methods/{methodName}")
+    @PreAuthorize("hasAnyAuthority('CUSTOMER', 'STAFF')")
     public ResponseData<List<PaymentMethodDTO>> getPaymentMethodsByName(
             @PathVariable String methodName) {
 
