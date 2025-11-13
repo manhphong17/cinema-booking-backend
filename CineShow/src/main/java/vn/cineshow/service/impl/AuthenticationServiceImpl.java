@@ -40,6 +40,7 @@ import vn.cineshow.exception.DuplicateResourceException;
 import vn.cineshow.exception.ErrorCode;
 import vn.cineshow.exception.ResourceNotFoundException;
 import vn.cineshow.model.Account;
+import vn.cineshow.model.ActivityLog;
 import vn.cineshow.model.RefreshToken;
 import vn.cineshow.model.Role;
 import vn.cineshow.model.User;
@@ -75,6 +76,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     private final PasswordEncoder encoder;
     private final OtpService otpService;
     private final AccountProviderRepository accountProviderRepository;
+    private final ActivityLogRepository activityLogRepository;
 
     private static final SecureRandom RNG = new SecureRandom();
 
@@ -89,6 +91,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     @Override
     @Transactional
     public TokenResponse signIn(SignInRequest req) {
+
         Authentication authentication;
         try {
             authentication = authenticationManager.authenticate(
@@ -116,6 +119,20 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         List<String> roleNames = account.getRoles().stream()
                 .map(Role::getRoleName)
                 .toList();
+
+        // Save login activity
+        try {
+            User user = account.getUser();
+            if (user != null) {
+                activityLogRepository.save(ActivityLog.builder()
+                        .user(user)
+                        .action("LOGIN")
+                        .description("Email/Password login")
+                        .build());
+            }
+        } catch (Exception ex) {
+            log.warn("Failed to save login activity for {}", req.getEmail(), ex);
+        }
 
         return TokenResponse.builder()
                 .accessToken(accessToken)

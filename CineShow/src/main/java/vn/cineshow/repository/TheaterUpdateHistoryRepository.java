@@ -28,4 +28,7 @@ public interface TheaterUpdateHistoryRepository extends JpaRepository<TheaterUpd
             LocalDateTime endDate, 
             Pageable pageable
     );
+
+    // Lấy lịch sử gần đây nhất (cho dashboard)
+    Page<TheaterUpdateHistory> findByOrderByUpdatedAtDesc(Pageable pageable);
 }

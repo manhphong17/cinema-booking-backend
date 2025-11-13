@@ -41,6 +41,7 @@ class ConcessionTypeServiceImpl implements ConcessionTypeService {
 
 
     @Override
+    @Transactional
     public void updateStatus(Long id) {
         ConcessionType type = concessionTypeRepo.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.CONCESSION_TYPE_NOT_FOUND));
@@ -57,6 +58,7 @@ class ConcessionTypeServiceImpl implements ConcessionTypeService {
     }
 
     @Override
+    @Transactional
     public void addConcessionType(String name) {
         String trimmedName = name.trim();
 
