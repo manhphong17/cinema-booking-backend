@@ -20,6 +20,13 @@ import vn.cineshow.model.ShowTime;
 @Repository
 public interface ShowTimeRepository extends JpaRepository<ShowTime, Long> {
 
+    boolean existsByRoom_Id(Long roomId);
+
+    boolean existsByRoom_RoomType_Id(Long roomTypeId);
+
+    @Query("select case when count(st) > 0 then true else false end from ShowTime st join st.room r join r.seats s where s.seatType.id = :seatTypeId")
+    boolean existsBySeatTypeId(@Param("seatTypeId") Long seatTypeId);
+
     @Override
     @EntityGraph(attributePaths = {"movie", "room", "subtitle"})
     Page<ShowTime> findAll(Pageable pageable);
