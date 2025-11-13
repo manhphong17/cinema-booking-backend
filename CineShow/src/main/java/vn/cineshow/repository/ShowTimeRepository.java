@@ -32,7 +32,8 @@ public interface ShowTimeRepository extends JpaRepository<ShowTime, Long> {
             "JOIN FETCH st.movie m " +
             "JOIN FETCH r.roomType rt " +
             "WHERE " +
-            "  (:movieId IS NULL OR m.id = :movieId) " +
+            "  st.isDeleted = false " +
+            "  AND (:movieId IS NULL OR m.id = :movieId) " +
             "  AND (:date IS NULL OR CAST(st.startTime AS date) = :date) " +
             "  AND (:roomId IS NULL OR r.id = :roomId) " +
             "  AND (:roomTypeId IS NULL OR rt.id = :roomTypeId) " +

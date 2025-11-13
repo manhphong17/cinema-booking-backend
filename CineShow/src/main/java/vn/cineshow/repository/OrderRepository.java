@@ -58,4 +58,23 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
             "tickets.showTime.room"
     })
     Page<Order> findByUser_IdAndCreatedAtBetween(Long userId, LocalDateTime start, LocalDateTime end, Pageable pageable);
+
+    // Count orders created in a date range
+    long countByCreatedAtBetween(LocalDateTime start, LocalDateTime end);
+
+    // Sum revenue from completed orders in a date range
+    @Query("SELECT COALESCE(SUM(o.totalPrice), 0.0) FROM Order o " +
+           "WHERE o.createdAt >= :start AND o.createdAt < :end " +
+           "AND o.orderStatus = vn.cineshow.enums.OrderStatus.COMPLETED")
+    Double sumRevenueByCreatedAtBetween(@Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
+
+    // Count orders and revenue per day
+    @Query(value = "SELECT CAST(o.created_at AS DATE) as date, " +
+           "COUNT(o.id) as orderCount, " +
+           "COALESCE(SUM(CASE WHEN o.order_status = 'COMPLETED' THEN o.total_price ELSE 0.0 END), 0.0) as revenue " +
+           "FROM orders o " +
+           "WHERE o.created_at >= :start AND o.created_at < :end " +
+           "GROUP BY CAST(o.created_at AS DATE) " +
+           "ORDER BY date ASC", nativeQuery = true)
+    java.util.List<Object[]> getOrderStatsByDateRange(@Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
 }
