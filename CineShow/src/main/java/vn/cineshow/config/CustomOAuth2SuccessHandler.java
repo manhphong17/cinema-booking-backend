@@ -31,6 +31,8 @@ import vn.cineshow.repository.AccountRepository;
 import vn.cineshow.repository.RoleRepository;
 import vn.cineshow.service.JWTService;
 import vn.cineshow.service.RefreshTokenService;
+import vn.cineshow.repository.ActivityLogRepository;
+import vn.cineshow.model.ActivityLog;
 
 @Component
 @RequiredArgsConstructor
@@ -50,6 +52,7 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
     private final RoleRepository roleRepository;
     private final AccountProviderRepository accountProviderRepository;
     private final RefreshTokenService refreshTokenService;
+    private final ActivityLogRepository activityLogRepository;
 
     /**
      * Handles successful OAuth2 authentication.
@@ -193,6 +196,20 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
                 roleNames);
 
         refreshTokenService.replaceRefreshToken(account, refreshToken, jwtService.getRefreshTokenExpiryInSecond());
+
+        // Save login activity
+        try {
+            User user = account.getUser();
+            if (user != null) {
+                activityLogRepository.save(ActivityLog.builder()
+                        .user(user)
+                        .action("LOGIN")
+                        .description("OAuth2 login")
+                        .build());
+            }
+        } catch (Exception ex) {
+            // avoid blocking the flow on logging failure
+        }
 
         // Set refresh token as HttpOnly cookie
         // Fix: Set secure(false) for localhost development (http://)
