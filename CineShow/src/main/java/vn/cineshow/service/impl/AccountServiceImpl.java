@@ -57,6 +57,7 @@ class AccountServiceImpl implements AccountService {
      * - No lowercase letter
      * - No digit
      */
+
     private void validatePasswordStrength(String password) {
         if (password.length() < 8) {
             throw new AppException(ErrorCode.PASSWORD_TOO_WEAK);
