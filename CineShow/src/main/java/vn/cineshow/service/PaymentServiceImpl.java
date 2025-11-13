@@ -4,12 +4,10 @@ package vn.cineshow.service;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.transaction.annotation.Transactional;
 import vn.cineshow.dto.request.payment.CheckoutRequest;
-import vn.cineshow.dto.response.payment.PaymentMethodDTO;
 
-import java.util.List;
 import java.util.Map;
 
-public interface VNPayService {
+public interface PaymentServiceImpl {
 
     String createPaymentUrl(HttpServletRequest req, CheckoutRequest checkoutRequest);
 
@@ -20,4 +18,6 @@ public interface VNPayService {
     Map<String, Object> handleReturn(Map<String, String> params);
 
 
+    @Transactional
+    void createCashPayment(CheckoutRequest checkoutRequest);
 }

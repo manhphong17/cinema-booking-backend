@@ -9,7 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import vn.cineshow.dto.request.payment.CheckoutRequest;
 import vn.cineshow.dto.response.ResponseData;
-import vn.cineshow.service.VNPayService;
+import vn.cineshow.service.PaymentServiceImpl;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -21,14 +21,14 @@ import java.util.Map;
 @Slf4j
 public class PaymentController {
 
-    private final VNPayService vnpayService;
+    private final PaymentServiceImpl paymentService;
 
     @PostMapping("/checkout")
 
     public ResponseData<String> createVNPayPayment(HttpServletRequest request,
                                                    @RequestBody CheckoutRequest checkoutRequest) {
 
-        String paymentUrl = vnpayService.createPaymentUrl(request, checkoutRequest);
+        String paymentUrl = paymentService.createPaymentUrl(request, checkoutRequest);
         return new ResponseData<>(HttpStatus.OK.value(), "Create VNPay URL successfully", paymentUrl);
 
     }
@@ -37,7 +37,7 @@ public class PaymentController {
     public ResponseEntity<Map<String, String>> handleVNPayIPN(@RequestParam Map<String, String> params) {
         log.info(" Received VNPay IPN callback with params: {}", params);
 
-        Map<String, String> response = vnpayService.handleIPN(params);
+        Map<String, String> response = paymentService.handleIPN(params);
 
         log.info("📤 Responding to VNPay IPN: {}", response);
         return ResponseEntity.ok(response);
@@ -53,13 +53,19 @@ public class PaymentController {
             }
         });
 
-        Map<String, Object> result = vnpayService.handleReturn(params);
+        Map<String, Object> result = paymentService.handleReturn(params);
 
         return new ResponseData<>(
                 HttpStatus.OK.value(),
                 "VNPay return processed",
                 result
         );
+    }
+
+    @PostMapping("/checkout-cash")
+    public ResponseData<String> createCashPayment(@RequestBody CheckoutRequest checkoutRequest) {
+        paymentService.createCashPayment(checkoutRequest);
+        return new ResponseData<>(HttpStatus.OK.value(), "Thanh toán tiền mặt thành công", "CASH_SUCCESS");
     }
 
 }

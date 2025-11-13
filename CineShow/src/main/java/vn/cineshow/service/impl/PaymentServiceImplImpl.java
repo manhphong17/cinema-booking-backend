@@ -50,12 +50,12 @@ import vn.cineshow.repository.TicketRepository;
 import vn.cineshow.repository.UserRepository;
 import vn.cineshow.service.BookingService;
 import vn.cineshow.service.RedisService;
-import vn.cineshow.service.VNPayService;
+import vn.cineshow.service.PaymentServiceImpl;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class VNPayServiceImpl implements VNPayService {
+public class PaymentServiceImplImpl implements PaymentServiceImpl {
 
     private final PaymentRepository paymentRepository; //
     private final VNPayProperties vnpayProperties;//
@@ -444,6 +444,7 @@ public class VNPayServiceImpl implements VNPayService {
                 response.put("message", "Thanh toán không thành công hoặc đã hết hạn thanh toán");
             }
             response.put("orderCode", payment.getTxnRef());
+            response.put("orderId", order.getId()); // Add orderId to response
             return response;
 
         } catch (Exception e) {
@@ -545,6 +546,103 @@ public class VNPayServiceImpl implements VNPayService {
         return isValid;
     }
 
+    @Transactional
+    @Override
+    public void createCashPayment(CheckoutRequest checkoutRequest) {
+
+        // 0 Lấy user
+        User user = userRepository.findById(checkoutRequest.getUserId())
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+        log.info(" Bắt đầu thanh toán CASH ");
+
+        // 1️⃣ Tạo Order (status COMPLETED)
+        Order order = Order.builder()
+                .totalPrice(checkoutRequest.getTotalPrice())
+                .discount(checkoutRequest.getDiscount())
+                .orderStatus(OrderStatus.COMPLETED)
+                .user(user)
+                .build();
+
+        // 2️⃣ Lấy danh sách Ticket và gán hai chiều + BOOKED
+        List<Ticket> tickets = new ArrayList<>(checkoutRequest.getTicketIds().size());
+        for (Long id : checkoutRequest.getTicketIds()) {
+            Ticket t = ticketRepository.findById(id)
+                    .orElseThrow(() -> new AppException(ErrorCode.TICKET_NOT_FOUND));
+            t.setOrder(order);
+            t.setStatus(TicketStatus.BOOKED);
+            t.setPriceSnapshot(t.getTicketPrice().getPrice()); // snapshot giá vé tại thời điểm thanh toán
+            tickets.add(t);
+        }
+        order.setTickets(tickets);
+        ticketRepository.saveAll(tickets);
+
+        // 3️⃣ Tạo OrderConcession + trừ stock
+        List<OrderConcession> orderConcessions = new ArrayList<>();
+        if (checkoutRequest.getConcessions() != null) {
+            for (CheckoutRequest.ConcessionOrderRequest req : checkoutRequest.getConcessions()) {
+                Concession concession = concessionRepository.findById(req.getConcessionId())
+                        .orElseThrow(() -> new AppException(ErrorCode.CONCESSION_NOT_FOUND));
+
+                // Trừ stock
+                int remain = concession.getUnitInStock() - req.getQuantity();
+                concession.setUnitInStock(Math.max(remain, 0));
+                concessionRepository.save(concession);
+
+                // Tạo OrderConcession record
+                OrderConcession oc = OrderConcession.builder()
+                        .order(order)
+                        .concession(concession)
+                        .orderConcessionId(new OrderConcessionId(order.getId(), concession.getId()))
+                        .quantity(req.getQuantity())
+                        .unitPrice(concession.getPrice())
+                        .priceSnapshot(concession.getPrice() * req.getQuantity())
+                        .build();
+                orderConcessions.add(oc);
+            }
+            orderConcessionRepository.saveAll(orderConcessions);
+        }
+
+        orderRepository.save(order);
 
 
+        // 4️⃣ Tạo Payment (status COMPLETED)
+        PaymentMethod method = paymentMethodRepository
+                .findByPaymentCodeIgnoreCase(checkoutRequest.getPaymentCode())
+                .orElseThrow(() -> new AppException(ErrorCode.PAYMENT_METHOD_NOT_FOUND));
+
+        String transactionNo = "CASH-" + String.format("%08d", System.currentTimeMillis() % 100_000_000);
+
+        Payment payment = Payment.builder()
+                .order(order)
+                .method(method)
+                .amount(checkoutRequest.getAmount())
+                .txnRef(order.getCode())
+                .transactionNo(transactionNo)
+                .paymentStatus(PaymentStatus.COMPLETED)
+                .build();
+
+        order.setPayment(payment);
+
+        // 5️⃣ Lưu toàn bộ
+        orderRepository.save(order);
+
+        // --- 6. Xóa key Redis (OrderSession + SeatHold) ---
+        try {
+            String orderSessionKey = "orderSession:showtime:" + checkoutRequest.getShowtimeId()
+                    + ":userId:" + checkoutRequest.getUserId();
+
+            String seatHoldKey = "seatHold:showtime:" + checkoutRequest.getShowtimeId()
+                    + ":user:" + checkoutRequest.getUserId();
+
+            redisService.delete(orderSessionKey);
+            redisService.delete(seatHoldKey);
+            log.info("Xóa key Redis: {}, {}", orderSessionKey, seatHoldKey);
+
+        } catch (Exception e) {
+            log.warn("Không thể xóa key Redis: {}", e.getMessage());
+        }
+        log.info(" Thanh toán CASH hoàn tất cho đơn hàng {}", order.getCode());
+    }
 }
+
+

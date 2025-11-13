@@ -27,6 +27,8 @@ public enum ErrorCode {
     PASSWORD_RESET_TOKEN_NOT_FOUND(1033, "Password reset token not found"),
     PASSWORD_RESET_TOKEN_INVALID(1034, "Password reset token is invalid or has expired"),
 
+
+
     CONCESSION_TYPE_NOT_FOUND(1025, "Concession type not found"),
     CONCESSION_TYPE_IN_USE(1026, "Concession has been in use"),
     CONCESSION_TYPE_EXISTED(1027, "Concession already existed"),

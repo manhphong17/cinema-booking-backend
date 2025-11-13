@@ -1057,7 +1057,7 @@ VALUES ('Nguyễn Văn An', 'Hà Nội', 100, '1990-05-15', 'MALE', 6, NOW(), NO
        ('Vương Thị Uyên', 'Cần Thơ', 0, '1994-06-09', 'FEMALE', 25, NOW(), NOW());
 
 -- Account-Role relationships
-INSERT INTO account_roles (account_id, role_id)
+    INSERT INTO account_roles (account_id, role_id)
 VALUES
 -- Customer accounts (6-10) - CUSTOMER role
 (6, 2),
