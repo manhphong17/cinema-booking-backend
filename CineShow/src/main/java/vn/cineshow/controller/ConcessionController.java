@@ -32,7 +32,7 @@ public class ConcessionController {
     private final ConcessionTypeService concessionTypeService;
 
     @GetMapping
-    @PreAuthorize("hasAnyAuthority('BUSINESS','CUSTOMER')")
+    @PreAuthorize("hasAnyAuthority('BUSINESS','CUSTOMER','STAFF')")
     public ResponseData<Page<ConcessionResponse>> showListConcessions(
             @RequestParam(defaultValue = "0") int page,        // trang hiện tại (mặc định 0)
             @RequestParam(defaultValue = "10") int size,       // số item / trang

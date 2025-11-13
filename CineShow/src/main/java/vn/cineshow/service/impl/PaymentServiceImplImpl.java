@@ -444,6 +444,7 @@ public class PaymentServiceImplImpl implements PaymentServiceImpl {
                 response.put("message", "Thanh toán không thành công hoặc đã hết hạn thanh toán");
             }
             response.put("orderCode", payment.getTxnRef());
+            response.put("orderId", order.getId()); // Add orderId to response
             return response;
 
         } catch (Exception e) {
