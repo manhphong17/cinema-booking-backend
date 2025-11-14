@@ -1,10 +1,15 @@
 package vn.cineshow.service.impl;
 
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import vn.cineshow.dto.redis.OrderSessionDTO;
 import vn.cineshow.dto.redis.OrderSessionRequest;
 import vn.cineshow.dto.request.booking.ConcessionListRequest;
@@ -18,10 +23,6 @@ import vn.cineshow.repository.ConcessionRepository;
 import vn.cineshow.repository.TicketRepository;
 import vn.cineshow.service.OrderSessionService;
 import vn.cineshow.service.RedisService;
-
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Optional;
 
 @Slf4j
 @Service
@@ -90,22 +91,41 @@ public class OrderSessionServiceImpl implements OrderSessionService {
         //get Order session in redis
         OrderSessionDTO orderExist = redisService.get(key, OrderSessionDTO.class);
 
-        if (orderExist == null) {
-            log.debug("[ORDER_SESSION] [COMBO] key = {} not found", key);
-            throw new AppException(ErrorCode.REDIS_KEY_NOT_FOUND);
-        }
+        boolean isExist = orderExist != null;
 
-        if (orderExist.getConcessionOrders() == null) {
+        // Auto-create order-session if it doesn't exist (for staff orders without tickets)
+        if (!isExist) {
+            log.info("[ORDER_SESSION] [COMBO] key = {} not found, creating new order session", key);
+            orderExist = new OrderSessionDTO();
+            orderExist.setCreatedAt(LocalDateTime.now());
+            orderExist.setExpiredAt(LocalDateTime.now().plusSeconds(TTL_DEFAULT));
+            orderExist.setStatus(OrderSessionStatus.PENDING);
+            orderExist.setUserId(concessionListRequest.getUserId());
+            orderExist.setShowtimeId(concessionListRequest.getShowtimeId());
+            orderExist.setTicketIds(new ArrayList<>()); // Empty ticket list for staff orders without tickets
             orderExist.setConcessionOrders(new ArrayList<>());
-        } else {
-            orderExist.getConcessionOrders().clear();
         }
 
-        orderExist.getConcessionOrders().addAll(concessionListRequest.getConcessions());
-        orderExist.setTotalPrice(countTotalAmount(orderExist));
+        // At this point, orderExist is guaranteed to be non-null
+        final OrderSessionDTO order = orderExist;
+
+        // Ensure concessionOrders list exists and clear it
+        if (order.getConcessionOrders() == null) {
+            order.setConcessionOrders(new ArrayList<>());
+        }
+        order.getConcessionOrders().clear();
+
+        order.getConcessionOrders().addAll(concessionListRequest.getConcessions());
+        order.setTotalPrice(countTotalAmount(order));
         log.info("[ORDER_SESSION][COMBO] Combo updated, key = {}", key);
 
-        redisService.update(key, orderExist);
+        // Save or update in redis
+        if (!isExist) {
+            redisService.save(key, order, TTL_DEFAULT);
+            log.info("[ORDER_SESSION] [SAVE] Created new order session with concessions, key = {}", key);
+        } else {
+            redisService.update(key, order);
+        }
     }
 
     private double countTotalAmount(OrderSessionDTO order) {
@@ -163,23 +183,6 @@ public class OrderSessionServiceImpl implements OrderSessionService {
         log.info("[ORDER_SESSION] [DELETE] key = {}", getKey(userId, showtimeId));
     }
 
-//    @Override
-//    public void extendTTL(Long userId, Long showtimeId) {
-//        String key = getKey(userId, showtimeId);
-//
-//        //get order session
-//        OrderSessionDTO order = redisService.get(key, OrderSessionDTO.class);
-//
-//        if (order == null) {
-//            log.warn("[ORDER_SESSION][EXTEND] no session order found for userId ={}, showtimrId ={}", userId, showtimeId);
-//            return;
-//        }
-//
-//        order.setExpiredAt(LocalDateTime.now().plusSeconds(PAYMENT_EXTENSION));
-//
-//        redisService.save(key, order, PAYMENT_EXTENSION);
-//        log.info("[ORDER_SESSION][EXTEND] Payment start with ttl extended, key = {}", key);
-//    }
 
     @Override
     public OrderSessionDTO getOrderSession(Long showtimeId, Long userId) {

@@ -555,4 +555,18 @@ public class OrderController {
         );
     }
 
+
+    @GetMapping("/check-ticket")
+    @PreAuthorize("hasAuthority('STAFF')")
+    public ResponseData<OrderCheckTicketResponse> checkTicketByOrderCode(
+            @RequestParam("orderCode") String orderCode
+    ) {
+        OrderCheckTicketResponse response = orderQueryService.checkTicketByOrderCode(orderCode);
+        return new ResponseData<>(
+                HttpStatus.OK.value(),
+                "Check ticket successfully. Total tickets: " + response.getTicketCount(),
+                response
+        );
+    }
+
 }

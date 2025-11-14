@@ -162,6 +162,15 @@ public class RoomServiceImpl implements RoomService {
         entity.setRows(request.getRows());
         entity.setColumns(request.getColumns());
 
+        // Chuyển đổi status từ String sang Enum
+        RoomStatus newStatus = RoomStatus.valueOf(request.getStatus().trim().toUpperCase());
+
+        // KIỂM TRA: Nếu đang cố gắng kích hoạt phòng (chuyển status thành ACTIVE)
+        if (newStatus == RoomStatus.ACTIVE && !entity.getRoomType().getActive()) {
+            // Ném exception nếu loại phòng của nó đang không hoạt động
+            throw new AppException(ErrorCode.ROOM_TYPE_INACTIVE);
+        }
+
         // String -> Enum
         entity.setStatus(RoomStatus.valueOf(request.getStatus().trim().toUpperCase()));
 
