@@ -20,8 +20,31 @@ public class TheaterUpdateHistory {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
 
-    @Column(name = "theater_id", nullable = false)
-    Long theaterId; // luôn = 1
+    // Quan hệ Many-to-One với Theater
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "theater_id", nullable = false)
+    Theater theater;
+
+    // Giữ lại theaterId để backward compatible và cho repository queries
+    // Dùng @PostLoad để tự động sync từ theater entity
+    @Transient
+    Long theaterId;
+    
+    // Tự động sync theaterId từ theater sau khi load từ DB
+    @PostLoad
+    private void syncTheaterId() {
+        if (theater != null) {
+            this.theaterId = theater.getId();
+        }
+    }
+    
+    // Getter cho theaterId - backward compatible
+    public Long getTheaterId() {
+        if (theaterId == null && theater != null) {
+            theaterId = theater.getId();
+        }
+        return theaterId;
+    }
 
     @Column(name = "updated_field", nullable = false, length = 100)
     String updatedField;

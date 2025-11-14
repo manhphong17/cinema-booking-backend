@@ -11,6 +11,7 @@ import vn.cineshow.dto.response.ResponseData;
 import vn.cineshow.dto.response.dashboard.AccountListResponseDTO;
 import vn.cineshow.dto.response.dashboard.DashboardResponseDTO;
 import vn.cineshow.dto.response.dashboard.DashboardSummaryResponse;
+import vn.cineshow.dto.response.dashboard.StatisticsResponseDTO;
 import vn.cineshow.exception.AppException;
 import vn.cineshow.exception.ErrorCode;
 import vn.cineshow.service.DashboardService;
@@ -33,7 +34,7 @@ public class DashboardController {
                     "Supports partial data if some sources are unavailable."
     )
     @GetMapping("/summary")
-    @PreAuthorize("hasAnyAuthority('ADMIN', 'BUSINESS')")
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseData<DashboardSummaryResponse> getSummary(
             @RequestParam(defaultValue = "7d") String range,
             @RequestParam(defaultValue = "10") int recentSize,
@@ -56,9 +57,9 @@ public class DashboardController {
             DashboardSummaryResponse summary = dashboardService.getSummary(range, recentSize, tz);
 
             // Check if all sources failed
-            if (summary.isPartial() && 
-                summary.getUnavailableSources() != null && 
-                summary.getUnavailableSources().size() >= 7) {
+            if (summary.isPartial() &&
+                    summary.getUnavailableSources() != null &&
+                    summary.getUnavailableSources().size() >= 7) {
                 log.error("All data sources failed");
                 throw new AppException(ErrorCode.INTERNAL_ERROR);
             }
@@ -87,13 +88,13 @@ public class DashboardController {
                     "Requires ADMIN, OPERATION, or BUSINESS role."
     )
     @GetMapping("/admin")
-    @PreAuthorize("hasAnyAuthority('ADMIN', 'OPERATION', 'BUSINESS')")
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseData<DashboardResponseDTO> getDashboardData(
             @RequestParam(required = false) String startDate,
             @RequestParam(required = false) String endDate,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
-        log.info("Request to get dashboard data with filters - startDate: {}, endDate: {}, page: {}, size: {}", 
+        log.info("Request to get dashboard data with filters - startDate: {}, endDate: {}, page: {}, size: {}",
                 startDate, endDate, page, size);
 
         DashboardResponseDTO dashboardData = dashboardService.getDashboardData(startDate, endDate, page, size);
@@ -113,23 +114,61 @@ public class DashboardController {
                     "Requires ADMIN, OPERATION, or BUSINESS role."
     )
     @GetMapping("/accounts")
-    @PreAuthorize("hasAnyAuthority('ADMIN', 'OPERATION', 'BUSINESS')")
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseData<AccountListResponseDTO> getAccounts(
             @RequestParam(required = false) String startDate,
             @RequestParam(required = false) String endDate,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
-        log.info("Request to get accounts list with filters - startDate: {}, endDate: {}, page: {}, size: {}", 
+        log.info("Request to get accounts list with filters - startDate: {}, endDate: {}, page: {}, size: {}",
                 startDate, endDate, page, size);
 
         AccountListResponseDTO accountsData = dashboardService.getAccounts(startDate, endDate, page, size);
 
-        log.info("Accounts list retrieved successfully - total: {}, page: {}/{}", 
+        log.info("Accounts list retrieved successfully - total: {}, page: {}/{}",
                 accountsData.getTotalElements(), page + 1, accountsData.getTotalPages());
         return new ResponseData<>(
                 HttpStatus.OK.value(),
                 "Accounts list retrieved successfully",
                 accountsData
+        );
+    }
+
+    @Operation(
+            summary = "Get statistics and details",
+            description = "Get all statistics including total accounts, total orders, and order details with creator information. " +
+                    "Supports filtering by user ID and date range. " +
+                    "Requires ADMIN, OPERATION, or BUSINESS role."
+    )
+    @GetMapping("/statistics")
+    @PreAuthorize("hasAuthority('ADMIN')")
+    public ResponseData<StatisticsResponseDTO> getStatistics(
+            @RequestParam(required = false) Long userId,
+            @RequestParam(required = false) String startDate,
+            @RequestParam(required = false) String endDate,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        log.info("Request to get statistics - userId: {}, startDate: {}, endDate: {}, page: {}, size: {}",
+                userId, startDate, endDate, page, size);
+
+        // Validate page and size
+        if (page < 0) {
+            log.warn("Invalid page parameter: {}", page);
+            throw new AppException(ErrorCode.INVALID_PARAMETER);
+        }
+        if (size < 1 || size > 100) {
+            log.warn("Invalid size parameter: {}", size);
+            throw new AppException(ErrorCode.INVALID_PARAMETER);
+        }
+
+        StatisticsResponseDTO statistics = dashboardService.getStatistics(userId, startDate, endDate, page, size);
+
+        log.info("Statistics retrieved successfully - totalAccounts: {}, totalOrders: {}, orders in page: {}",
+                statistics.getTotalAccounts(), statistics.getTotalOrders(), statistics.getOrders().size());
+        return new ResponseData<>(
+                HttpStatus.OK.value(),
+                "Statistics retrieved successfully",
+                statistics
         );
     }
 }

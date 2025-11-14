@@ -34,11 +34,6 @@ public class TheaterResponse {
 
     String information;
 
-    String representativeName;
-    String representativeTitle;
-    String representativePhone;
-    String representativeEmail;
-
     String createdBy;
     String updatedBy;
 }

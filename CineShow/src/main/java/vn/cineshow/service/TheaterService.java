@@ -57,7 +57,7 @@ public class TheaterService {
                 .orElseGet(() -> createDefaultTheater());
 
         // Log changes before updating
-        String updatedBy = request.getUpdatedBy() != null ? request.getUpdatedBy() : "system";
+        String updatedBy = "system";
         logFieldChange(theater.getId(), "name", theater.getName(), request.getName(), updatedBy);
         logFieldChange(theater.getId(), "address", theater.getAddress(), request.getAddress(), updatedBy);
         logFieldChange(theater.getId(), "hotline", theater.getHotline(), request.getHotline(), updatedBy);
@@ -67,10 +67,6 @@ public class TheaterService {
         logFieldChange(theater.getId(), "closeTime", theater.getCloseTime(), request.getCloseTime(), updatedBy);
         logFieldChange(theater.getId(), "overnight", theater.getOvernight(), Boolean.TRUE.equals(request.getOvernight()), updatedBy);
         logFieldChange(theater.getId(), "information", theater.getInformation(), request.getInformation(), updatedBy);
-        logFieldChange(theater.getId(), "representativeName", theater.getRepresentativeName(), request.getRepresentativeName(), updatedBy);
-        logFieldChange(theater.getId(), "representativeTitle", theater.getRepresentativeTitle(), request.getRepresentativeTitle(), updatedBy);
-        logFieldChange(theater.getId(), "representativePhone", theater.getRepresentativePhone(), request.getRepresentativePhone(), updatedBy);
-        logFieldChange(theater.getId(), "representativeEmail", theater.getRepresentativeEmail(), request.getRepresentativeEmail(), updatedBy);
 
         // Update fields
         theater.setName(request.getName());
@@ -82,11 +78,7 @@ public class TheaterService {
         theater.setCloseTime(request.getCloseTime());
         theater.setOvernight(Boolean.TRUE.equals(request.getOvernight()));
         theater.setInformation(request.getInformation());
-        theater.setRepresentativeName(request.getRepresentativeName());
-        theater.setRepresentativeTitle(request.getRepresentativeTitle());
-        theater.setRepresentativePhone(request.getRepresentativePhone());
-        theater.setRepresentativeEmail(request.getRepresentativeEmail());
-        theater.setUpdatedBy(request.getUpdatedBy());
+        theater.setUpdatedBy(updatedBy);
 
         // Save and return
         Theater saved = theaterRepository.save(theater);
@@ -123,30 +115,15 @@ public class TheaterService {
         if (request.getCloseTime() == null) {
             throw new IllegalParameterException("Close time is required");
         }
-        if (request.getRepresentativeName() == null || request.getRepresentativeName().isBlank()) {
-            throw new IllegalParameterException("Representative name is required");
-        }
-        if (request.getRepresentativePhone() == null || request.getRepresentativePhone().isBlank()) {
-            throw new IllegalParameterException("Representative phone is required");
-        }
-        if (request.getRepresentativeEmail() == null || request.getRepresentativeEmail().isBlank()) {
-            throw new IllegalParameterException("Representative email is required");
-        }
 
         // Validate email format
         if (!EMAIL_PATTERN.matcher(request.getContactEmail()).matches()) {
             throw new IllegalParameterException("Invalid contact email format");
         }
-        if (!EMAIL_PATTERN.matcher(request.getRepresentativeEmail()).matches()) {
-            throw new IllegalParameterException("Invalid representative email format");
-        }
 
         // Validate phone format
         if (!PHONE_PATTERN.matcher(request.getHotline().replaceAll("[\\s-]", "")).matches()) {
             throw new IllegalParameterException("Invalid hotline format");
-        }
-        if (!PHONE_PATTERN.matcher(request.getRepresentativePhone().replaceAll("[\\s-]", "")).matches()) {
-            throw new IllegalParameterException("Invalid representative phone format");
         }
 
 
@@ -191,10 +168,6 @@ public class TheaterService {
                 .closeTime(theater.getCloseTime())
                 .overnight(theater.getOvernight())
                 .information(theater.getInformation())
-                .representativeName(theater.getRepresentativeName())
-                .representativeTitle(theater.getRepresentativeTitle())
-                .representativePhone(theater.getRepresentativePhone())
-                .representativeEmail(theater.getRepresentativeEmail())
                 .createdBy(theater.getCreatedBy())
                 .updatedBy(theater.getUpdatedBy())
                 .build();
@@ -215,10 +188,6 @@ public class TheaterService {
                 .closeTime(LocalTime.of(23, 30))
                 .overnight(false)
                 .information("Rạp chiếu phim hiện đại với công nghệ âm thanh và hình ảnh tốt nhất. Phục vụ khách hàng 7 ngày trong tuần với đa dạng thể loại phim từ Hollywood đến phim Việt Nam.")
-                .representativeName("Nguyễn Văn An")
-                .representativeTitle("Giám đốc điều hành")
-                .representativePhone("0901234567")
-                .representativeEmail("manager@cineshow.vn")
                 .createdBy("system")
                 .updatedBy("system")
                 .build();
