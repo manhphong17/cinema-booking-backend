@@ -51,6 +51,7 @@ public enum ErrorCode {
     ROOM_IN_USE(1043, "Room is in use and cannot be deleted"),
     ROOM_TYPE_HAS_SHOWTIMES(1045, "Cannot modify or deactivate room type because it is associated with active showtimes"),
     ROOM_SIZE_EXCEEDED(1044, "Room size exceeds the maximum"),
+    ROOM_TYPE_INACTIVE(1046, "Cannot activate room because its room type is inactive"),
 
 
     SHOW_TIME_NOT_FOUND(3001, "Show time not found"),
