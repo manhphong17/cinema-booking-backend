@@ -34,10 +34,11 @@ public class TheaterService {
     /**
      * GET /api/theater_details
      * Lấy thông tin cấu hình theater (single row, id = 1)
+     * Nếu chưa có dữ liệu, tạo theater mặc định
      */
     public TheaterResponse getTheaterDetails() {
         Theater theater = theaterRepository.findById(1L)
-                .orElseThrow(() -> new ResourceNotFoundException("Theater configuration not found"));
+                .orElseGet(() -> createDefaultTheater());
 
         return mapToResponse(theater);
     }
@@ -51,12 +52,12 @@ public class TheaterService {
         // Validate input
         validateTheaterRequest(request);
 
-        // Get existing theater
+        // Get existing theater or create default if not found
         Theater theater = theaterRepository.findById(1L)
-                .orElseThrow(() -> new ResourceNotFoundException("Theater configuration not found"));
+                .orElseGet(() -> createDefaultTheater());
 
         // Log changes before updating
-        String updatedBy = request.getUpdatedBy() != null ? request.getUpdatedBy() : "system";
+        String updatedBy = "system";
         logFieldChange(theater.getId(), "name", theater.getName(), request.getName(), updatedBy);
         logFieldChange(theater.getId(), "address", theater.getAddress(), request.getAddress(), updatedBy);
         logFieldChange(theater.getId(), "hotline", theater.getHotline(), request.getHotline(), updatedBy);
@@ -65,12 +66,7 @@ public class TheaterService {
         logFieldChange(theater.getId(), "openTime", theater.getOpenTime(), request.getOpenTime(), updatedBy);
         logFieldChange(theater.getId(), "closeTime", theater.getCloseTime(), request.getCloseTime(), updatedBy);
         logFieldChange(theater.getId(), "overnight", theater.getOvernight(), Boolean.TRUE.equals(request.getOvernight()), updatedBy);
-        logFieldChange(theater.getId(), "bannerUrl", theater.getBannerUrl(), request.getBannerUrl(), updatedBy);
         logFieldChange(theater.getId(), "information", theater.getInformation(), request.getInformation(), updatedBy);
-        logFieldChange(theater.getId(), "representativeName", theater.getRepresentativeName(), request.getRepresentativeName(), updatedBy);
-        logFieldChange(theater.getId(), "representativeTitle", theater.getRepresentativeTitle(), request.getRepresentativeTitle(), updatedBy);
-        logFieldChange(theater.getId(), "representativePhone", theater.getRepresentativePhone(), request.getRepresentativePhone(), updatedBy);
-        logFieldChange(theater.getId(), "representativeEmail", theater.getRepresentativeEmail(), request.getRepresentativeEmail(), updatedBy);
 
         // Update fields
         theater.setName(request.getName());
@@ -81,13 +77,8 @@ public class TheaterService {
         theater.setOpenTime(request.getOpenTime());
         theater.setCloseTime(request.getCloseTime());
         theater.setOvernight(Boolean.TRUE.equals(request.getOvernight()));
-        theater.setBannerUrl(request.getBannerUrl());
         theater.setInformation(request.getInformation());
-        theater.setRepresentativeName(request.getRepresentativeName());
-        theater.setRepresentativeTitle(request.getRepresentativeTitle());
-        theater.setRepresentativePhone(request.getRepresentativePhone());
-        theater.setRepresentativeEmail(request.getRepresentativeEmail());
-        theater.setUpdatedBy(request.getUpdatedBy());
+        theater.setUpdatedBy(updatedBy);
 
         // Save and return
         Theater saved = theaterRepository.save(theater);
@@ -124,30 +115,15 @@ public class TheaterService {
         if (request.getCloseTime() == null) {
             throw new IllegalParameterException("Close time is required");
         }
-        if (request.getRepresentativeName() == null || request.getRepresentativeName().isBlank()) {
-            throw new IllegalParameterException("Representative name is required");
-        }
-        if (request.getRepresentativePhone() == null || request.getRepresentativePhone().isBlank()) {
-            throw new IllegalParameterException("Representative phone is required");
-        }
-        if (request.getRepresentativeEmail() == null || request.getRepresentativeEmail().isBlank()) {
-            throw new IllegalParameterException("Representative email is required");
-        }
 
         // Validate email format
         if (!EMAIL_PATTERN.matcher(request.getContactEmail()).matches()) {
             throw new IllegalParameterException("Invalid contact email format");
         }
-        if (!EMAIL_PATTERN.matcher(request.getRepresentativeEmail()).matches()) {
-            throw new IllegalParameterException("Invalid representative email format");
-        }
 
         // Validate phone format
         if (!PHONE_PATTERN.matcher(request.getHotline().replaceAll("[\\s-]", "")).matches()) {
             throw new IllegalParameterException("Invalid hotline format");
-        }
-        if (!PHONE_PATTERN.matcher(request.getRepresentativePhone().replaceAll("[\\s-]", "")).matches()) {
-            throw new IllegalParameterException("Invalid representative phone format");
         }
 
 
@@ -191,14 +167,31 @@ public class TheaterService {
                 .openTime(theater.getOpenTime())
                 .closeTime(theater.getCloseTime())
                 .overnight(theater.getOvernight())
-                .bannerUrl(theater.getBannerUrl())
                 .information(theater.getInformation())
-                .representativeName(theater.getRepresentativeName())
-                .representativeTitle(theater.getRepresentativeTitle())
-                .representativePhone(theater.getRepresentativePhone())
-                .representativeEmail(theater.getRepresentativeEmail())
                 .createdBy(theater.getCreatedBy())
                 .updatedBy(theater.getUpdatedBy())
                 .build();
+    }
+
+    /**
+     * Tạo theater mặc định khi chưa có dữ liệu
+     */
+    private Theater createDefaultTheater() {
+        Theater defaultTheater = Theater.builder()
+                .id(1L)
+                .name("CineShow Cinema")
+                .address("123 Nguyễn Huệ, Quận 1, TP.HCM")
+                .hotline("028-3822-3456")
+                .contactEmail("info@cineshow.vn")
+                .googleMapUrl("https://maps.google.com/cineshow-cinema")
+                .openTime(LocalTime.of(8, 0))
+                .closeTime(LocalTime.of(23, 30))
+                .overnight(false)
+                .information("Rạp chiếu phim hiện đại với công nghệ âm thanh và hình ảnh tốt nhất. Phục vụ khách hàng 7 ngày trong tuần với đa dạng thể loại phim từ Hollywood đến phim Việt Nam.")
+                .createdBy("system")
+                .updatedBy("system")
+                .build();
+
+        return theaterRepository.save(defaultTheater);
     }
 }

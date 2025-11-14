@@ -8,7 +8,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import vn.cineshow.dto.response.theater.TheaterUpdateHistoryResponse;
+import vn.cineshow.model.Theater;
 import vn.cineshow.model.TheaterUpdateHistory;
+import vn.cineshow.repository.TheaterRepository;
 import vn.cineshow.repository.TheaterUpdateHistoryRepository;
 
 import java.time.LocalDateTime;
@@ -21,6 +23,7 @@ import java.util.Objects;
 public class TheaterUpdateHistoryService {
 
     private final TheaterUpdateHistoryRepository historyRepository;
+    private final TheaterRepository theaterRepository;
 
     /**
      * Ghi lại lịch sử thay đổi
@@ -32,8 +35,13 @@ public class TheaterUpdateHistoryService {
             return;
         }
 
+        // Lấy theater entity để set quan hệ
+        Theater theater = theaterRepository.findById(theaterId)
+                .orElseThrow(() -> new RuntimeException("Theater not found with id: " + theaterId));
+
         TheaterUpdateHistory history = TheaterUpdateHistory.builder()
-                .theaterId(theaterId)
+                .theater(theater) // Set entity để tạo quan hệ JPA
+                .theaterId(theaterId) // Set theaterId để JPA có thể insert
                 .updatedField(fieldName)
                 .oldValue(convertToString(oldValue))
                 .newValue(convertToString(newValue))

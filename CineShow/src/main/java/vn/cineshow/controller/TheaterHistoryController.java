@@ -29,7 +29,6 @@ public class TheaterHistoryController {
      * Lấy lịch sử thay đổi của theater với phân trang
      */
     @GetMapping
-    @PreAuthorize("hasAuthority('BUSINESS')")
     public ResponseData<Map<String, Object>> getHistory(
             @RequestParam(defaultValue = "1") Long theaterId,
             @RequestParam(defaultValue = "1") int page,
@@ -55,7 +54,6 @@ public class TheaterHistoryController {
      * Lấy lịch sử trong khoảng thời gian
      */
     @GetMapping("/by-date-range")
-    @PreAuthorize("hasAuthority('BUSINESS')")
     public ResponseData<Map<String, Object>> getHistoryByDateRange(
             @RequestParam(defaultValue = "1") Long theaterId,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,

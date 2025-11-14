@@ -1,6 +1,8 @@
 package vn.cineshow.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 import vn.cineshow.enums.ConcessionStatus;
@@ -34,6 +36,8 @@ public class Concession extends AbstractEntity implements Serializable {
     @JoinColumn(name = "concession_type_id", nullable = false)
     private ConcessionType concessionType;
 
+    @Min(0)
+    @Max(10000)
     private int unitInStock;
 
     @Enumerated(EnumType.STRING)

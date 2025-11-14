@@ -56,23 +56,4 @@ public class TheaterRequest {
     String bannerUrl; // cho phép FE gửi lại khi đã upload
 
     String information; // Thông tin thêm về rạp
-
-    @NotBlank(message = "Representative name is required")
-    @Size(max = 100, message = "Representative name must not exceed 100 characters")
-    String representativeName;
-
-    @Size(max = 100, message = "Representative title must not exceed 100 characters")
-    String representativeTitle;
-
-    @NotBlank(message = "Representative phone is required")
-    @Size(max = 30, message = "Representative phone must not exceed 30 characters")
-    String representativePhone;
-
-    @NotBlank(message = "Representative email is required")
-    @Email(message = "Invalid representative email format")
-    @Size(max = 120, message = "Representative email must not exceed 120 characters")
-    String representativeEmail;
-
-    @Size(max = 60, message = "Updated by must not exceed 60 characters")
-    String updatedBy;
 }

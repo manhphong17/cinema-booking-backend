@@ -31,14 +31,8 @@ public class TheaterResponse {
     
     Boolean overnight;
 
-    String bannerUrl;
 
     String information;
-
-    String representativeName;
-    String representativeTitle;
-    String representativePhone;
-    String representativeEmail;
 
     String createdBy;
     String updatedBy;

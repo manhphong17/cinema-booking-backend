@@ -72,6 +72,20 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
                                                  LocalDateTime end,
                                                  Pageable pageable);
 
+    @EntityGraph(attributePaths = {
+            "user",
+            "user.account"
+    })
+    @Query("SELECT o FROM Order o " +
+            "WHERE (:userId IS NULL OR o.user.id = :userId) " +
+            "AND (:startDate IS NULL OR o.createdAt >= :startDate) " +
+            "AND (:endDate IS NULL OR o.createdAt <= :endDate) " +
+            "ORDER BY o.createdAt DESC")
+    Page<Order> findOrdersWithFilters(@Param("userId") Long userId,
+                                      @Param("startDate") LocalDateTime startDate,
+                                      @Param("endDate") LocalDateTime endDate,
+                                      Pageable pageable);
+
     // ================== DASHBOARD / STATS (V1) ==================
 
     // Đếm số order tạo trong khoảng thời gian
