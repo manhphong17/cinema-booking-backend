@@ -31,7 +31,6 @@ public class TheaterResponse {
     
     Boolean overnight;
 
-    String bannerUrl;
 
     String information;
 

@@ -5,7 +5,7 @@ spring:
   application:
     name: PHT Cinema VN
   profiles:
-    active: dev
+    active: prod
   jackson:
     time-zone: Asia/Ho_Chi_Minh
     date-format: yyyy-MM-dd HH:mm:ss

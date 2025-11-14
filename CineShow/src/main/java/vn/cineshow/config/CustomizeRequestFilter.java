@@ -1,11 +1,7 @@
 package vn.cineshow.config;
 
-import jakarta.servlet.FilterChain;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import java.io.IOException;
+
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -13,12 +9,17 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
+
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import vn.cineshow.enums.TokenType;
 import vn.cineshow.exception.TokenExpiredException;
 import vn.cineshow.service.JWTService;
 import vn.cineshow.service.impl.AccountDetailsService;
-
-import java.io.IOException;
 
 @Component
 @Slf4j(topic = "CUSTOMIZE-REQUEST-FILTER")
@@ -68,11 +69,25 @@ public class CustomizeRequestFilter extends OncePerRequestFilter {
         if ("OPTIONS".equalsIgnoreCase(request.getMethod())) return true;
         if ("websocket".equalsIgnoreCase(request.getHeader("Upgrade"))) return true; // native WS
         // Bỏ qua các endpoint WS/STOMP
-        return uri.startsWith("/ws-native")
+        if (uri.startsWith("/ws-native")
                 || uri.startsWith("/ws")
                 || uri.startsWith("/sockjs")
                 || uri.startsWith("/stomp")
-                || uri.startsWith("/websocket"); // đường dẫn nội bộ của SockJS
+                || uri.startsWith("/websocket")) {
+            return true; // đường dẫn nội bộ của SockJS
+        }
+        // Bỏ qua các public endpoints
+        return uri.startsWith("/auth")
+                || uri.startsWith("/oauth2")
+                || uri.startsWith("/swagger-ui")
+                || uri.startsWith("/v3/api-docs")
+                || uri.startsWith("/public")
+                || uri.startsWith("/actuator")
+                || uri.startsWith("/images")
+                || uri.startsWith("/uploads")
+                || uri.startsWith("/static")
+                || uri.startsWith("/img")
+                || uri.equals("/api/theater_details"); // Public endpoint - không cần authentication
     }
 
 
