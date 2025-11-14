@@ -24,6 +24,7 @@ import vn.cineshow.exception.AppException;
 import vn.cineshow.exception.ErrorCode;
 import vn.cineshow.model.*;
 import vn.cineshow.repository.OrderRepository;
+import vn.cineshow.repository.OrderConcessionRepository;
 import vn.cineshow.service.OrderQueryService;
 
 import javax.crypto.Mac;
@@ -41,6 +42,7 @@ import java.util.*;
 public class OrderController {
 
     private final OrderRepository orderRepository;
+    private final OrderConcessionRepository orderConcessionRepository;
     private final OrderQueryService orderQueryService;
 
     @GetMapping
@@ -126,6 +128,9 @@ public class OrderController {
         List<String> seats = (o.getTickets() == null)
                 ? List.of()
                 : o.getTickets().stream().map(this::safeSeatLabel).toList();
+        
+        // Lấy concessions cho order này
+        List<OrderConcessionItem> concessions = getConcessionsByOrderId(o.getId());
 
         // --- reservationCode: ưu tiên từ Ticket, nếu trống thì lấy từ payments (transactionNo/txnRef) ---
         String reservationCode = null;
@@ -170,6 +175,7 @@ public class OrderController {
                 .showtimeStart(start)
                 .showtimeEnd(end)
                 .seats(seats)
+                .concessions(concessions)
                 .totalPrice(o.getTotalPrice())
                 .orderStatus(o.getOrderStatus() != null ? o.getOrderStatus().name() : null)
                 .reservationCode(reservationCode)
@@ -273,6 +279,7 @@ public class OrderController {
         return OrderQrPayloadResponse.builder()
                 .orderId(o.getId())
                 .userId(o.getUser() != null ? o.getUser().getId() : null)
+                .userName(o.getUser() != null ? o.getUser().getName() : null)
                 .createdAt(o.getCreatedAt())
                 .totalPrice(o.getTotalPrice())
                 .status(o.getOrderStatus() != null ? o.getOrderStatus().name() : null)
@@ -432,6 +439,7 @@ public class OrderController {
             String room = safeRoomName(o);
             List<String> seats = o.getTickets() == null ? List.of()
                     : o.getTickets().stream().map(this::safeSeatLabel).toList();
+            List<OrderConcessionItem> concessions = getConcessionsByOrderId(o.getId());
 
             return OrderListItemResponse.builder()
                     .orderId(o.getId())
@@ -439,8 +447,10 @@ public class OrderController {
                     .userName(o.getUser() != null ? o.getUser().getName() : null)
                     .movieName(movie)
                     .showtimeStart(st)
+                    .code(o.getCode())
                     .roomName(room)
                     .seats(seats)
+                    .concessions(concessions)
                     .totalPrice(o.getTotalPrice())
                     .status(o.getOrderStatus() != null ? o.getOrderStatus().name() : null)
                     .build();
@@ -494,6 +504,28 @@ public class OrderController {
         String row = t.getSeat().getRow();
         String col = t.getSeat().getColumn();
         return (row != null ? row : "") + (col != null ? col : "");
+    }
+
+    private OrderConcessionItem mapToOrderConcessionItem(OrderConcession oc) {
+        if (oc == null || oc.getConcession() == null) return null;
+        return OrderConcessionItem.builder()
+                .name(oc.getConcession().getName())
+                .quantity(oc.getQuantity())
+                .unitPrice(oc.getUnitPrice())
+                .urlImage(oc.getConcession().getUrlImage())
+                .build();
+    }
+
+    private List<OrderConcessionItem> getConcessionsByOrderId(Long orderId) {
+        try {
+            List<OrderConcession> orderConcessions = orderConcessionRepository.findByOrderIdWithConcession(orderId);
+            return orderConcessions.stream()
+                    .map(this::mapToOrderConcessionItem)
+                    .toList();
+        } catch (Exception e) {
+            // Nếu có lỗi, trả về danh sách rỗng
+            return List.of();
+        }
     }
 
     @GetMapping("/sales")

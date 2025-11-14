@@ -12,6 +12,7 @@ import java.util.List;
 public class OrderQrPayloadResponse {
     Long orderId;
     Long userId;
+    String userName;
     LocalDateTime createdAt;
     Double totalPrice;
     String status;
