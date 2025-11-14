@@ -8,13 +8,16 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.support.TransactionTemplate;
 import vn.cineshow.dto.response.dashboard.*;
 import vn.cineshow.model.Account;
 import vn.cineshow.model.ActivityLog;
+import vn.cineshow.model.Order;
 import vn.cineshow.model.Role;
 import vn.cineshow.model.User;
 import vn.cineshow.repository.AccountRepository;
 import vn.cineshow.repository.ActivityLogRepository;
+import vn.cineshow.repository.OrderRepository;
 import vn.cineshow.repository.UserRepository;
 import vn.cineshow.service.DashboardService;
 
@@ -46,6 +49,8 @@ public class DashboardServiceImpl implements DashboardService {
     private final UserRepository userRepository;
     private final ActivityLogRepository activityLogRepository;
     private final AccountRepository accountRepository;
+    private final OrderRepository orderRepository;
+    private final TransactionTemplate transactionTemplate;
 
     // Hằng số cho "Phiên hoạt động" (ví dụ: 1 giờ qua)
     private static final int ACTIVE_SESSION_HOURS = 1;
@@ -400,16 +405,30 @@ public class DashboardServiceImpl implements DashboardService {
                 });
 
 
-        CompletableFuture<List<ActivityLog>> recentActivitiesFuture = CompletableFuture
+        CompletableFuture<List<RecentActivitySummaryDTO>> recentActivitiesFuture = CompletableFuture
                 .supplyAsync(() -> {
                     try {
-                        PageRequest pageable = PageRequest.of(0, recentSize, Sort.by(Sort.Direction.DESC, "createdAt"));
-                        return activityLogRepository.findActivitiesWithFilter(null, null, pageable).getContent();
+                        // Sử dụng TransactionTemplate để đảm bảo chạy trong transaction
+                        return transactionTemplate.execute(status -> {
+                            PageRequest pageable = PageRequest.of(0, recentSize, Sort.by(Sort.Direction.DESC, "createdAt"));
+                            List<ActivityLog> activities = activityLogRepository.findActivitiesWithFilter(null, null, pageable).getContent();
+                            // Map ngay trong transaction để tránh LazyInitializationException
+                            return activities.stream()
+                                    .map(log -> RecentActivitySummaryDTO.builder()
+                                            .timestamp(log.getCreatedAt())
+                                            .email(log.getUser() != null && log.getUser().getAccount() != null
+                                                    ? log.getUser().getAccount().getEmail()
+                                                    : "Unknown")
+                                            .action(log.getAction())
+                                            .description(log.getDescription())
+                                            .build())
+                                    .collect(Collectors.toList());
+                        });
                     } catch (Exception ex) {
                         log.error("Error getting recent activities", ex);
                         unavailableSources.add("recentActivities");
                         partial.set(true);
-                        return new ArrayList<ActivityLog>();
+                        return new ArrayList<RecentActivitySummaryDTO>();
                     }
                 })
                 .orTimeout(SOURCE_TIMEOUT_SECONDS, TimeUnit.SECONDS)
@@ -417,7 +436,7 @@ public class DashboardServiceImpl implements DashboardService {
                     log.error("Error getting recent activities", ex);
                     unavailableSources.add("recentActivities");
                     partial.set(true);
-                    return new ArrayList<ActivityLog>();
+                    return new ArrayList<RecentActivitySummaryDTO>();
                 });
 
         // Chờ tất cả hoàn thành với timeout tổng
@@ -438,7 +457,7 @@ public class DashboardServiceImpl implements DashboardService {
         long loginsToday = loginsTodayFuture.join();
         List<DailyStatDTO> registrations = registrationsFuture.join();
         List<DailyStatDTO> loginsDaily = loginsDailyFuture.join();
-        List<ActivityLog> recentActivities = recentActivitiesFuture.join();
+        List<RecentActivitySummaryDTO> recentActivitiesDTO = recentActivitiesFuture.join();
 
         // Tạo map cho dữ liệu biểu đồ
         Map<LocalDate, Long> registrationsMap = registrations.stream()
@@ -456,18 +475,6 @@ public class DashboardServiceImpl implements DashboardService {
                             .logins(loginsMap.getOrDefault(date, 0L))
                             .build();
                 })
-                .collect(Collectors.toList());
-
-        // Map recent activities
-        List<RecentActivitySummaryDTO> recentActivitiesDTO = recentActivities.stream()
-                .map(log -> RecentActivitySummaryDTO.builder()
-                        .timestamp(log.getCreatedAt())
-                        .email(log.getUser() != null && log.getUser().getAccount() != null
-                                ? log.getUser().getAccount().getEmail()
-                                : "Unknown")
-                        .action(log.getAction())
-                        .description(log.getDescription())
-                        .build())
                 .collect(Collectors.toList());
 
         boolean isPartial = partial.get();
@@ -502,6 +509,85 @@ public class DashboardServiceImpl implements DashboardService {
             log.warn("Invalid range format: {}, using default {}", range, CHART_DAYS);
             return CHART_DAYS;
         }
+    }
+
+    /**
+     * Lấy tất cả số liệu và chi tiết bao gồm số account, số order và danh sách order với thông tin người tạo.
+     */
+    @Override
+    @org.springframework.transaction.annotation.Transactional(readOnly = true)
+    public StatisticsResponseDTO getStatistics(Long userId, String startDate, String endDate, int page, int size) {
+        log.info("Getting statistics - userId: {}, startDate: {}, endDate: {}, page: {}, size: {}",
+                userId, startDate, endDate, page, size);
+
+        // Parse dates
+        LocalDateTime startDateTime = parseDate(startDate, true);
+        LocalDateTime endDateTime = parseDate(endDate, false);
+
+        // Get total accounts count
+        long totalAccounts = accountRepository.count();
+
+        // Get total orders count (with filters)
+        long totalOrders;
+        if (userId != null && startDateTime != null && endDateTime != null) {
+            totalOrders = orderRepository.findOrdersWithFilters(userId, startDateTime, endDateTime,
+                    Pageable.unpaged()).getTotalElements();
+        } else if (userId != null) {
+            // Count orders by user only
+            totalOrders = orderRepository.findByUser_IdOrderByCreatedAtDesc(userId, Pageable.unpaged())
+                    .getTotalElements();
+        } else if (startDateTime != null && endDateTime != null) {
+            totalOrders = orderRepository.countByCreatedAtBetween(startDateTime, endDateTime);
+        } else {
+            totalOrders = orderRepository.count();
+        }
+
+        // Get paginated orders with filters
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+        Page<Order> ordersPage = orderRepository.findOrdersWithFilters(
+                userId, startDateTime, endDateTime, pageable);
+
+        // Map orders to DTOs
+        List<OrderItemDTO> orderItems = ordersPage.getContent().stream()
+                .map(this::mapToOrderItemDTO)
+                .collect(Collectors.toList());
+
+        log.info("Statistics retrieved - totalAccounts: {}, totalOrders: {}, orders in page: {}",
+                totalAccounts, totalOrders, orderItems.size());
+
+        return StatisticsResponseDTO.builder()
+                .totalAccounts(totalAccounts)
+                .totalOrders(totalOrders)
+                .orders(orderItems)
+                .currentPage(ordersPage.getNumber())
+                .totalPages(ordersPage.getTotalPages())
+                .totalElements(ordersPage.getTotalElements())
+                .pageSize(ordersPage.getSize())
+                .build();
+    }
+
+    /**
+     * [Hàm nội bộ] Map Order entity sang OrderItemDTO.
+     * @param order Order entity
+     * @return OrderItemDTO
+     */
+    private OrderItemDTO mapToOrderItemDTO(Order order) {
+        User user = order.getUser();
+        String userEmail = null;
+        if (user != null && user.getAccount() != null) {
+            userEmail = user.getAccount().getEmail();
+        }
+
+        return OrderItemDTO.builder()
+                .orderId(order.getId())
+                .orderCode(order.getCode())
+                .createdAt(order.getCreatedAt())
+                .totalPrice(order.getTotalPrice())
+                .orderStatus(order.getOrderStatus() != null ? order.getOrderStatus().name() : null)
+                .userId(user != null ? user.getId() : null)
+                .userName(user != null ? user.getName() : null)
+                .userEmail(userEmail)
+                .build();
     }
 
 }

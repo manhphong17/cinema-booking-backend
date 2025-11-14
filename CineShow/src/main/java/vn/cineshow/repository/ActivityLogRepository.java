@@ -5,6 +5,7 @@ package vn.cineshow.repository;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -47,11 +48,13 @@ public interface ActivityLogRepository extends JpaRepository<ActivityLog, Long> 
 
     /**
      * Lấy hoạt động với phân trang và lọc theo khoảng thời gian.
+     * Sử dụng EntityGraph để eager fetch User và Account để tránh LazyInitializationException.
      * @param startDate Thời điểm bắt đầu (nullable)
      * @param endDate Thời điểm kết thúc (nullable)
      * @param pageable Thông tin phân trang
      * @return Page chứa danh sách ActivityLog
      */
+    @EntityGraph(attributePaths = {"user", "user.account"})
     @Query("SELECT a FROM ActivityLog a WHERE " +
             "(:startDate IS NULL OR a.createdAt >= :startDate) AND " +
             "(:endDate IS NULL OR a.createdAt <= :endDate) " +

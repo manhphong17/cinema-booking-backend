@@ -40,4 +40,15 @@ public interface DashboardService {
      * @return DashboardSummaryResponse chứa metrics, biểu đồ, và hoạt động gần đây
      */
     DashboardSummaryResponse getSummary(String range, int recentSize, String timezone);
+
+    /**
+     * Lấy tất cả số liệu và chi tiết bao gồm số account, số order và danh sách order với thông tin người tạo.
+     * @param userId Lọc theo user ID (optional, null để lấy tất cả)
+     * @param startDate Ngày bắt đầu lọc (format: yyyy-MM-dd), optional
+     * @param endDate Ngày kết thúc lọc (format: yyyy-MM-dd), optional
+     * @param page Số trang (bắt đầu từ 0)
+     * @param size Số lượng items mỗi trang
+     * @return StatisticsResponseDTO chứa số account, số order và danh sách order
+     */
+    vn.cineshow.dto.response.dashboard.StatisticsResponseDTO getStatistics(Long userId, String startDate, String endDate, int page, int size);
 }

@@ -28,7 +28,7 @@ public class TheaterController {
     /**
      * GET /api/theater_details
      * Lấy thông tin cấu hình theater hiện tại
-     * Public endpoint - có thể truy cập từ trang home
+     * Requires ADMIN authority
      */
     @GetMapping("/theater_details")
     public ResponseData<TheaterResponse> getTheaterDetails() {
@@ -45,7 +45,6 @@ public class TheaterController {
      * Cập nhật thông tin theater (Admin only)
      */
     @PutMapping("/theater_details")
-    @PreAuthorize("hasAuthority('BUSINESS')")
     public ResponseData<TheaterResponse> updateTheaterDetails(
             @Valid @RequestBody TheaterRequest request
     ) {

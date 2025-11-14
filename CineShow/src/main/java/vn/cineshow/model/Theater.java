@@ -6,6 +6,7 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.time.LocalTime;
+import java.util.List;
 
 @Getter
 @Setter
@@ -54,23 +55,14 @@ public class Theater {
     @Column(name = "information", columnDefinition = "TEXT")
     String information;
 
-    // ==== Người đại diện ====
-    @Column(name = "rep_name", nullable = false, length = 100)
-    String representativeName;
-
-    @Column(name = "rep_title", length = 100)
-    String representativeTitle;
-
-    @Column(name = "rep_phone", nullable = false, length = 30)
-    String representativePhone;
-
-    @Column(name = "rep_email", nullable = false, length = 120)
-    String representativeEmail;
-
     // ==== Audit cơ bản (nếu bạn có AbstractEntity thì thay thế) ====
     @Column(name = "created_by", length = 60)
     String createdBy;
 
     @Column(name = "updated_by", length = 60)
     String updatedBy;
+
+    // ==== Lịch sử thay đổi ====
+    @OneToMany(mappedBy = "theater", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    List<TheaterUpdateHistory> updateHistories;
 }
