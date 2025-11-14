@@ -9,6 +9,8 @@ import org.springframework.stereotype.Repository;
 import vn.cineshow.enums.RoomStatus;
 import vn.cineshow.model.Room;
 
+import java.util.List;
+
 @Repository
 public interface RoomRepository extends JpaRepository<Room, Long>, JpaSpecificationExecutor<Room> {
 
@@ -36,4 +38,6 @@ public interface RoomRepository extends JpaRepository<Room, Long>, JpaSpecificat
     boolean existsByNameIgnoreCase(String name);
 
     Object findByRoomType_Id(Long roomTypeId, Sort sort);
+
+    List<Room> findAllByRoomType_Id(Long roomTypeId);
 }

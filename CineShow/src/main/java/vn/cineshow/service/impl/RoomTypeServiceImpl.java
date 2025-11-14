@@ -8,8 +8,10 @@ import vn.cineshow.dto.request.room.RoomTypeCreateRequest;
 import vn.cineshow.dto.request.room.RoomTypeUpdateRequest;
 import vn.cineshow.dto.response.room.room_type.RoomTypeDTO;
 import vn.cineshow.dto.response.room.room_type.RoomTypeResponse;
+import vn.cineshow.enums.RoomStatus;
 import vn.cineshow.exception.AppException;
 import vn.cineshow.exception.ErrorCode;
+import vn.cineshow.model.Room;
 import vn.cineshow.model.RoomType;
 import vn.cineshow.repository.RoomRepository;
 import vn.cineshow.repository.RoomTypeRepository;
@@ -88,7 +90,7 @@ public class RoomTypeServiceImpl implements RoomTypeService {
     public RoomTypeResponse update(Long id, RoomTypeUpdateRequest req) {
         var e = roomTypeRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.ROOM_TYPE_NOT_FOUND));
         if (showTimeRepository.existsByRoom_RoomType_Id(id)) {
-            throw new AppException(ErrorCode.ROOM_TYPE_IN_USE);
+            throw new AppException(ErrorCode.ROOM_TYPE_HAS_SHOWTIMES);
         }
         if (req.getName() == null || req.getName().isBlank()) throw new AppException(ErrorCode.INVALID_PARAMETER);
         var newName = req.getName().trim();
@@ -105,7 +107,7 @@ public class RoomTypeServiceImpl implements RoomTypeService {
     public RoomTypeResponse patch(Long id, RoomTypeUpdateRequest req) {
         var e = roomTypeRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.ROOM_TYPE_NOT_FOUND));
         if (showTimeRepository.existsByRoom_RoomType_Id(id)) {
-            throw new AppException(ErrorCode.ROOM_TYPE_IN_USE);
+            throw new AppException(ErrorCode.ROOM_TYPE_HAS_SHOWTIMES);
         }
         if (req.getName() != null) {
             var newName = req.getName().trim();
@@ -123,7 +125,7 @@ public class RoomTypeServiceImpl implements RoomTypeService {
             throw new AppException(ErrorCode.ROOM_TYPE_NOT_FOUND);
         }
         if (showTimeRepository.existsByRoom_RoomType_Id(id)) {
-            throw new AppException(ErrorCode.ROOM_TYPE_IN_USE);
+            throw new AppException(ErrorCode.ROOM_TYPE_HAS_SHOWTIMES);
         }
         if (roomRepository.findByRoomType_Id(id, Sort.unsorted()) != null) {
             throw new AppException(ErrorCode.ROOM_TYPE_IN_USE);
@@ -134,7 +136,17 @@ public class RoomTypeServiceImpl implements RoomTypeService {
     @Override @Transactional public RoomTypeResponse activate(Long id)   { var e = roomTypeRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.ROOM_TYPE_NOT_FOUND)); e.setActive(true);  return map(e); }
     @Override @Transactional public RoomTypeResponse deactivate(Long id) {
         if (showTimeRepository.existsByRoom_RoomType_Id(id)) {
-            throw new AppException(ErrorCode.ROOM_TYPE_IN_USE);
+            throw new AppException(ErrorCode.ROOM_TYPE_HAS_SHOWTIMES);
         }
-        var e = roomTypeRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.ROOM_TYPE_NOT_FOUND)); e.setActive(false); return map(e); }
+        var e = roomTypeRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.ROOM_TYPE_NOT_FOUND));
+        e.setActive(false);
+
+        List<Room> roomsToDeactivate = roomRepository.findAllByRoomType_Id(id);
+        for (Room room : roomsToDeactivate) {
+            room.setStatus(RoomStatus.INACTIVE);
+        }
+        roomRepository.saveAll(roomsToDeactivate);
+
+        return map(e);
+    }
 }
