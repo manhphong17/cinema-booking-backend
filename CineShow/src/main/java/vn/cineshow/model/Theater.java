@@ -22,13 +22,13 @@ public class Theater {
     Long id; // = 1L (single row)
 
     // ==== Thông tin cơ bản ====
-    @Column(nullable = false, length = 100)
+    @Column(name = "name", nullable = false, length = 100)
     String name;
 
-    @Column(nullable = false, length = 255)
+    @Column(name = "address", nullable = false, length = 255)
     String address;
 
-    @Column(nullable = false, length = 30)
+    @Column(name = "hotline", nullable = false, length = 30)
     String hotline;
 
     @Column(name = "contact_email", nullable = false, length = 120)
@@ -49,9 +49,6 @@ public class Theater {
     @Column(name = "overnight", nullable = false)
     Boolean overnight = Boolean.FALSE;
 
-    // ==== Banner ====
-    @Column(name = "banner_url", length = 512)
-    String bannerUrl;
 
     // ==== Thông tin ====
     @Column(name = "information", columnDefinition = "TEXT")

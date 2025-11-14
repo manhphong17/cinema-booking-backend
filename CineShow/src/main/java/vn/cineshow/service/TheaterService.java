@@ -34,10 +34,11 @@ public class TheaterService {
     /**
      * GET /api/theater_details
      * Lấy thông tin cấu hình theater (single row, id = 1)
+     * Nếu chưa có dữ liệu, tạo theater mặc định
      */
     public TheaterResponse getTheaterDetails() {
         Theater theater = theaterRepository.findById(1L)
-                .orElseThrow(() -> new ResourceNotFoundException("Theater configuration not found"));
+                .orElseGet(() -> createDefaultTheater());
 
         return mapToResponse(theater);
     }
@@ -51,9 +52,9 @@ public class TheaterService {
         // Validate input
         validateTheaterRequest(request);
 
-        // Get existing theater
+        // Get existing theater or create default if not found
         Theater theater = theaterRepository.findById(1L)
-                .orElseThrow(() -> new ResourceNotFoundException("Theater configuration not found"));
+                .orElseGet(() -> createDefaultTheater());
 
         // Log changes before updating
         String updatedBy = request.getUpdatedBy() != null ? request.getUpdatedBy() : "system";
@@ -65,7 +66,6 @@ public class TheaterService {
         logFieldChange(theater.getId(), "openTime", theater.getOpenTime(), request.getOpenTime(), updatedBy);
         logFieldChange(theater.getId(), "closeTime", theater.getCloseTime(), request.getCloseTime(), updatedBy);
         logFieldChange(theater.getId(), "overnight", theater.getOvernight(), Boolean.TRUE.equals(request.getOvernight()), updatedBy);
-        logFieldChange(theater.getId(), "bannerUrl", theater.getBannerUrl(), request.getBannerUrl(), updatedBy);
         logFieldChange(theater.getId(), "information", theater.getInformation(), request.getInformation(), updatedBy);
         logFieldChange(theater.getId(), "representativeName", theater.getRepresentativeName(), request.getRepresentativeName(), updatedBy);
         logFieldChange(theater.getId(), "representativeTitle", theater.getRepresentativeTitle(), request.getRepresentativeTitle(), updatedBy);
@@ -81,7 +81,6 @@ public class TheaterService {
         theater.setOpenTime(request.getOpenTime());
         theater.setCloseTime(request.getCloseTime());
         theater.setOvernight(Boolean.TRUE.equals(request.getOvernight()));
-        theater.setBannerUrl(request.getBannerUrl());
         theater.setInformation(request.getInformation());
         theater.setRepresentativeName(request.getRepresentativeName());
         theater.setRepresentativeTitle(request.getRepresentativeTitle());
@@ -191,7 +190,6 @@ public class TheaterService {
                 .openTime(theater.getOpenTime())
                 .closeTime(theater.getCloseTime())
                 .overnight(theater.getOvernight())
-                .bannerUrl(theater.getBannerUrl())
                 .information(theater.getInformation())
                 .representativeName(theater.getRepresentativeName())
                 .representativeTitle(theater.getRepresentativeTitle())
@@ -200,5 +198,31 @@ public class TheaterService {
                 .createdBy(theater.getCreatedBy())
                 .updatedBy(theater.getUpdatedBy())
                 .build();
+    }
+
+    /**
+     * Tạo theater mặc định khi chưa có dữ liệu
+     */
+    private Theater createDefaultTheater() {
+        Theater defaultTheater = Theater.builder()
+                .id(1L)
+                .name("CineShow Cinema")
+                .address("123 Nguyễn Huệ, Quận 1, TP.HCM")
+                .hotline("028-3822-3456")
+                .contactEmail("info@cineshow.vn")
+                .googleMapUrl("https://maps.google.com/cineshow-cinema")
+                .openTime(LocalTime.of(8, 0))
+                .closeTime(LocalTime.of(23, 30))
+                .overnight(false)
+                .information("Rạp chiếu phim hiện đại với công nghệ âm thanh và hình ảnh tốt nhất. Phục vụ khách hàng 7 ngày trong tuần với đa dạng thể loại phim từ Hollywood đến phim Việt Nam.")
+                .representativeName("Nguyễn Văn An")
+                .representativeTitle("Giám đốc điều hành")
+                .representativePhone("0901234567")
+                .representativeEmail("manager@cineshow.vn")
+                .createdBy("system")
+                .updatedBy("system")
+                .build();
+
+        return theaterRepository.save(defaultTheater);
     }
 }

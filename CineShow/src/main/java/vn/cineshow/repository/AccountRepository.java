@@ -1,5 +1,8 @@
 package vn.cineshow.repository;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -8,6 +11,7 @@ import org.springframework.stereotype.Repository;
 import vn.cineshow.model.Account;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -52,4 +56,19 @@ public interface AccountRepository extends JpaRepository<Account, Long> {
             @Param("startDate") LocalDateTime startDate,
             @Param("endDate") LocalDateTime endDate,
             org.springframework.data.domain.Pageable pageable);
+    // Dùng cho đăng nhập/xác thực (CHỈ lấy bản ghi chưa xóa mềm)
+    Optional<Account> findByEmailAndIsDeletedFalse(String email);
+
+    // Kiểm tra tồn tại email (chỉ với bản ghi chưa xóa mềm)
+    boolean existsByEmailAndIsDeletedFalse(String email);
+
+    // Lấy theo id (chỉ với bản ghi chưa xóa mềm)
+    Optional<Account> findByIdAndIsDeletedFalse(Long id);
+
+    // Liệt kê (chỉ với bản ghi chưa xóa mềm)
+    Page<Account> findAllByIsDeletedFalse(Pageable pageable);
+
+    @EntityGraph(attributePaths = {"user", "roles"})
+    Page<Account> findAll(Pageable pageable);
+
 }
