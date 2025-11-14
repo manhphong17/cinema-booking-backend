@@ -68,8 +68,8 @@ public class SecurityConfig {
                 "/movies/*",
                 "/payment/ipn",
                 "/images/**", "/uploads/**", "/static/**", "/img/**",
-                "/bookings/movies/**"
-
+                "/bookings/movies/**",
+                "/api/theater_details"
         );
 
         http

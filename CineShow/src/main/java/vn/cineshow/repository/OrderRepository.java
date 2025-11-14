@@ -204,4 +204,17 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
         """)
     Long getConcessionSoldByDate(@Param("start") LocalDateTime start,
                                  @Param("end") LocalDateTime end);
+
+
+    @Query("""
+        SELECT DISTINCT o FROM Order o
+        LEFT JOIN FETCH o.tickets t
+        LEFT JOIN FETCH t.seat s
+        LEFT JOIN FETCH s.seatType
+        LEFT JOIN FETCH t.showTime st
+        LEFT JOIN FETCH st.movie m
+        LEFT JOIN FETCH st.room r
+        WHERE o.code = :code
+        """)
+    Optional<Order> findByCodeWithTickets(@Param("code") String code);
 }
