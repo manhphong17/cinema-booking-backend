@@ -11,7 +11,6 @@ import vn.cineshow.dto.request.theater.TheaterRequest;
 import vn.cineshow.dto.response.ResponseData;
 import vn.cineshow.dto.response.theater.BannerUploadResponse;
 import vn.cineshow.dto.response.theater.TheaterResponse;
-import vn.cineshow.service.TheaterBannerService;
 import vn.cineshow.service.TheaterService;
 
 import java.io.IOException;
@@ -25,7 +24,6 @@ import java.io.IOException;
 public class TheaterController {
 
     private final TheaterService theaterService;
-    private final TheaterBannerService theaterBannerService;
 
     /**
      * GET /api/theater_details
@@ -59,38 +57,8 @@ public class TheaterController {
         );
     }
 
-    /**
-     * POST /api/theater_banner
-     * Upload banner image (Admin only)
-     * Kiểm tra MIME type, size, và aspect ratio
-     */
-    @PostMapping(value = "/theater_banner", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @PreAuthorize("hasAuthority('BUSINESS')")
-    public ResponseData<BannerUploadResponse> uploadBanner(
-            @RequestParam("file") MultipartFile file
-    ) throws IOException {
-        BannerUploadResponse response = theaterBannerService.uploadBanner(file);
-        return new ResponseData<>(
-                HttpStatus.OK.value(),
-                "Banner uploaded successfully",
-                response
-        );
-    }
 
-    /**
-     * DELETE /api/theater_banner
-     * Xóa banner hiện tại (Admin only)
-     * Xóa file trên S3 và gỡ liên kết trong database
-     */
-    @DeleteMapping("/theater_banner")
-    @PreAuthorize("hasAuthority('BUSINESS')")
-    public ResponseData<Void> deleteBanner() {
-        theaterBannerService.deleteBanner();
-        return new ResponseData<>(
-                HttpStatus.OK.value(),
-                "Banner deleted successfully",
-                null
-        );
-    }
+
+
 
 }

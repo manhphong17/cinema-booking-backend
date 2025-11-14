@@ -71,28 +71,28 @@ spring:
       enabled: true
       path: /h2-console
 
-  datasource:
-    url: jdbc:mysql://cineshow-db.cxg2yw8kealb.ap-southeast-1.rds.amazonaws.com:3306/cineshow?useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC
-    username: admin
-    password: Bimatcuaphong
-    driver-class-name: com.mysql.cj.jdbc.Driver
-    hikari:
-      maximum-pool-size: 15          # Tăng lên 15 connection để xử lý nhiều request đồng thời
-      minimum-idle: 5                # Tăng lên 5 connection sẵn sàng
-      idle-timeout: 300000           # 5 phút không dùng -> đóng
-      max-lifetime: 1200000          # 20 phút -> đóng và tạo mới
-      connection-timeout: 60000      # Tăng lên 60s timeout (AWS RDS có thể chậm do network latency)
-      validation-timeout: 10000       # Tăng lên 10s cho việc kiểm tra connection
-      pool-name: HikariPool-CineShow
-      # Tối ưu cho AWS RDS: thêm các tham số để giảm latency
-      connection-test-query: SELECT 1
-      leak-detection-threshold: 60000 # Phát hiện connection leak sau 60s
-
 #  datasource:
-#    url: jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_NAME:cineshow}?useUnicode=true&characterEncoding=UTF-8&createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Ho_Chi_Minh
-#    username: ${DB_USER:root}
-#    password: ${DB_PASS:}
+#    url: jdbc:mysql://cineshow-db.cxg2yw8kealb.ap-southeast-1.rds.amazonaws.com:3306/cineshow?useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC
+#    username: admin
+#    password: Bimatcuaphong
 #    driver-class-name: com.mysql.cj.jdbc.Driver
+#    hikari:
+#      maximum-pool-size: 15          # Tăng lên 15 connection để xử lý nhiều request đồng thời
+#      minimum-idle: 5                # Tăng lên 5 connection sẵn sàng
+#      idle-timeout: 300000           # 5 phút không dùng -> đóng
+#      max-lifetime: 1200000          # 20 phút -> đóng và tạo mới
+#      connection-timeout: 60000      # Tăng lên 60s timeout (AWS RDS có thể chậm do network latency)
+#      validation-timeout: 10000       # Tăng lên 10s cho việc kiểm tra connection
+#      pool-name: HikariPool-CineShow
+#      # Tối ưu cho AWS RDS: thêm các tham số để giảm latency
+#      connection-test-query: SELECT 1
+#      leak-detection-threshold: 60000 # Phát hiện connection leak sau 60s
+
+  datasource:
+    url: jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_NAME:cineshow}?useUnicode=true&characterEncoding=UTF-8&createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Ho_Chi_Minh
+    username: ${DB_USER:root}
+    password: ${DB_PASS:}
+    driver-class-name: com.mysql.cj.jdbc.Driver
 
   jpa:
     hibernate:
