@@ -17,6 +17,7 @@ public class OrderListItemResponse {
     String code;
     String roomName;
     List<String> seats; // "I7","I8"...
+    List<OrderConcessionItem> concessions;
     Double totalPrice;
     String status;
 }
