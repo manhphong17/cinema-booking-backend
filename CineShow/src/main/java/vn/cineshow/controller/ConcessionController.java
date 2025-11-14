@@ -66,6 +66,12 @@ public class ConcessionController {
 
         Long concessionId = concessionService.addConcession(concessionAddRequest);
 
+        if (concessionAddRequest.unitInStock() == 0) {
+            concession.setStockStatus(StockStatus.OUT_OF_STOCK);
+        } else {
+            concession.setStockStatus(StockStatus.IN_STOCK);
+        }
+
         return new ResponseData<>(
                 HttpStatus.OK.value(),
                 "Đã thêm sản phẩm thành công",

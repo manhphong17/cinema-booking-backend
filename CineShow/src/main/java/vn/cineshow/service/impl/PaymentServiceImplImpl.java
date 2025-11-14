@@ -381,7 +381,7 @@ public class PaymentServiceImplImpl implements PaymentServiceImpl {
     }
 
 
-    @Transactional(readOnly = true)
+    @Transactional
     @Override
     public Map<String, Object> handleReturn(Map<String, String> params) {
         Map<String, Object> response = new HashMap<>();
@@ -440,8 +440,20 @@ public class PaymentServiceImplImpl implements PaymentServiceImpl {
                     response.put("message", "Thanh toán không thành công hoặc đã hết hạn thanh toán");
                 }
             } else {
+
+                order.setOrderStatus(OrderStatus.CANCELED);
+                payment.setPaymentStatus(PaymentStatus.FAILED);
+
+                for (Ticket ticket : tickets) {
+                    ticket.setOrder(null);
+                }
+
+                orderRepository.save(order);
+                paymentRepository.save(payment);
+                ticketRepository.saveAll(tickets);
+
                 response.put("status", "FAILED");
-                response.put("message", "Thanh toán không thành công hoặc đã hết hạn thanh toán");
+                response.put("message", "Thanh toán không thành công");
             }
             response.put("orderCode", payment.getTxnRef());
             response.put("orderId", order.getId()); // Add orderId to response
@@ -563,6 +575,7 @@ public class PaymentServiceImplImpl implements PaymentServiceImpl {
                 .user(user)
                 .build();
 
+
         // 2️⃣ Lấy danh sách Ticket và gán hai chiều + BOOKED
         List<Ticket> tickets = new ArrayList<>(checkoutRequest.getTicketIds().size());
         for (Long id : checkoutRequest.getTicketIds()) {
@@ -575,34 +588,25 @@ public class PaymentServiceImplImpl implements PaymentServiceImpl {
         }
         order.setTickets(tickets);
         ticketRepository.saveAll(tickets);
+        orderRepository.save(order);
+
 
         // 3️⃣ Tạo OrderConcession + trừ stock
-        List<OrderConcession> orderConcessions = new ArrayList<>();
-        if (checkoutRequest.getConcessions() != null) {
-            for (CheckoutRequest.ConcessionOrderRequest req : checkoutRequest.getConcessions()) {
-                Concession concession = concessionRepository.findById(req.getConcessionId())
-                        .orElseThrow(() -> new AppException(ErrorCode.CONCESSION_NOT_FOUND));
-
-                // Trừ stock
-                int remain = concession.getUnitInStock() - req.getQuantity();
-                concession.setUnitInStock(Math.max(remain, 0));
-                concessionRepository.save(concession);
-
-                // Tạo OrderConcession record
-                OrderConcession oc = OrderConcession.builder()
-                        .order(order)
-                        .concession(concession)
-                        .orderConcessionId(new OrderConcessionId(order.getId(), concession.getId()))
-                        .quantity(req.getQuantity())
-                        .unitPrice(concession.getPrice())
-                        .priceSnapshot(concession.getPrice() * req.getQuantity())
-                        .build();
-                orderConcessions.add(oc);
-            }
-            orderConcessionRepository.saveAll(orderConcessions);
-        }
-
-        orderRepository.save(order);
+        List<OrderConcession> orderConcessions = checkoutRequest.getConcessions().stream()
+                .map(cor -> {
+                    Concession c = concessionRepository.findById(cor.getConcessionId())
+                            .orElseThrow(() -> new AppException(ErrorCode.CONCESSION_NOT_FOUND));
+                    return OrderConcession.builder()
+                            .order(order)
+                            .concession(c)
+                            .orderConcessionId(new OrderConcessionId(order.getId(), c.getId()))
+                            .quantity(cor.getQuantity())
+                            .unitPrice(c.getPrice())
+                            .priceSnapshot(c.getPrice() * cor.getQuantity())
+                            .build();
+                })
+                .collect(Collectors.toList());
+        orderConcessionRepository.saveAll(orderConcessions);
 
 
         // 4️⃣ Tạo Payment (status COMPLETED)
