@@ -49,8 +49,8 @@ import vn.cineshow.repository.PaymentRepository;
 import vn.cineshow.repository.TicketRepository;
 import vn.cineshow.repository.UserRepository;
 import vn.cineshow.service.BookingService;
-import vn.cineshow.service.RedisService;
 import vn.cineshow.service.PaymentServiceImpl;
+import vn.cineshow.service.RedisService;
 
 @Service
 @RequiredArgsConstructor
@@ -630,7 +630,11 @@ public class PaymentServiceImplImpl implements PaymentServiceImpl {
         // 5️⃣ Lưu toàn bộ
         orderRepository.save(order);
 
-        // --- 6. Xóa key Redis (OrderSession + SeatHold) ---
+        // 6️⃣ Broadcast booked seats via WebSocket
+        List<Long> ticketIds = tickets.stream().map(Ticket::getId).toList();
+        bookingService.broadcastBooked(checkoutRequest.getShowtimeId(), ticketIds);
+
+        // --- 7. Xóa key Redis (OrderSession + SeatHold) ---
         try {
             String orderSessionKey = "orderSession:showtime:" + checkoutRequest.getShowtimeId()
                     + ":userId:" + checkoutRequest.getUserId();
