@@ -74,6 +74,36 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
 
     @EntityGraph(attributePaths = {
             "user",
+            "tickets.seat",
+            "tickets.showTime.movie",
+            "tickets.showTime.room"
+    })
+    @Query("SELECT o FROM Order o " +
+            "WHERE o.user.id = :userId " +
+            "AND o.createdAt >= :start AND o.createdAt < :end " +
+            "AND o.orderStatus IN (vn.cineshow.enums.OrderStatus.COMPLETED, vn.cineshow.enums.OrderStatus.CANCELED) " +
+            "ORDER BY o.createdAt DESC")
+    Page<Order> findByUser_IdAndCreatedAtBetweenAndStatusIn(@Param("userId") Long userId,
+                                                             @Param("start") LocalDateTime start,
+                                                             @Param("end") LocalDateTime end,
+                                                             Pageable pageable);
+
+    @EntityGraph(attributePaths = {
+            "user",
+            "tickets.seat",
+            "tickets.showTime.movie",
+            "tickets.showTime.room"
+    })
+    @Query("SELECT o FROM Order o " +
+            "WHERE o.createdAt >= :start AND o.createdAt < :end " +
+            "AND o.orderStatus IN (vn.cineshow.enums.OrderStatus.COMPLETED, vn.cineshow.enums.OrderStatus.CANCELED) " +
+            "ORDER BY o.createdAt DESC")
+    Page<Order> findByCreatedAtBetweenAndStatusIn(@Param("start") LocalDateTime start,
+                                                   @Param("end") LocalDateTime end,
+                                                   Pageable pageable);
+
+    @EntityGraph(attributePaths = {
+            "user",
             "user.account"
     })
     @Query("SELECT o FROM Order o " +
