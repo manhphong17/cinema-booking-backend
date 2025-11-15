@@ -19,6 +19,7 @@ public class OrderCheckTicketResponse {
     String orderCode;
     LocalDateTime createdAt;
     String userName;
+    Long userId;
     Double totalPrice;
     String orderStatus;
     Integer ticketCount;

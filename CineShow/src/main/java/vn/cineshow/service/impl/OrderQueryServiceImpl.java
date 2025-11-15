@@ -8,14 +8,17 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import vn.cineshow.config.SecurityAuditor;
-import vn.cineshow.dto.response.order.OrderCheckTicketResponse;
-import vn.cineshow.dto.response.order.OrderResponse;
+import vn.cineshow.dto.request.order.OrderCreatedAtSearchRequest;
+import vn.cineshow.dto.request.order.OrderListRequest;
+import vn.cineshow.dto.response.order.*;
 import vn.cineshow.enums.OrderStatus;
 import vn.cineshow.exception.AppException;
 import vn.cineshow.exception.ErrorCode;
 import vn.cineshow.model.*;
+import vn.cineshow.repository.OrderConcessionRepository;
 import vn.cineshow.repository.OrderRepository;
 import vn.cineshow.service.OrderQueryService;
+import vn.cineshow.service.QrJwtService;
 import vn.cineshow.service.QrTokenService;
 import vn.cineshow.utils.validator.OwnershipValidator;
 import vn.cineshow.utils.validator.QrPolicy;
@@ -32,10 +35,12 @@ import java.util.stream.Collectors;
 public class OrderQueryServiceImpl implements OrderQueryService {
 
     private static final Duration RESEND_DEBOUNCE = Duration.ofSeconds(60);
-    private final OrderRepository orderRepository;       // <- đúng là 'private final'
+    private final OrderRepository orderRepository;
+    private final OrderConcessionRepository orderConcessionRepository;
     private final OwnershipValidator ownershipValidator;
     private final QrPolicy qrPolicy;
     private final QrTokenService qrTokenService;
+    private final QrJwtService qrJwtService;
     private final EmailServiceImpl emailService;
     private final SecurityAuditor securityAuditor;
     private final ConcurrentHashMap<String, Instant> resendDebounceMap = new ConcurrentHashMap<>();
@@ -202,6 +207,7 @@ public class OrderQueryServiceImpl implements OrderQueryService {
                 .orderCode(order.getCode())
                 .createdAt(order.getCreatedAt())
                 .userName(order.getUser() != null ? order.getUser().getName() : null)
+                .userId(order.getUser() != null ? order.getUser().getId() : null)
                 .totalPrice(order.getTotalPrice())
                 .orderStatus(order.getOrderStatus() != null ? order.getOrderStatus().name() : null)
                 .ticketCount(ticketInfos.size())
@@ -221,6 +227,398 @@ public class OrderQueryServiceImpl implements OrderQueryService {
                 .paymentMethod(
                         o.getPayment() != null ? o.getPayment().getMethod().getMethodName() : "N/A"
                 )
+                .build();
+    }
+
+    // ==================== New methods moved from controller ====================
+
+    private LocalDateTime resolveShowtimeEnd(Order order) {
+        Ticket t = pickPrimaryTicket(order);
+        return t != null && t.getShowTime() != null ? t.getShowTime().getEndTime() : null;
+    }
+
+    private List<OrderConcessionItem> getConcessionsByOrderId(Long orderId) {
+        try {
+            List<OrderConcession> orderConcessions = orderConcessionRepository.findByOrderIdWithConcession(orderId);
+            return orderConcessions.stream()
+                    .map(this::mapToOrderConcessionItem)
+                    .toList();
+        } catch (Exception e) {
+            return List.of();
+        }
+    }
+
+    private OrderConcessionItem mapToOrderConcessionItem(OrderConcession oc) {
+        if (oc == null || oc.getConcession() == null) return null;
+        return OrderConcessionItem.builder()
+                .name(oc.getConcession().getName())
+                .quantity(oc.getQuantity())
+                .unitPrice(oc.getUnitPrice())
+                .urlImage(oc.getConcession().getUrlImage())
+                .build();
+    }
+
+    private String safeTicketCode(Ticket t) {
+        if (t == null) return null;
+        java.util.function.Predicate<String> notBlank = s -> s != null && !s.isBlank();
+        java.util.function.Function<Object, String> asString = v -> (v == null) ? null : String.valueOf(v);
+        String[] methods = {"getCode", "getTicketCode", "getQrCode", "getReservationCode"};
+        for (String m : methods) {
+            try {
+                var md = t.getClass().getMethod(m);
+                String val = asString.apply(md.invoke(t));
+                if (notBlank.test(val)) return val;
+            } catch (Exception ignore) {}
+        }
+        return null;
+    }
+
+    private String safePaymentMethodName(Object pm) {
+        if (pm == null) return null;
+        java.util.function.Predicate<String> notBlank = s -> s != null && !s.isBlank();
+        java.util.function.Function<Object, String> asString = v -> (v == null) ? null : String.valueOf(v);
+        String[] methods = {"getMethodName", "getName", "getCode", "getMethodCode", "name"};
+        for (String m : methods) {
+            try {
+                var md = pm.getClass().getMethod(m);
+                String val = asString.apply(md.invoke(pm));
+                if (notBlank.test(val)) return val;
+            } catch (Exception ignore) {}
+        }
+        return null;
+    }
+
+    @Override
+    public OrderListResponse listAllOrders(Pageable pageable) {
+        Page<Order> page = orderRepository.findAllBy(pageable);
+
+        List<OrderListItemResponse> items = page.getContent().stream().map(o -> {
+            String movie = safeMovieName(o);
+            LocalDateTime start = resolveShowtimeStart(o);
+            String room = safeRoomName(o);
+            List<String> seats = o.getTickets() == null ? List.of()
+                    : o.getTickets().stream().map(this::safeSeatLabel).toList();
+
+            return OrderListItemResponse.builder()
+                    .orderId(o.getId())
+                    .createdAt(o.getCreatedAt())
+                    .userName(o.getUser() != null ? o.getUser().getName() : null)
+                    .movieName(movie)
+                    .showtimeStart(start)
+                    .code(o.getCode())
+                    .roomName(room)
+                    .seats(seats)
+                    .totalPrice(o.getTotalPrice())
+                    .status(o.getOrderStatus() != null ? o.getOrderStatus().name() : null)
+                    .build();
+        }).toList();
+
+        return OrderListResponse.builder()
+                .items(items)
+                .page(pageable.getPageNumber())
+                .size(pageable.getPageSize())
+                .totalElements(page.getTotalElements())
+                .totalPages(page.getTotalPages())
+                .build();
+    }
+
+    @Override
+    public OrderDetailResponse getOrderById(Long id) {
+        Order o = orderRepository.findOneById(id)
+                .orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_FOUND));
+
+        java.util.function.Predicate<String> notBlank = s -> s != null && !s.isBlank();
+        java.util.function.Function<Object, String> asString = v -> (v == null) ? null : String.valueOf(v);
+
+        String movie = safeMovieName(o);
+        LocalDateTime start = resolveShowtimeStart(o);
+        LocalDateTime end = resolveShowtimeEnd(o);
+        String room = safeRoomName(o);
+        List<String> seats = (o.getTickets() == null)
+                ? List.of()
+                : o.getTickets().stream().map(this::safeSeatLabel).toList();
+
+        List<OrderConcessionItem> concessions = getConcessionsByOrderId(o.getId());
+
+        String reservationCode = null;
+        if (o.getTickets() != null && !o.getTickets().isEmpty()) {
+            Ticket t = pickPrimaryTicket(o);
+            reservationCode = safeTicketCode(t);
+        }
+        if (!notBlank.test(reservationCode) && o.getPayment() != null) {
+            Payment p = o.getPayment();
+            String txNo = asString.apply(p.getTransactionNo());
+            String ref = asString.apply(p.getTxnRef());
+            if (notBlank.test(txNo)) {
+                reservationCode = txNo;
+            } else if (notBlank.test(ref)) {
+                reservationCode = ref;
+            }
+        }
+
+        List<String> paymentMethods;
+        if (o.getPayment() == null) {
+            paymentMethods = List.of();
+        } else {
+            Payment p = o.getPayment();
+            String method = safePaymentMethodName(p.getMethod());
+            paymentMethods = notBlank.test(method) ? List.of(method) : List.of();
+        }
+
+        return OrderDetailResponse.builder()
+                .orderId(o.getId())
+                .createdAt(o.getCreatedAt())
+                .userName(o.getUser() != null ? o.getUser().getName() : null)
+                .orderCode(o.getCode())
+                .bookingCode(reservationCode)
+                .movieName(movie)
+                .roomName(room)
+                .showtimeStart(start)
+                .showtimeEnd(end)
+                .seats(seats)
+                .concessions(concessions)
+                .totalPrice(o.getTotalPrice())
+                .orderStatus(o.getOrderStatus() != null ? o.getOrderStatus().name() : null)
+                .reservationCode(reservationCode)
+                .paymentMethods(paymentMethods)
+                .qrAvailable(true)
+                .qrExpired(false)
+                .regenerateAllowed(false)
+                .qrJwt(null)
+                .qrImageUrl(null)
+                .graceMinutes(null)
+                .build();
+    }
+
+    @Override
+    public OrderQrPayloadResponse getQrPayload(Long id) {
+        Order o = orderRepository.findOneById(id)
+                .orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_FOUND));
+
+        if (o.getOrderStatus() == OrderStatus.CANCELED) {
+            throw new AppException(ErrorCode.ORDER_CANCELED);
+        }
+
+        String movie = safeMovieName(o);
+        String room = safeRoomName(o);
+        LocalDateTime start = resolveShowtimeStart(o);
+        LocalDateTime end = resolveShowtimeEnd(o);
+        List<String> seats = (o.getTickets() == null) ? List.of()
+                : o.getTickets().stream().map(this::safeSeatLabel).toList();
+
+        String reservationCode = null;
+        Payment payment = o.getPayment();
+        if (payment != null) {
+            if (payment.getTransactionNo() != null && !payment.getTransactionNo().isBlank()) {
+                reservationCode = payment.getTransactionNo();
+            } else if (payment.getTxnRef() != null && !payment.getTxnRef().isBlank()) {
+                reservationCode = payment.getTxnRef();
+            }
+        }
+
+        if (reservationCode == null || reservationCode.isBlank()) {
+            reservationCode = o.getCode() != null ? o.getCode() : String.valueOf(o.getId());
+        }
+
+        int graceMinutes = 30;
+        long exp = Instant.now().plusSeconds(graceMinutes * 60L).getEpochSecond();
+        String nonce = UUID.randomUUID().toString();
+
+        // Đảm bảo orderCode luôn có giá trị (fallback về orderId nếu null)
+        String orderCode = o.getCode() != null && !o.getCode().isBlank() 
+                ? o.getCode() 
+                : String.valueOf(o.getId());
+
+        // Lấy thông tin user
+        Long userId = o.getUser() != null ? o.getUser().getId() : null;
+        String userName = o.getUser() != null ? o.getUser().getName() : null;
+
+        Map<String, Object> payload = new LinkedHashMap<>();
+        payload.put("ver", 1);
+        payload.put("nonce", nonce);
+        payload.put("exp", exp);
+        
+        // Thêm orderCode ở top level để dễ truy cập khi scan QR
+        payload.put("orderCode", orderCode);
+        
+        // Thêm userName và userId vào QR payload để có thể extract khi quét QR
+        if (userName != null) {
+            payload.put("userName", userName);
+        }
+        if (userId != null) {
+            payload.put("userId", userId);
+        }
+
+        Map<String, Object> orderInfo = new LinkedHashMap<>();
+        orderInfo.put("orderId", o.getId());
+        orderInfo.put("orderCode", orderCode);
+        orderInfo.put("reservationCode", reservationCode);
+        orderInfo.put("status", o.getOrderStatus() != null ? o.getOrderStatus().name() : null);
+        payload.put("order", orderInfo);
+
+        Map<String, Object> show = new LinkedHashMap<>();
+        show.put("movie", movie);
+        show.put("room", room);
+        show.put("start", start != null ? start.toString() : null);
+        show.put("end", end != null ? end.toString() : null);
+        payload.put("showtime", show);
+
+        payload.put("seats", seats);
+
+        String jwt = qrJwtService.createHs256Jwt(payload);
+
+        List<String> ticketCodes = List.of();
+
+        List<String> paymentMethods;
+        if (o.getPayment() == null || o.getPayment().getMethod() == null) {
+            paymentMethods = List.of();
+        } else {
+            PaymentMethod method = o.getPayment().getMethod();
+            String methodName = String.valueOf(method.getMethodName());
+            paymentMethods = List.of(methodName);
+        }
+
+        Instant qrExpiryAt = Instant.ofEpochSecond(exp);
+        String payloadJson = qrJwtService.toJson(payload);
+
+        return OrderQrPayloadResponse.builder()
+                .orderId(o.getId())
+                .userId(o.getUser() != null ? o.getUser().getId() : null)
+                .userName(o.getUser() != null ? o.getUser().getName() : null)
+                .createdAt(o.getCreatedAt())
+                .totalPrice(o.getTotalPrice())
+                .status(o.getOrderStatus() != null ? o.getOrderStatus().name() : null)
+                .orderCode(orderCode)
+                .reservationCode(reservationCode)
+                .movieName(movie)
+                .roomName(room)
+                .showtimeStart(start)
+                .showtimeEnd(end)
+                .seats(seats)
+                .ticketCodes(ticketCodes)
+                .paymentMethods(paymentMethods)
+                .qrAvailable(true)
+                .qrExpired(false)
+                .regenerateAllowed(true)
+                .graceMinutes(graceMinutes)
+                .qrExpiryAt(qrExpiryAt)
+                .qrJwt(jwt)
+                .qrImageUrl(null)
+                .payloadJson(payloadJson)
+                .nonce(nonce)
+                .version(1)
+                .build();
+    }
+
+    @Override
+    public OrderListResponse searchOrders(OrderListRequest req) {
+        int page = req.getPage() != null ? req.getPage() : 0;
+        int size = req.getSize() != null ? req.getSize() : 10;
+
+        Sort.Direction direction = Sort.Direction.DESC;
+        List<String> sortList = req.getSort();
+        if (sortList != null && !sortList.isEmpty()) {
+            String first = sortList.get(0);
+            if ("asc".equalsIgnoreCase(first)) {
+                direction = Sort.Direction.ASC;
+            } else if ("desc".equalsIgnoreCase(first)) {
+                direction = Sort.Direction.DESC;
+            }
+        }
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by(new Sort.Order(direction, "createdAt")));
+        Page<Order> pageData = orderRepository.findAllBy(pageable);
+
+        List<OrderListItemResponse> items = pageData.getContent().stream().map(o -> {
+            String movie = safeMovieName(o);
+            LocalDateTime start = resolveShowtimeStart(o);
+            String room = safeRoomName(o);
+            List<String> seats = o.getTickets() == null ? List.of()
+                    : o.getTickets().stream().map(this::safeSeatLabel).toList();
+
+            return OrderListItemResponse.builder()
+                    .orderId(o.getId())
+                    .createdAt(o.getCreatedAt())
+                    .userName(o.getUser() != null ? o.getUser().getName() : null)
+                    .movieName(movie)
+                    .showtimeStart(start)
+                    .code(o.getCode())
+                    .roomName(room)
+                    .seats(seats)
+                    .totalPrice(o.getTotalPrice())
+                    .status(o.getOrderStatus() != null ? o.getOrderStatus().name() : null)
+                    .build();
+        }).toList();
+
+        return OrderListResponse.builder()
+                .items(items)
+                .page(pageable.getPageNumber())
+                .size(pageable.getPageSize())
+                .totalElements(pageData.getTotalElements())
+                .totalPages(pageData.getTotalPages())
+                .build();
+    }
+
+    @Override
+    public OrderListResponse searchOrdersByDate(OrderCreatedAtSearchRequest req) {
+        if (req.getDate() == null) {
+            throw new AppException(ErrorCode.INVALID_PARAMETER);
+        }
+
+        int page = req.getPage() != null ? req.getPage() : 0;
+        int size = req.getSize() != null ? req.getSize() : 10;
+        Sort.Direction direction = Sort.Direction.DESC;
+        List<String> sortList = req.getSort();
+        if (sortList != null && !sortList.isEmpty()) {
+            String first = sortList.get(0);
+            if (first != null && first.equalsIgnoreCase("asc")) {
+                direction = Sort.Direction.ASC;
+            } else if (first != null && first.equalsIgnoreCase("desc")) {
+                direction = Sort.Direction.DESC;
+            }
+        }
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by(new Sort.Order(direction, "createdAt")));
+
+        LocalDateTime start = req.getDate().atStartOfDay();
+        LocalDateTime end = start.plusDays(1);
+
+        Page<Order> pageData;
+        if (req.getUserId() != null) {
+            pageData = orderRepository.findByUser_IdAndCreatedAtBetween(req.getUserId(), start, end, pageable);
+        } else {
+            pageData = orderRepository.findByCreatedAtBetween(start, end, pageable);
+        }
+
+        List<OrderListItemResponse> items = pageData.getContent().stream().map(o -> {
+            String movie = safeMovieName(o);
+            LocalDateTime st = resolveShowtimeStart(o);
+            String room = safeRoomName(o);
+            List<String> seats = o.getTickets() == null ? List.of()
+                    : o.getTickets().stream().map(this::safeSeatLabel).toList();
+            List<OrderConcessionItem> concessions = getConcessionsByOrderId(o.getId());
+
+            return OrderListItemResponse.builder()
+                    .orderId(o.getId())
+                    .createdAt(o.getCreatedAt())
+                    .userName(o.getUser() != null ? o.getUser().getName() : null)
+                    .movieName(movie)
+                    .showtimeStart(st)
+                    .code(o.getCode())
+                    .roomName(room)
+                    .seats(seats)
+                    .concessions(concessions)
+                    .totalPrice(o.getTotalPrice())
+                    .status(o.getOrderStatus() != null ? o.getOrderStatus().name() : null)
+                    .build();
+        }).toList();
+
+        return OrderListResponse.builder()
+                .items(items)
+                .page(pageable.getPageNumber())
+                .size(pageable.getPageSize())
+                .totalElements(pageData.getTotalElements())
+                .totalPages(pageData.getTotalPages())
                 .build();
     }
 }
