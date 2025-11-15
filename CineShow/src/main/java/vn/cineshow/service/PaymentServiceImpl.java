@@ -1,11 +1,12 @@
 package vn.cineshow.service;
 
 
-import jakarta.servlet.http.HttpServletRequest;
-import org.springframework.transaction.annotation.Transactional;
-import vn.cineshow.dto.request.payment.CheckoutRequest;
-
 import java.util.Map;
+
+import org.springframework.transaction.annotation.Transactional;
+
+import jakarta.servlet.http.HttpServletRequest;
+import vn.cineshow.dto.request.payment.CheckoutRequest;
 
 public interface PaymentServiceImpl {
 
@@ -19,5 +20,5 @@ public interface PaymentServiceImpl {
 
 
     @Transactional
-    void createCashPayment(CheckoutRequest checkoutRequest);
+    Long createCashPayment(CheckoutRequest checkoutRequest);
 }
