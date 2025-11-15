@@ -20,20 +20,12 @@ public class TicketCleanupScheduler {
 
     private final TicketRepository ticketRepository;
 
-    /**
-     * Scheduler tự động dọn vé ở trạng thái AVAILABLE hoặc BLOCKED
-     * vào 1h sáng của ngày sau ngày suất chiếu
-     * 
-     * Cron: "0 0 1 * * *" = Chạy lúc 1:00 AM mỗi ngày
-     * Zone: Asia/Ho_Chi_Minh
-     */
+
     @Scheduled(cron = "0 0 1 * * *", zone = "Asia/Ho_Chi_Minh")
     @Transactional
     public void cleanupExpiredTickets() {
-        log.info("[TICKET CLEANUP] Bắt đầu dọn vé AVAILABLE/BLOCKED sau ngày suất chiếu...");
+        log.info("[TICKET CLEANUP] Start clean ticket AVAILABLE/BLOCKED...");
         
-        // Lấy ngày hôm qua (ngày sau ngày suất chiếu)
-        // Nếu hôm nay là ngày 13, thì dọn vé của showtime kết thúc trước ngày 13 (tức là ngày 12 trở về trước)
         LocalDate thresholdDate = LocalDate.now();
         
         List<TicketStatus> statusesToClean = List.of(TicketStatus.AVAILABLE, TicketStatus.BLOCKED);
@@ -43,18 +35,9 @@ public class TicketCleanupScheduler {
                 thresholdDate
         );
         
-        if (ticketsToDelete.isEmpty()) {
-            log.info("[TICKET CLEANUP] Không có vé nào cần dọn.");
-            return;
-        }
-        
-        int deletedCount = ticketsToDelete.size();
-        
-        // Xóa vé
         ticketRepository.deleteAll(ticketsToDelete);
         
-        log.info("[TICKET CLEANUP] Đã xóa {} vé (AVAILABLE/BLOCKED) của các showtime đã qua ngày suất chiếu.", deletedCount);
-        log.info("[TICKET CLEANUP] Ngày threshold: {}", thresholdDate);
+        log.info("[TICKET CLEANUP] Date threshold: {}", thresholdDate);
     }
 }
 

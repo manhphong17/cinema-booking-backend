@@ -16,7 +16,7 @@ import java.util.List;
 @Entity
 @Table(name = "theater")
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class Theater {
+public class Theater {  
 
     @Id
     @Column(name = "id")

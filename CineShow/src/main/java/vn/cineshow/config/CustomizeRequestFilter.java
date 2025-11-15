@@ -65,7 +65,7 @@ public class CustomizeRequestFilter extends OncePerRequestFilter {
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
         String uri = request.getRequestURI();
-        // Bỏ qua preflight và handshake WebSocket
+
         if ("OPTIONS".equalsIgnoreCase(request.getMethod())) return true;
         if ("websocket".equalsIgnoreCase(request.getHeader("Upgrade"))) return true; // native WS
         // Bỏ qua các endpoint WS/STOMP
@@ -74,9 +74,9 @@ public class CustomizeRequestFilter extends OncePerRequestFilter {
                 || uri.startsWith("/sockjs")
                 || uri.startsWith("/stomp")
                 || uri.startsWith("/websocket")) {
-            return true; // đường dẫn nội bộ của SockJS
+            return true;
         }
-        // Bỏ qua các public endpoints
+
         return uri.startsWith("/auth")
                 || uri.startsWith("/oauth2")
                 || uri.startsWith("/swagger-ui")
@@ -87,7 +87,7 @@ public class CustomizeRequestFilter extends OncePerRequestFilter {
                 || uri.startsWith("/uploads")
                 || uri.startsWith("/static")
                 || uri.startsWith("/img")
-                || uri.equals("/api/theater_details"); // Public endpoint - không cần authentication
+                || uri.equals("/api/theater_details");
     }
 
 
