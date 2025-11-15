@@ -612,11 +612,12 @@ public class OrderQueryServiceImpl implements OrderQueryService {
         LocalDateTime start = req.getDate().atStartOfDay();
         LocalDateTime end = start.plusDays(1);
 
+        // Chỉ lấy đơn hàng có status COMPLETED hoặc CANCELED
         Page<Order> pageData;
         if (req.getUserId() != null) {
-            pageData = orderRepository.findByUser_IdAndCreatedAtBetween(req.getUserId(), start, end, pageable);
+            pageData = orderRepository.findByUser_IdAndCreatedAtBetweenAndStatusIn(req.getUserId(), start, end, pageable);
         } else {
-            pageData = orderRepository.findByCreatedAtBetween(start, end, pageable);
+            pageData = orderRepository.findByCreatedAtBetweenAndStatusIn(start, end, pageable);
         }
 
         List<OrderListItemResponse> items = pageData.getContent().stream().map(o -> {

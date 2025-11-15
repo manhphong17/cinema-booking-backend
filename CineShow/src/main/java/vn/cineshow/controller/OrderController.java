@@ -1,411 +1,60 @@
 package vn.cineshow.controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 import vn.cineshow.dto.request.order.OrderCreatedAtSearchRequest;
 import vn.cineshow.dto.request.order.OrderListRequest;
 import vn.cineshow.dto.response.ResponseData;
 import vn.cineshow.dto.response.order.*;
-import vn.cineshow.enums.OrderStatus;
-import vn.cineshow.exception.AppException;
-import vn.cineshow.exception.ErrorCode;
-import vn.cineshow.model.*;
-import vn.cineshow.repository.OrderConcessionRepository;
-import vn.cineshow.repository.OrderRepository;
 import vn.cineshow.service.OrderQueryService;
 
-import javax.crypto.Mac;
-import javax.crypto.spec.SecretKeySpec;
-import java.nio.charset.StandardCharsets;
-import java.time.Instant;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.*;
+import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/orders")
 public class OrderController {
 
-    private final OrderRepository orderRepository;
-    private final OrderConcessionRepository orderConcessionRepository;
     private final OrderQueryService orderQueryService;
-
-    @Value("${qr.secret:change-this-secret}")
-    private String qrSecret;
-
-    private static final ObjectMapper MAPPER = new ObjectMapper();
 
     /* ======================= BASIC LIST / DETAIL ======================= */
 
     @GetMapping
-    @Transactional(readOnly = true)
     public OrderListResponse listAll(
-            @PageableDefault(sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
+            @PageableDefault(sort = "createdAt", direction = org.springframework.data.domain.Sort.Direction.DESC) Pageable pageable
     ) {
-        Page<Order> page = orderRepository.findAllBy(pageable);
-
-        List<OrderListItemResponse> items = page.getContent().stream().map(o -> {
-            String movie = safeMovieName(o);
-            LocalDateTime start = resolveShowtimeStart(o);
-            String room = safeRoomName(o);
-            List<String> seats = (o.getTickets() == null)
-                    ? List.of()
-                    : o.getTickets().stream().map(this::safeSeatLabel).toList();
-
-            return OrderListItemResponse.builder()
-                    .orderId(o.getId())
-                    .createdAt(o.getCreatedAt())
-                    .userName(o.getUser() != null ? o.getUser().getName() : null)
-                    .movieName(movie)
-                    .showtimeStart(start)
-                    .roomName(room)
-                    .seats(seats)
-                    .totalPrice(o.getTotalPrice())
-                    .status(o.getOrderStatus() != null ? o.getOrderStatus().name() : null)
-                    .build();
-        }).toList();
-
-        return OrderListResponse.builder()
-                .items(items)
-                .page(pageable.getPageNumber())
-                .size(pageable.getPageSize())
-                .totalElements(page.getTotalElements())
-                .totalPages(page.getTotalPages())
-                .build();
+        return orderQueryService.listAllOrders(pageable);
     }
 
     @GetMapping("/{id}")
-    @Transactional(readOnly = true)
     public OrderDetailResponse getOne(@PathVariable("id") Long id) {
-        Order o = orderRepository.findOneById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found"));
-
-        // ===== local helpers =====
-        java.util.function.Predicate<String> notBlank = s -> s != null && !s.isBlank();
-        java.util.function.Function<Object, String> asString = v -> (v == null) ? null : String.valueOf(v);
-
-        java.util.function.Function<Ticket, String> safeTicketCode = (Ticket t) -> {
-            if (t == null) return null;
-            String[] methods = {"getCode", "getTicketCode", "getQrCode", "getReservationCode"};
-            for (String m : methods) {
-                try {
-                    var md = t.getClass().getMethod(m);
-                    String val = asString.apply(md.invoke(t));
-                    if (notBlank.test(val)) return val;
-                } catch (Exception ignore) {}
-            }
-            return null;
-        };
-
-        java.util.function.Function<Object, String> safePaymentMethodName = (Object pm) -> {
-            if (pm == null) return null;
-            String[] methods = {"getMethodName", "getName", "getCode", "getMethodCode", "name"};
-            for (String m : methods) {
-                try {
-                    var md = pm.getClass().getMethod(m);
-                    String val = asString.apply(md.invoke(pm));
-                    if (notBlank.test(val)) return val;
-                } catch (Exception ignore) {}
-            }
-            return null;
-        };
-        // ===== end helpers =====
-
-        String movie = safeMovieName(o);
-        LocalDateTime start = resolveShowtimeStart(o);
-        LocalDateTime end = resolveShowtimeEnd(o);
-        String room = safeRoomName(o);
-        List<String> seats = (o.getTickets() == null)
-                ? List.of()
-                : o.getTickets().stream().map(this::safeSeatLabel).toList();
-
-        // concessions
-        List<OrderConcessionItem> concessions = getConcessionsByOrderId(o.getId());
-
-        // reservationCode: ưu tiên Ticket, fallback payment
-        String reservationCode = null;
-        if (o.getTickets() != null && !o.getTickets().isEmpty()) {
-            Ticket t = pickPrimaryTicket(o);
-            reservationCode = safeTicketCode.apply(t);
-        }
-        if (!notBlank.test(reservationCode) && o.getPayment() != null) {
-            Payment p = o.getPayment();
-            String txNo = asString.apply(p.getTransactionNo());
-            String ref  = asString.apply(p.getTxnRef());
-
-            if (notBlank.test(txNo)) {
-                reservationCode = txNo;
-            } else if (notBlank.test(ref)) {
-                reservationCode = ref;
-            }
-        }
-
-        // paymentMethods
-        List<String> paymentMethods;
-        if (o.getPayment() == null) {
-            paymentMethods = List.of();
-        } else {
-            Payment p = o.getPayment();
-            String method = safePaymentMethodName.apply(p.getMethod());
-            paymentMethods = notBlank.test(method) ? List.of(method) : List.of();
-        }
-
-        return OrderDetailResponse.builder()
-                .orderId(o.getId())
-                .createdAt(o.getCreatedAt())
-                .userName(o.getUser() != null ? o.getUser().getName() : null)
-                .orderCode(o.getCode())
-                .bookingCode(reservationCode)
-                .movieName(movie)
-                .roomName(room)
-                .showtimeStart(start)
-                .showtimeEnd(end)
-                .seats(seats)
-                .concessions(concessions)
-                .totalPrice(o.getTotalPrice())
-                .orderStatus(o.getOrderStatus() != null ? o.getOrderStatus().name() : null)
-                .reservationCode(reservationCode)
-                .paymentMethods(paymentMethods)
-                .qrAvailable(true)
-                .qrExpired(false)
-                .regenerateAllowed(false)
-                .qrJwt(null)
-                .qrImageUrl(null)
-                .graceMinutes(null)
-                .isCheckIn(o.getIsCheckIn() != null ? o.getIsCheckIn() : false)
-                .build();
+        return orderQueryService.getOrderById(id);
     }
 
     /* ======================= QR PAYLOAD ======================= */
 
     @GetMapping("/{id}/qr-payload")
-    @Transactional(readOnly = true)
     public OrderQrPayloadResponse getQrPayload(@PathVariable("id") Long id) {
-        Order o = orderRepository.findOneById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found"));
-
-        if (o.getOrderStatus() == OrderStatus.CANCELED) {
-            throw new AppException(ErrorCode.ORDER_CANCELED);
-        }
-
-        String movie = safeMovieName(o);
-        String room  = safeRoomName(o);
-        LocalDateTime start = resolveShowtimeStart(o);
-        LocalDateTime end   = resolveShowtimeEnd(o);
-        List<String> seats = (o.getTickets() == null)
-                ? List.of()
-                : o.getTickets().stream().map(this::safeSeatLabel).toList();
-
-        // reservationCode: ưu tiên payment
-        String reservationCode = null;
-        Payment payment = o.getPayment();
-        if (payment != null) {
-            if (payment.getTransactionNo() != null && !payment.getTransactionNo().isBlank()) {
-                reservationCode = payment.getTransactionNo();
-            } else if (payment.getTxnRef() != null && !payment.getTxnRef().isBlank()) {
-                reservationCode = payment.getTxnRef();
-            }
-        }
-        if (reservationCode == null || reservationCode.isBlank()) {
-            reservationCode = o.getCode() != null ? o.getCode() : String.valueOf(o.getId());
-        }
-
-        int graceMinutes = 30;
-        long exp = Instant.now().plusSeconds(graceMinutes * 60L).getEpochSecond();
-        String nonce = UUID.randomUUID().toString();
-
-        Map<String, Object> payload = new LinkedHashMap<>();
-        payload.put("ver", 1);
-        payload.put("nonce", nonce);
-        payload.put("exp", exp);
-
-        Map<String, Object> orderInfo = new LinkedHashMap<>();
-        orderInfo.put("orderId", o.getId());
-        orderInfo.put("orderCode", o.getCode());
-        orderInfo.put("reservationCode", reservationCode);
-        orderInfo.put("status", o.getOrderStatus() != null ? o.getOrderStatus().name() : null);
-        payload.put("order", orderInfo);
-
-        Map<String, Object> show = new LinkedHashMap<>();
-        show.put("movie", movie);
-        show.put("room", room);
-        show.put("start", start != null ? start.toString() : null);
-        show.put("end", end != null ? end.toString() : null);
-        payload.put("showtime", show);
-
-        payload.put("seats", seats);
-
-        String jwt = createHs256Jwt(payload);
-
-        List<String> ticketCodes = List.of();
-
-        List<String> paymentMethods;
-        if (o.getPayment() == null || o.getPayment().getMethod() == null) {
-            paymentMethods = List.of();
-        } else {
-            PaymentMethod method = o.getPayment().getMethod();
-            String methodName = String.valueOf(method.getMethodName());
-            paymentMethods = List.of(methodName);
-        }
-
-        Instant qrExpiryAt = Instant.ofEpochSecond(exp);
-        String payloadJson = toJson(payload);
-
-        return OrderQrPayloadResponse.builder()
-                .orderId(o.getId())
-                .userId(o.getUser() != null ? o.getUser().getId() : null)
-                .userName(o.getUser() != null ? o.getUser().getName() : null)
-                .createdAt(o.getCreatedAt())
-                .totalPrice(o.getTotalPrice())
-                .status(o.getOrderStatus() != null ? o.getOrderStatus().name() : null)
-                .orderCode(o.getCode())
-                .reservationCode(reservationCode)
-                .movieName(movie)
-                .roomName(room)
-                .showtimeStart(start)
-                .showtimeEnd(end)
-                .seats(seats)
-                .ticketCodes(ticketCodes)
-                .paymentMethods(paymentMethods)
-                .qrAvailable(true)
-                .qrExpired(false)
-                .regenerateAllowed(true)
-                .graceMinutes(graceMinutes)
-                .qrExpiryAt(qrExpiryAt)
-                .qrJwt(jwt)
-                .qrImageUrl(null)
-                .payloadJson(payloadJson)
-                .nonce(nonce)
-                .version(1)
-                .build();
+        return orderQueryService.getQrPayload(id);
     }
 
     /* ======================= SEARCH ======================= */
 
     @PostMapping("/search")
-    @Transactional(readOnly = true)
     public OrderListResponse search(@RequestBody OrderListRequest req) {
-        int page = req.getPage() != null ? req.getPage() : 0;
-        int size = req.getSize() != null ? req.getSize() : 10;
-
-        Sort.Direction direction = Sort.Direction.DESC;
-        List<String> sortList = req.getSort();
-        if (sortList != null && !sortList.isEmpty()) {
-            String first = sortList.get(0);
-            if ("asc".equalsIgnoreCase(first)) {
-                direction = Sort.Direction.ASC;
-            } else if ("desc".equalsIgnoreCase(first)) {
-                direction = Sort.Direction.DESC;
-            }
-        }
-
-        Pageable pageable = PageRequest.of(page, size, Sort.by(new Sort.Order(direction, "createdAt")));
-        Page<Order> pageData = orderRepository.findAllBy(pageable);
-
-        List<OrderListItemResponse> items = pageData.getContent().stream().map(o -> {
-            String movie = safeMovieName(o);
-            LocalDateTime start = resolveShowtimeStart(o);
-            String room = safeRoomName(o);
-            List<String> seats = (o.getTickets() == null)
-                    ? List.of()
-                    : o.getTickets().stream().map(this::safeSeatLabel).toList();
-
-            return OrderListItemResponse.builder()
-                    .orderId(o.getId())
-                    .createdAt(o.getCreatedAt())
-                    .userName(o.getUser() != null ? o.getUser().getName() : null)
-                    .movieName(movie)
-                    .showtimeStart(start)
-                    .code(o.getCode())
-                    .roomName(room)
-                    .seats(seats)
-                    .totalPrice(o.getTotalPrice())
-                    .status(o.getOrderStatus() != null ? o.getOrderStatus().name() : null)
-                    .build();
-        }).toList();
-
-        return OrderListResponse.builder()
-                .items(items)
-                .page(pageable.getPageNumber())
-                .size(pageable.getPageSize())
-                .totalElements(pageData.getTotalElements())
-                .totalPages(pageData.getTotalPages())
-                .build();
+        return orderQueryService.searchOrders(req);
     }
 
     @PostMapping("/search-by-date")
-    @Transactional(readOnly = true)
     public OrderListResponse searchByCreated(@RequestBody OrderCreatedAtSearchRequest req) {
-        if (req.getDate() == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "date is required");
-        }
-
-        int page = req.getPage() != null ? req.getPage() : 0;
-        int size = req.getSize() != null ? req.getSize() : 10;
-
-        Sort.Direction direction = Sort.Direction.DESC;
-        List<String> sortList = req.getSort();
-        if (sortList != null && !sortList.isEmpty()) {
-            String first = sortList.get(0);
-            if (first != null && first.equalsIgnoreCase("asc")) {
-                direction = Sort.Direction.ASC;
-            } else if (first != null && first.equalsIgnoreCase("desc")) {
-                direction = Sort.Direction.DESC;
-            }
-        }
-
-        Pageable pageable = PageRequest.of(page, size, Sort.by(new Sort.Order(direction, "createdAt")));
-
-        LocalDateTime start = req.getDate().atStartOfDay();
-        LocalDateTime end = start.plusDays(1);
-
-        Page<Order> pageData;
-        if (req.getUserId() != null) {
-            pageData = orderRepository.findByUser_IdAndCreatedAtBetween(req.getUserId(), start, end, pageable);
-        } else {
-            pageData = orderRepository.findByCreatedAtBetween(start, end, pageable);
-        }
-
-        List<OrderListItemResponse> items = pageData.getContent().stream().map(o -> {
-            String movie = safeMovieName(o);
-            LocalDateTime st = resolveShowtimeStart(o);
-            String room = safeRoomName(o);
-            List<String> seats = o.getTickets() == null ? List.of()
-                    : o.getTickets().stream().map(this::safeSeatLabel).toList();
-            List<OrderConcessionItem> concessions = getConcessionsByOrderId(o.getId());
-
-            return OrderListItemResponse.builder()
-                    .orderId(o.getId())
-                    .createdAt(o.getCreatedAt())
-                    .userName(o.getUser() != null ? o.getUser().getName() : null)
-                    .movieName(movie)
-                    .showtimeStart(st)
-                    .code(o.getCode())
-                    .roomName(room)
-                    .seats(seats)
-                    .concessions(concessions)
-                    .totalPrice(o.getTotalPrice())
-                    .status(o.getOrderStatus() != null ? o.getOrderStatus().name() : null)
-                    .build();
-        }).toList();
-
-        return OrderListResponse.builder()
-                .items(items)
-                .page(pageable.getPageNumber())
-                .size(pageable.getPageSize())
-                .totalElements(pageData.getTotalElements())
-                .totalPages(pageData.getTotalPages())
-                .build();
+        return orderQueryService.searchOrdersByDate(req);
     }
 
     /* ======================= SALES / CHECK TICKET / CHECK-IN ======================= */
@@ -460,100 +109,4 @@ public class OrderController {
         );
     }
 
-    /* ======================= Helpers ======================= */
-
-    private String toJson(Object o) {
-        try { return MAPPER.writeValueAsString(o); }
-        catch (Exception e) { throw new RuntimeException(e); }
-    }
-
-    private String createHs256Jwt(Object payload) {
-        try {
-            String headerJson = "{\"alg\":\"HS256\",\"typ\":\"JWT\"}";
-            String payloadJson = toJson(payload);
-
-            String headerB64  = base64Url(headerJson.getBytes(StandardCharsets.UTF_8));
-            String payloadB64 = base64Url(payloadJson.getBytes(StandardCharsets.UTF_8));
-            String signingInput = headerB64 + "." + payloadB64;
-
-            byte[] sig = hmacSha256(signingInput.getBytes(StandardCharsets.UTF_8), qrSecret.getBytes(StandardCharsets.UTF_8));
-            String sigB64 = base64Url(sig);
-            return signingInput + "." + sigB64;
-        } catch (Exception e) {
-            throw new RuntimeException("Cannot create QR JWT", e);
-        }
-    }
-
-    private byte[] hmacSha256(byte[] data, byte[] key) throws Exception {
-        Mac mac = Mac.getInstance("HmacSHA256");
-        mac.init(new SecretKeySpec(key, "HmacSHA256"));
-        return mac.doFinal(data);
-    }
-
-    private String base64Url(byte[] bytes) {
-        return Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
-    }
-
-    private Ticket pickPrimaryTicket(Order order) {
-        if (order == null || order.getTickets() == null || order.getTickets().isEmpty()) return null;
-        return order.getTickets().stream()
-                .min(Comparator.comparing(t -> {
-                    Seat s = t.getSeat();
-                    String label = s != null
-                            ? (Objects.toString(s.getRow(), "") + Objects.toString(s.getColumn(), ""))
-                            : "";
-                    return label;
-                }))
-                .orElse(null);
-    }
-
-    private String safeMovieName(Order order) {
-        Ticket t = pickPrimaryTicket(order);
-        if (t == null || t.getShowTime() == null || t.getShowTime().getMovie() == null) return null;
-        return t.getShowTime().getMovie().getName();
-    }
-
-    private LocalDateTime resolveShowtimeStart(Order order) {
-        Ticket t = pickPrimaryTicket(order);
-        return t != null && t.getShowTime() != null ? t.getShowTime().getStartTime() : null;
-    }
-
-    private LocalDateTime resolveShowtimeEnd(Order order) {
-        Ticket t = pickPrimaryTicket(order);
-        return t != null && t.getShowTime() != null ? t.getShowTime().getEndTime() : null;
-    }
-
-    private String safeRoomName(Order order) {
-        Ticket t = pickPrimaryTicket(order);
-        if (t == null || t.getShowTime() == null || t.getShowTime().getRoom() == null) return null;
-        return t.getShowTime().getRoom().getName();
-    }
-
-    private String safeSeatLabel(Ticket t) {
-        if (t == null || t.getSeat() == null) return null;
-        String row = t.getSeat().getRow();
-        String col = t.getSeat().getColumn();
-        return (row != null ? row : "") + (col != null ? col : "");
-    }
-
-    private OrderConcessionItem mapToOrderConcessionItem(OrderConcession oc) {
-        if (oc == null || oc.getConcession() == null) return null;
-        return OrderConcessionItem.builder()
-                .name(oc.getConcession().getName())
-                .quantity(oc.getQuantity())
-                .unitPrice(oc.getUnitPrice())
-                .urlImage(oc.getConcession().getUrlImage())
-                .build();
-    }
-
-    private List<OrderConcessionItem> getConcessionsByOrderId(Long orderId) {
-        try {
-            List<OrderConcession> orderConcessions = orderConcessionRepository.findByOrderIdWithConcession(orderId);
-            return orderConcessions.stream()
-                    .map(this::mapToOrderConcessionItem)
-                    .toList();
-        } catch (Exception e) {
-            return List.of();
-        }
-    }
 }
