@@ -2,7 +2,6 @@ package vn.cineshow.controller;
 import org.springframework.beans.factory.annotation.Value;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import lombok.RequiredArgsConstructor;
@@ -13,7 +12,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 import vn.cineshow.dto.request.order.OrderCreatedAtSearchRequest;
 import vn.cineshow.dto.request.order.OrderListRequest;
@@ -186,6 +184,7 @@ public class OrderController {
                 .qrJwt(null)
                 .qrImageUrl(null)
                 .graceMinutes(null)
+                .isCheckIn(o.getIsCheckIn() != null ? o.getIsCheckIn() : false)
                 .build();
     }
 
@@ -565,6 +564,17 @@ public class OrderController {
         return new ResponseData<>(
                 HttpStatus.OK.value(),
                 "Check ticket successfully. Total tickets: " + response.getTicketCount(),
+                response
+        );
+    }
+
+    @PostMapping("/{id}/check-in")
+    @PreAuthorize("hasAuthority('STAFF')")
+    public ResponseData<OrderCheckTicketResponse> checkInOrder(@PathVariable("id") Long id) {
+        OrderCheckTicketResponse response = orderQueryService.checkInOrder(id);
+        return new ResponseData<>(
+                HttpStatus.OK.value(),
+                "Check-in successfully",
                 response
         );
     }

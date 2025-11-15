@@ -1,10 +1,10 @@
 package vn.cineshow.dto.response.order;
 
-import lombok.Builder;
-import lombok.Value;
-
 import java.time.LocalDateTime;
 import java.util.List;
+
+import lombok.Builder;
+import lombok.Value;
 
 @Value
 @Builder
@@ -40,4 +40,5 @@ public class OrderDetailResponse {
     String qrJwt;       // JWT/HMAC
     String qrImageUrl;  // nếu generate ra file/endpoint render ảnh
     Integer graceMinutes;
+    Boolean isCheckIn;
 }

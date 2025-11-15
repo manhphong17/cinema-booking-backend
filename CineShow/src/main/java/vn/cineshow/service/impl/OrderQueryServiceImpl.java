@@ -1,29 +1,45 @@
 package vn.cineshow.service.impl;
 
-import lombok.AllArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import vn.cineshow.config.SecurityAuditor;
 import vn.cineshow.dto.response.order.OrderCheckTicketResponse;
 import vn.cineshow.dto.response.order.OrderResponse;
 import vn.cineshow.enums.OrderStatus;
 import vn.cineshow.exception.AppException;
 import vn.cineshow.exception.ErrorCode;
-import vn.cineshow.model.*;
+import vn.cineshow.model.Movie;
+import vn.cineshow.model.Order;
+import vn.cineshow.model.Room;
+import vn.cineshow.model.Seat;
+import vn.cineshow.model.ShowTime;
+import vn.cineshow.model.Ticket;
 import vn.cineshow.repository.OrderRepository;
 import vn.cineshow.service.OrderQueryService;
 import vn.cineshow.service.QrTokenService;
 import vn.cineshow.utils.validator.OwnershipValidator;
 import vn.cineshow.utils.validator.QrPolicy;
-
-import java.time.*;
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
 
 
 @Service
@@ -31,86 +47,36 @@ import java.util.stream.Collectors;
 @Slf4j(topic = "ORDER-QUERY-SERVICE")
 public class OrderQueryServiceImpl implements OrderQueryService {
 
-    private static final Duration RESEND_DEBOUNCE = Duration.ofSeconds(60);
-    private final OrderRepository orderRepository;       // <- đúng là 'private final'
-    private final OwnershipValidator ownershipValidator;
-    private final QrPolicy qrPolicy;
-    private final QrTokenService qrTokenService;
-    private final EmailServiceImpl emailService;
-    private final SecurityAuditor securityAuditor;
-    private final ConcurrentHashMap<String, Instant> resendDebounceMap = new ConcurrentHashMap<>();
-
-
-
-    private String safeMovieName(Order order) {
-        Ticket t = pickPrimaryTicket(order);
-        if (t == null) return null;
-        ShowTime st = t.getShowTime();
-        return st != null && st.getMovie() != null ? st.getMovie().getName() : null;
-    }
-
-    private LocalDateTime resolveShowtimeStart(Order order) {
-        Ticket t = pickPrimaryTicket(order);
-        return t != null && t.getShowTime() != null ? t.getShowTime().getStartTime() : null;
-    }
-
-    private String safeRoomName(Order order) {
-        Ticket t = pickPrimaryTicket(order);
-        if (t == null) return null;
-        ShowTime st = t.getShowTime();
-        Room room = st != null ? st.getRoom() : null;
-        return room != null ? room.getName() : null;
-    }
+    private final OrderRepository orderRepository;
 
     private String safeSeatLabel(Ticket t) {
         if (t == null || t.getSeat() == null) return null;
         Seat s = t.getSeat();
         String row = s.getRow();
         String col = s.getColumn();
-        return (row != null ? row : "") + (col != null ? col : "");
+
+        int rowNumber = Integer.parseInt(row);
+        int colNumber = Integer.parseInt(col);
+
+        String rowLetter = convertNumberToLetter(rowNumber);
+        
+        return rowLetter + colNumber;
+    }
+    
+    private String convertNumberToLetter(int number) {
+        if (number < 1) return null;
+        
+        StringBuilder result = new StringBuilder();
+        
+        while (number > 0) {
+            number--;
+            result.insert(0, (char)('A' + (number % 26)));
+            number = number / 26;
+        }
+        
+        return result.toString();
     }
 
-    private List<String> safeSeatLabels(Order order) {
-        if (order.getTickets() == null) return List.of();
-        return order.getTickets().stream()
-                .map(this::safeSeatLabel)
-                .filter(Objects::nonNull)
-                .sorted()
-                .collect(Collectors.toList());
-    }
-
-    private Ticket pickPrimaryTicket(Order order) {
-        if (order == null || order.getTickets() == null || order.getTickets().isEmpty()) return null;
-        return order.getTickets().stream()
-                .min(Comparator.comparing(t -> {
-                    Seat s = t.getSeat();
-                    String label = s != null ? (Objects.toString(s.getRow(), "") + Objects.toString(s.getColumn(), "")) : "";
-                    return label;
-                }))
-                .orElse(null);
-    }
-
-    private boolean isQrExpired(LocalDateTime start, LocalDateTime now) {
-        if (start == null) return true;
-        return qrPolicy.isExpired(start, now);
-    }
-
-    private boolean canRegenerate(boolean paid, boolean canceled, LocalDateTime start, LocalDateTime now) {
-        if (!paid || canceled || start == null) return false;
-        return !qrPolicy.isExpired(start, now);
-    }
-
-    private String generateQrToken(Order order) {
-        Ticket t = pickPrimaryTicket(order);
-        if (t == null || t.getShowTime() == null) return null;
-        Long showtimeId = t.getShowTime().getId();
-        List<Long> seatIds = order.getTickets() == null ? List.of() : order.getTickets().stream()
-                .map(Ticket::getSeat)
-                .filter(Objects::nonNull)
-                .map(Seat::getId)
-                .collect(Collectors.toList());
-        return qrTokenService.generateToken(order.getId(), showtimeId, seatIds, qrPolicy.graceMinutes(), "v1");
-    }
 
     // endregion
     @Override
@@ -165,7 +131,6 @@ public class OrderQueryServiceImpl implements OrderQueryService {
         Order order = orderRepository.findByCodeWithTickets(orderCode)
                 .orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_FOUND));
 
-        // Map tickets to TicketInfo
         List<OrderCheckTicketResponse.TicketInfo> ticketInfos = order.getTickets() == null ? List.of() :
                 order.getTickets().stream()
                         .map(ticket -> {
@@ -174,8 +139,11 @@ public class OrderQueryServiceImpl implements OrderQueryService {
                             Movie movie = showTime != null ? showTime.getMovie() : null;
                             Room room = showTime != null ? showTime.getRoom() : null;
 
-                            String seatCode = (seat != null && seat.getRow() != null && seat.getColumn() != null)
-                                    ? seat.getRow() + seat.getColumn() : null;
+                            String seatCode = safeSeatLabel(ticket);
+                            if (seatCode == null || seatCode.isEmpty()) {
+                                throw new AppException(ErrorCode.TICKET_NOT_FOUND);
+                            }
+
                             String seatType = (seat != null && seat.getSeatType() != null)
                                     ? seat.getSeatType().getName() : null;
                             Double ticketPrice = ticket.getPriceSnapshot() != null
@@ -205,8 +173,29 @@ public class OrderQueryServiceImpl implements OrderQueryService {
                 .totalPrice(order.getTotalPrice())
                 .orderStatus(order.getOrderStatus() != null ? order.getOrderStatus().name() : null)
                 .ticketCount(ticketInfos.size())
+                .isCheckIn(order.getIsCheckIn() != null ? order.getIsCheckIn() : false)
                 .tickets(ticketInfos)
                 .build();
+    }
+
+    @Override
+    @Transactional
+    public OrderCheckTicketResponse checkInOrder(Long orderId) {
+        Order order = orderRepository.findOneById(orderId)
+                .orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_FOUND));
+
+        if (order.getOrderStatus() != OrderStatus.COMPLETED) {
+            throw new AppException(ErrorCode.ORDER_NOT_COMPLETED);
+        }
+
+        if (Boolean.TRUE.equals(order.getIsCheckIn())) {
+            throw new AppException(ErrorCode.ORDER_ALREADY_CHECKED_IN);
+        }
+
+        order.setIsCheckIn(true);
+        orderRepository.save(order);
+
+        return checkTicketByOrderCode(order.getCode());
     }
 
 
