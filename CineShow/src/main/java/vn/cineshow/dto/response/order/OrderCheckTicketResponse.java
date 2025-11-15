@@ -1,10 +1,15 @@
 package vn.cineshow.dto.response.order;
 
-import lombok.*;
-import lombok.experimental.FieldDefaults;
-
 import java.time.LocalDateTime;
 import java.util.List;
+
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.experimental.FieldDefaults;
 
 @Getter
 @Setter
@@ -23,6 +28,7 @@ public class OrderCheckTicketResponse {
     Double totalPrice;
     String orderStatus;
     Integer ticketCount;
+    Boolean isCheckIn;
 
     List<TicketInfo> tickets;
 
@@ -37,17 +43,11 @@ public class OrderCheckTicketResponse {
         String seatCode;
         String seatType;
         Double ticketPrice;
-
-        // ShowTime info
         Long showtimeId;
         LocalDateTime showtimeStart;
         LocalDateTime showtimeEnd;
-
-        // Movie info
         String movieName;
         String posterUrl;
-
-        // Room info
         String roomName;
     }
 }

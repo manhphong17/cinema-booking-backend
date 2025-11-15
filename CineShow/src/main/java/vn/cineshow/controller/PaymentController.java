@@ -1,18 +1,24 @@
 package vn.cineshow.controller;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
 import vn.cineshow.dto.request.payment.CheckoutRequest;
 import vn.cineshow.dto.response.ResponseData;
 import vn.cineshow.service.PaymentServiceImpl;
-
-import java.util.HashMap;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/payment")
@@ -63,9 +69,9 @@ public class PaymentController {
     }
 
     @PostMapping("/checkout-cash")
-    public ResponseData<String> createCashPayment(@RequestBody CheckoutRequest checkoutRequest) {
-        paymentService.createCashPayment(checkoutRequest);
-        return new ResponseData<>(HttpStatus.OK.value(), "Thanh toán tiền mặt thành công", "CASH_SUCCESS");
+    public ResponseData<Long> createCashPayment(@RequestBody CheckoutRequest checkoutRequest) {
+        Long orderId = paymentService.createCashPayment(checkoutRequest);
+        return new ResponseData<>(HttpStatus.OK.value(), "Thanh toán tiền mặt thành công", orderId);
     }
 
 }

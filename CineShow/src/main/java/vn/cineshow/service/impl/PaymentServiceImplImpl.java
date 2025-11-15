@@ -560,7 +560,7 @@ public class PaymentServiceImplImpl implements PaymentServiceImpl {
 
     @Transactional
     @Override
-    public void createCashPayment(CheckoutRequest checkoutRequest) {
+    public Long createCashPayment(CheckoutRequest checkoutRequest) {
 
         // 0 Lấy user
         User user = userRepository.findById(checkoutRequest.getUserId())
@@ -646,6 +646,7 @@ public class PaymentServiceImplImpl implements PaymentServiceImpl {
             log.warn("Không thể xóa key Redis: {}", e.getMessage());
         }
         log.info(" Thanh toán CASH hoàn tất cho đơn hàng {}", order.getCode());
+        return order.getId();
     }
 }
 
