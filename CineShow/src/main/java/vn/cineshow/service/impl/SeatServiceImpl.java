@@ -22,6 +22,7 @@ import vn.cineshow.repository.SeatTypeRepository;
 import vn.cineshow.repository.ShowTimeRepository;
 import vn.cineshow.service.SeatService;
 
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -34,14 +35,10 @@ public class SeatServiceImpl implements SeatService {
     private final SeatTypeRepository seatTypeRepository;
     private final ShowTimeRepository showTimeRepository;
 
-    /* =========================
-       1) INIT
-       ========================= */
-
     @Override
     @Transactional
     public int initSeats(Long roomId, SeatInitRequest request) {
-        if (showTimeRepository.existsByRoom_Id(roomId)) {
+        if (showTimeRepository.existsByRoom_IdAndStartTimeAfter(roomId, LocalDateTime.now())) {
             throw new AppException(ErrorCode.ROOM_IN_USE);
         }
         Room room = roomRepository.findById(roomId).orElseThrow(() -> new AppException(ErrorCode.ROOM_NOT_FOUND));
@@ -71,21 +68,17 @@ public class SeatServiceImpl implements SeatService {
 
         room.setRows(rows);
         room.setColumns(cols);
-        room.setCapacity(batch.size()); // All seats are available initially
+        room.setCapacity(batch.size());
         roomRepository.save(room);
 
         return batch.size();
     }
 
-    /* =========================
-       2) GET MATRIX
-       ========================= */
     @Override
     @Transactional(readOnly = true)
     public SeatMatrixResponse getSeatMatrix(Long roomId) {
         Room room = roomRepository.findById(roomId).orElseThrow(() -> new AppException(ErrorCode.ROOM_NOT_FOUND));
 
-        // Lấy ghế theo row/column (String) đã sắp xếp
         List<Seat> seats = seatRepository.findByRoom_IdOrderByRowAscColumnAsc(roomId);
 
         int rows = room.getRows() != null ? room.getRows() : 0;
@@ -97,13 +90,12 @@ public class SeatServiceImpl implements SeatService {
         }
 
         for (Seat s : seats) {
-            // parse row/column (String) -> index 1-based
             int r, c;
             try {
                 r = Integer.parseInt(s.getRow());
                 c = Integer.parseInt(s.getColumn());
             } catch (NumberFormatException e) {
-                continue; // bỏ qua ghế có dữ liệu row/column không hợp lệ
+                continue;
             }
             if (r <= 0 || c <= 0 || r > rows || c > cols) continue;
 
@@ -141,13 +133,10 @@ public class SeatServiceImpl implements SeatService {
                 .build();
     }
 
-    /* =========================
-       3) SAVE MATRIX (UPSERT)
-       ========================= */
     @Override
     @Transactional
     public Map<String, Integer> saveSeatMatrix(Long roomId, SeatMatrixRequest request) {
-        if (showTimeRepository.existsByRoom_Id(roomId)) {
+        if (showTimeRepository.existsByRoom_IdAndStartTimeAfter(roomId, LocalDateTime.now())) {
             throw new AppException(ErrorCode.ROOM_IN_USE);
         }
         Room room = roomRepository.findById(roomId)
@@ -156,7 +145,7 @@ public class SeatServiceImpl implements SeatService {
         List<Seat> existing = seatRepository.findByRoom_Id(roomId);
         Map<String, Seat> existingMap = existing.stream()
                 .collect(Collectors.toMap(
-                        s -> key(s.getRow(), s.getColumn()), // dùng row/column String
+                        s -> key(s.getRow(), s.getColumn()),
                         s -> s
                 ));
 
@@ -183,14 +172,13 @@ public class SeatServiceImpl implements SeatService {
                                 .orElseThrow(() -> new AppException(ErrorCode.SEAT_TYPE_NOT_FOUND));
                     }
 
-                    // String -> Enum (mặc định ACTIVE)
                     SeatStatus desiredStatus = SeatStatus.AVAILABLE;
                     if (cellReq.getSeatTypeId() == -1) {
                         desiredStatus = SeatStatus.BLOCKED;
                     } else if (cellReq.getStatus() != null && !cellReq.getStatus().isBlank()) {
                         try {
                             desiredStatus = SeatStatus.valueOf(cellReq.getStatus().trim().toUpperCase());
-                        } catch (IllegalArgumentException ignored) { /* giữ ACTIVE */ }
+                        } catch (IllegalArgumentException ignored) { }
                     }
 
                     String rowLabel = toRowLabel(r);
@@ -226,14 +214,12 @@ public class SeatServiceImpl implements SeatService {
             }
         }
 
-        // Xóa ghế không còn trong payload
         int deleted = 0;
         for (Seat toDel : existingMap.values()) {
             seatRepository.delete(toDel);
             deleted++;
         }
 
-        // Đồng bộ kích thước room
         if (!Objects.equals(room.getRows(), newRows) || !Objects.equals(room.getColumns(), newCols)) {
             room.setRows(newRows);
             room.setColumns(newCols);
@@ -248,13 +234,10 @@ public class SeatServiceImpl implements SeatService {
         return result;
     }
 
-    /* =========================
-       4) BULK TYPE
-       ========================= */
     @Override
     @Transactional
     public int bulkUpdateSeatType(Long roomId, BulkTypeRequest request) {
-        if (showTimeRepository.existsByRoom_Id(roomId)) {
+        if (showTimeRepository.existsByRoom_IdAndStartTimeAfter(roomId, LocalDateTime.now())) {
             throw new AppException(ErrorCode.ROOM_IN_USE);
         }
         Room room = roomRepository.findById(roomId)
@@ -274,13 +257,10 @@ public class SeatServiceImpl implements SeatService {
         return toSave.size();
     }
 
-    /* =========================
-       5) BULK BLOCK
-       ========================= */
     @Override
     @Transactional
     public int bulkBlockSeats(Long roomId, BulkBlockRequest request) {
-        if (showTimeRepository.existsByRoom_Id(roomId)) {
+        if (showTimeRepository.existsByRoom_IdAndStartTimeAfter(roomId, LocalDateTime.now())) {
             throw new AppException(ErrorCode.ROOM_IN_USE);
         }
         Room room = roomRepository.findById(roomId)
@@ -294,7 +274,6 @@ public class SeatServiceImpl implements SeatService {
                             String.valueOf(pos.getRowIndex()),
                             String.valueOf(pos.getColumnIndex()))
                     .ifPresent(seat -> {
-                        // Sync status theo blocked
                         if (block) seat.setStatus(SeatStatus.BLOCKED);
                         else if (seat.getStatus() == SeatStatus.BLOCKED) seat.setStatus(SeatStatus.AVAILABLE);
                         toSave.add(seat);
@@ -309,17 +288,10 @@ public class SeatServiceImpl implements SeatService {
         return toSave.size();
     }
 
-    /* =========================
-       Helpers
-       ========================= */
-
     private String key(String row, String column) {
         return row + "," + column;
     }
 
-    /**
-     * 1->A, 26->Z, 27->AA, ...
-     */
     private String toRowLabel(int index1Based) {
         StringBuilder sb = new StringBuilder();
         int n = index1Based;
@@ -337,7 +309,6 @@ public class SeatServiceImpl implements SeatService {
         if (rt != null) {
             rtDTO = RoomTypeDTO.builder()
                     .id(rt.getId())
-//                    .code(rt.getCode())
                     .name(rt.getName())
                     .description(rt.getDescription())
                     .build();
@@ -349,7 +320,7 @@ public class SeatServiceImpl implements SeatService {
                 .rows(room.getRows())
                 .columns(room.getColumns())
                 .capacity(room.getCapacity())
-                .status(room.getStatus() == null ? null : room.getStatus().name()) // enum -> String
+                .status(room.getStatus() == null ? null : room.getStatus().name())
                 .description(room.getDescription())
                 .createdAt(room.getCreatedAt())
                 .updatedAt(room.getUpdatedAt())

@@ -43,11 +43,8 @@ import vn.cineshow.service.UserService;
 public class AuthenticationController {
 
     private final AuthenticationService authenticationService;
-
     private final UserService userService;
-
     private final AccountService accountService;
-
     private final OtpService otpService;
 
     @Operation(summary = "Access token", description = "Get access token  email and password")
@@ -56,19 +53,17 @@ public class AuthenticationController {
         log.info("Access token request:");
         TokenResponse tokenResponse = authenticationService.signIn(req);
 
-        //set cookie for refresh token
         ResponseCookie cookie = ResponseCookie.from("refreshToken", tokenResponse.getRefreshToken())
                 .httpOnly(true)
-                .secure(false)  // Fix: Set to false for localhost development
+                .secure(false)
                 .path("/")
                 .maxAge(Duration.ofDays(30))
-                .sameSite("Lax")  // Fix: Change from Strict to Lax for better compatibility
+                .sameSite("Lax")
                 .build();
 
         response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
 
         log.info("Access token response:" + tokenResponse.getAccessToken());
-        //return access token + account info
         return new ResponseData<>(HttpStatus.OK.value(),
                 "Login successful",
                 SignInResponse.builder()
@@ -99,15 +94,13 @@ public class AuthenticationController {
             HttpServletResponse response) {
         log.info("Logout request received");
         
-        // Delete refresh token from database
         authenticationService.logout(refreshToken);
         
-        // Delete refresh token cookie by setting maxAge to 0
         ResponseCookie cookie = ResponseCookie.from("refreshToken", "")
                 .httpOnly(true)
                 .secure(false)
                 .path("/")
-                .maxAge(Duration.ofSeconds(0))  // Delete cookie immediately
+                .maxAge(Duration.ofSeconds(0))
                 .sameSite("Lax")
                 .build();
         
@@ -143,9 +136,6 @@ public class AuthenticationController {
         );
     }
 
-    //=========================================================
-    //======================= REGISTER =========================
-
     @PostMapping("/register-email")
     public ResponseData<?> registerEmail(@RequestBody @Valid EmailRegisterRequest req) {
         if (!req.password().equals(req.confirmPassword())) {
@@ -178,7 +168,6 @@ public class AuthenticationController {
         );
     }
 
-    // Quên mật khẩu → gửi OTP
     @PostMapping("/forgot-password")
     public ResponseData<?> forgotPassword(@RequestBody @Valid ForgotPasswordRequest request) {
         boolean sent = authenticationService.forgotPassword(request);
@@ -190,7 +179,6 @@ public class AuthenticationController {
                 "OTP sent to your email", null);
     }
 
-    // B3: Verify OTP khi reset password
     @PostMapping("/verify-otp-reset")
     public ResponseData<VerifyOtpResetResponse> verifyOtpReset(@RequestBody @Valid OtpVerifyDTO req) {
         Optional<String> tokenOpt = authenticationService.verifyOtpForReset(req.email(), req.otpCode());
@@ -202,7 +190,6 @@ public class AuthenticationController {
                 new VerifyOtpResetResponse(tokenOpt.get()));
     }
 
-    // B4: Đặt lại mật khẩu bằng OTP
     @PostMapping("/reset-password")
     public ResponseData<?> resetPassword(@RequestBody @Valid ResetPasswordRequest request) {
         boolean success = authenticationService.resetPassword(request);

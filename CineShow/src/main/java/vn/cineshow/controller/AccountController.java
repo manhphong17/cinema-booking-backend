@@ -30,12 +30,9 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class AccountController {
 
-
     private final AccountService accountService;
     private final OtpService otpService;
     private final AuthenticationService authenticationService;
-
-    // ======================= Email register + OTP active =======================
 
     @PostMapping("/register-email")
     public ResponseData<?> registerEmail(@RequestBody @Valid EmailRegisterRequest req) {
@@ -69,8 +66,6 @@ public class AccountController {
                 null
         );
     }
-
-    // ======================= Forgot / Reset password via OTP =======================
 
     @PostMapping("/forgot-password")
     public ResponseData<?> forgotPassword(@RequestBody @Valid ForgotPasswordRequest request) {
@@ -123,8 +118,6 @@ public class AccountController {
         );
     }
 
-    // ======================= User self change password =======================
-
     @PostMapping("/{userId}/change-password")
     public ResponseData<?> changePassword(@PathVariable Long userId,
                                           @RequestBody @Valid ChangePasswordRequest request) {
@@ -135,8 +128,6 @@ public class AccountController {
                 null
         );
     }
-
-    // ======================= CRUD Account =======================
 
     @PostMapping
     public ResponseData<AccountResponse> create(@RequestBody @Valid AccountCreateRequest req) {
@@ -169,8 +160,6 @@ public class AccountController {
         );
     }
 
-    // ======================= Admin change password (đúng DTO & path) =======================
-
     @PostMapping("/{id}/admin-change-password")
     public ResponseData<?> adminChangePassword(@PathVariable Long id,
                                                @RequestBody @Valid AccountChangePasswordRequest req) {
@@ -181,8 +170,6 @@ public class AccountController {
                 null
         );
     }
-
-    // ======================= List (paging) =======================
 
     @GetMapping
     public ResponseData<Page<AccountResponse>> list(@RequestParam(defaultValue = "0") int page,

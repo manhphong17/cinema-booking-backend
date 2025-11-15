@@ -16,6 +16,7 @@ import vn.cineshow.repository.SeatTypeRepository;
 import vn.cineshow.repository.ShowTimeRepository;
 import vn.cineshow.service.SeatTypeService;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -31,20 +32,15 @@ public class SeatTypeServiceImpl implements SeatTypeService {
     @Override
     @Transactional(readOnly = true)
     public List<SeatTypeDTO> getAllSeatTypesDTO() {
-        // Sắp xếp theo name để UI hiển thị ổn định; có thể đổi field khác nếu cần
         List<SeatType> entities = seatTypeRepository.findAll(Sort.by(Sort.Order.asc("name")));
         return entities.stream()
                 .map(this::toDTO)
                 .collect(Collectors.toList());
     }
 
-    /* =========================
-       Helpers
-       ========================= */
     private SeatTypeDTO toDTO(SeatType st) {
         return SeatTypeDTO.builder()
                 .id(st.getId())
-//                .code(st.getCode())
                 .name(st.getName())
                 .description(st.getDescription())
                 .build();
@@ -92,7 +88,7 @@ public class SeatTypeServiceImpl implements SeatTypeService {
     @Override
     public SeatTypeResponse update(Long id, SeatTypeUpdateRequest req) {
         var e = seatTypeRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.SEAT_TYPE_NOT_FOUND));
-        if (showTimeRepository.existsBySeatTypeId(id)) {
+        if (showTimeRepository.existsBySeatTypeIdAndStartTimeAfter(id, LocalDateTime.now())) {
             throw new AppException(ErrorCode.SEAT_TYPE_IN_USE);
         }
         if (req.getName() == null || req.getName().isBlank()) throw new AppException(ErrorCode.INVALID_PARAMETER);
@@ -108,7 +104,7 @@ public class SeatTypeServiceImpl implements SeatTypeService {
     @Override
     public SeatTypeResponse patch(Long id, SeatTypeUpdateRequest req) {
         var e = seatTypeRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.SEAT_TYPE_NOT_FOUND));
-        if (showTimeRepository.existsBySeatTypeId(id)) {
+        if (showTimeRepository.existsBySeatTypeIdAndStartTimeAfter(id, LocalDateTime.now())) {
             throw new AppException(ErrorCode.SEAT_TYPE_IN_USE);
         }
         if (req.getName() != null) {
@@ -126,7 +122,7 @@ public class SeatTypeServiceImpl implements SeatTypeService {
         if (!seatTypeRepository.existsById(id)) {
             throw new AppException(ErrorCode.SEAT_TYPE_NOT_FOUND);
         }
-        if (showTimeRepository.existsBySeatTypeId(id)) {
+        if (showTimeRepository.existsBySeatTypeIdAndStartTimeAfter(id, LocalDateTime.now())) {
             throw new AppException(ErrorCode.SEAT_TYPE_IN_USE);
         }
         if (!seatRepository.findBySeatType_Id(id).isEmpty()) {
@@ -137,7 +133,7 @@ public class SeatTypeServiceImpl implements SeatTypeService {
 
     @Override public SeatTypeResponse activate(Long id)   { var e = seatTypeRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.SEAT_TYPE_NOT_FOUND)); e.setActive(true);  return map(e); }
     @Override public SeatTypeResponse deactivate(Long id) {
-        if (showTimeRepository.existsBySeatTypeId(id)) {
+        if (showTimeRepository.existsBySeatTypeIdAndStartTimeAfter(id, LocalDateTime.now())) {
             throw new AppException(ErrorCode.SEAT_TYPE_IN_USE);
         }
         var e = seatTypeRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.SEAT_TYPE_NOT_FOUND)); e.setActive(false); return map(e); }

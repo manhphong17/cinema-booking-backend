@@ -18,6 +18,7 @@ import vn.cineshow.repository.RoomTypeRepository;
 import vn.cineshow.repository.ShowTimeRepository;
 import vn.cineshow.service.RoomTypeService;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -34,7 +35,6 @@ public class RoomTypeServiceImpl implements RoomTypeService {
     @Override
     @Transactional(readOnly = true)
     public List<RoomTypeDTO> getAllRoomTypesDTO() {
-        // Sắp xếp theo tên cho ổn định UI; nếu không cần có thể dùng findAll() đơn thuần
         List<RoomType> entities = roomTypeRepository.findAll(Sort.by(Sort.Order.asc("name")));
         return entities.stream()
                 .map(rt -> RoomTypeDTO.builder()
@@ -89,7 +89,7 @@ public class RoomTypeServiceImpl implements RoomTypeService {
     @Transactional
     public RoomTypeResponse update(Long id, RoomTypeUpdateRequest req) {
         var e = roomTypeRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.ROOM_TYPE_NOT_FOUND));
-        if (showTimeRepository.existsByRoom_RoomType_Id(id)) {
+        if (showTimeRepository.existsByRoom_RoomType_IdAndStartTimeAfter(id, LocalDateTime.now())) {
             throw new AppException(ErrorCode.ROOM_TYPE_HAS_SHOWTIMES);
         }
         if (req.getName() == null || req.getName().isBlank()) throw new AppException(ErrorCode.INVALID_PARAMETER);
@@ -106,7 +106,7 @@ public class RoomTypeServiceImpl implements RoomTypeService {
     @Transactional
     public RoomTypeResponse patch(Long id, RoomTypeUpdateRequest req) {
         var e = roomTypeRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.ROOM_TYPE_NOT_FOUND));
-        if (showTimeRepository.existsByRoom_RoomType_Id(id)) {
+        if (showTimeRepository.existsByRoom_RoomType_IdAndStartTimeAfter(id, LocalDateTime.now())) {
             throw new AppException(ErrorCode.ROOM_TYPE_HAS_SHOWTIMES);
         }
         if (req.getName() != null) {
@@ -124,7 +124,7 @@ public class RoomTypeServiceImpl implements RoomTypeService {
         if (!roomTypeRepository.existsById(id)) {
             throw new AppException(ErrorCode.ROOM_TYPE_NOT_FOUND);
         }
-        if (showTimeRepository.existsByRoom_RoomType_Id(id)) {
+        if (showTimeRepository.existsByRoom_RoomType_IdAndStartTimeAfter(id, LocalDateTime.now())) {
             throw new AppException(ErrorCode.ROOM_TYPE_HAS_SHOWTIMES);
         }
         if (roomRepository.findByRoomType_Id(id, Sort.unsorted()) != null) {
@@ -135,7 +135,7 @@ public class RoomTypeServiceImpl implements RoomTypeService {
 
     @Override @Transactional public RoomTypeResponse activate(Long id)   { var e = roomTypeRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.ROOM_TYPE_NOT_FOUND)); e.setActive(true);  return map(e); }
     @Override @Transactional public RoomTypeResponse deactivate(Long id) {
-        if (showTimeRepository.existsByRoom_RoomType_Id(id)) {
+        if (showTimeRepository.existsByRoom_RoomType_IdAndStartTimeAfter(id, LocalDateTime.now())) {
             throw new AppException(ErrorCode.ROOM_TYPE_HAS_SHOWTIMES);
         }
         var e = roomTypeRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.ROOM_TYPE_NOT_FOUND));

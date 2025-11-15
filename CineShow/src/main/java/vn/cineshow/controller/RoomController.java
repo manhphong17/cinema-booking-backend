@@ -26,10 +26,9 @@ import java.util.Map;
 public class RoomController {
 
     private final RoomService roomService;
-    private final RoomTypeService roomTypeService; // dùng cho /rooms/meta
-    private final SeatTypeService seatTypeService; // dùng cho /rooms/meta
+    private final RoomTypeService roomTypeService;
+    private final SeatTypeService seatTypeService;
 
-    // (Tùy chọn) GET /rooms/meta -> { roomTypes:[...], seatTypes:[...] }
     @GetMapping("/meta")
     @PreAuthorize("hasAuthority('OPERATION')")
     public ResponseData<RoomMetaResponse> getMeta() {
@@ -40,9 +39,6 @@ public class RoomController {
         return new ResponseData<>(HttpStatus.OK.value(), "Lấy metadata thành công", meta);
     }
 
-
-    // GET /rooms? pageNo, pageSize, keyword, roomTypeId, status, sortBy
-    // Trả: PageResponse<List<RoomDTO>>
     @GetMapping
     @PreAuthorize("hasAuthority('OPERATION')")
     public ResponseData<PageResponse<List<RoomDTO>>> searchRooms(
@@ -50,14 +46,13 @@ public class RoomController {
             @RequestParam(required = false) Integer pageSize,
             @RequestParam(required = false) String keyword,
             @RequestParam(required = false) Long roomTypeId,
-            @RequestParam(required = false) String status,   // "ACTIVE" | "INACTIVE"
-            @RequestParam(required = false) String sortBy    // ví dụ "name:asc,createdAt:desc"
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) String sortBy
     ) {
         PageResponse<List<RoomDTO>> page = roomService.searchRooms(pageNo, pageSize, keyword, roomTypeId, status, sortBy);
         return new ResponseData<>(HttpStatus.OK.value(), "Lấy danh sách phòng chiếu thành công", page);
     }
 
-    // GET /rooms/{roomId}
     @GetMapping("/{roomId}")
     @PreAuthorize("hasAuthority('OPERATION')")
     public ResponseData<RoomDTO> getRoomDetail(@PathVariable Long roomId) {
@@ -68,7 +63,6 @@ public class RoomController {
         return new ResponseData<>(HttpStatus.OK.value(), "Lấy thông tin phòng chiếu thành công", room);
     }
 
-    // POST /rooms
     @PostMapping
     @PreAuthorize("hasAuthority('OPERATION')")
     public ResponseData<RoomDTO> createRoom(@RequestBody @Valid RoomRequest request) {
@@ -76,7 +70,6 @@ public class RoomController {
         return new ResponseData<>(HttpStatus.CREATED.value(), "Đã thêm phòng chiếu thành công", created);
     }
 
-    // PUT /rooms/{roomId}
     @PutMapping("/{roomId}")
     @PreAuthorize("hasAuthority('OPERATION')")
     public ResponseData<RoomDTO> updateRoom(@PathVariable Long roomId,
@@ -88,7 +81,6 @@ public class RoomController {
         return new ResponseData<>(HttpStatus.OK.value(), "Đã cập nhật phòng chiếu thành công", updated);
     }
 
-    // DELETE /rooms/{roomId}
     @DeleteMapping("/{roomId}")
     @PreAuthorize("hasAuthority('OPERATION')")
     public ResponseData<?> deleteRoom(@PathVariable Long roomId) {

@@ -120,7 +120,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 .map(Role::getRoleName)
                 .toList();
 
-        // Save login activity
         try {
             User user = account.getUser();
             if (user != null) {
@@ -188,18 +187,12 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         return accountRepository.findByEmail(email).isPresent();
     }
 
-
-    //==============================================
-    //==================== REGISTER================
-
-
     @Transactional
     @Override
     public long registerByEmail(EmailRegisterRequest req) {
 
         Optional<Account> accountOtp = accountRepository.findAccountByEmail(req.email());
 
-        // TH1: Đã có account
         if (accountOtp.isPresent()) {
             Account account = accountOtp.get();
 
@@ -209,12 +202,10 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 throw new AuthenticatedException("Your account has been locked by administrator");
             }
 
-            // Nếu đang PENDING → cập nhật lại user info + password, gửi OTP mới
             User user = account.getUser();
             if (user == null) {
-                // Tạo mới user nếu DB đang bị thiếu (dirty data)
                 user = new User();
-                user.setAccount(account); // rất quan trọng: set ngược lại để Hibernate map quan hệ
+                user.setAccount(account);
             }
             user.setName(req.name());
             user.setDateOfBirth(req.dateOfBirth());
@@ -225,7 +216,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
             account.setUser(user);
             account.setPassword(encoder.encode(req.password()));
-            account.setStatus(AccountStatus.PENDING); // reset lại trạng thái pending nếu cần
+            account.setStatus(AccountStatus.PENDING);
             AccountProvider provider =AccountProvider.builder()
                     .provider(AuthProvider.LOCAL)
                     .account(account)
@@ -236,7 +227,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             return account.getId();
         }
 
-        // TH2: Chưa có account → tạo mới
         Role customer = roleRepo.findByRoleName("CUSTOMER")
                 .orElseThrow(() -> new ResourceNotFoundException("Role CUSTOMER not found"));
 
@@ -274,14 +264,12 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     @Transactional
     @Override
     public void verifyAccountAndUpdateStatus(String email, String otp) {
-        // Gọi lại hàm verifyOtp() trong otpService
         boolean verified = otpService.verifyOtp(email, otp);
 
         if (verified) {
             Account account = accountRepository.findAccountByEmail(email)
                     .orElseThrow(() -> new AppException(ErrorCode.ACCOUNT_NOT_FOUND));
 
-            //  Cập nhật trạng thái tài khoản
             account.setStatus(AccountStatus.ACTIVE);
             accountRepository.save(account);
         }
@@ -290,19 +278,16 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     @Override
     @Transactional
     public boolean forgotPassword(ForgotPasswordRequest request) {
-        // 400: invalid input
         if (request == null || request.getEmail() == null || request.getEmail().isBlank()) {
             throw new AppException(ErrorCode.INVALID_PARAMETER);
         }
         final String email = request.getEmail().trim();
 
-        // 404: Find accoung or throw exception if not found
         Optional<Account> accOpt = accountRepository.findAccountByEmail(email);
         if (accOpt.isEmpty()) {
             throw new AppException(ErrorCode.ACCOUNT_NOT_FOUND);
         }
 
-        // Lấy tên hiển thị nếu có (không quan trọng, chỉ để email content)
         String name = "bạn";
         try {
             Account acc = accOpt.get();
@@ -310,10 +295,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 name = acc.getUser().getName();
             }
         } catch (Exception ignore) {
-            // keep neutral name
         }
 
-        // Gửi OTP hoặc 500
         try {
             otpService.sendOtp(email, name);
             return true;
@@ -323,13 +306,9 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         }
     }
 
-    // -----------------------------------------------------------------------------------
-    // Verify OTP và phát hành resetToken (trả về cho Controller → FE nhận trong body)
-    // -----------------------------------------------------------------------------------
     @Override
     @Transactional
     public Optional<String> verifyOtpForReset(String email, String otpInput) {
-        // 1) verify OTP (plain vs hashed) → 400 nếu không hợp lệ
         boolean verified;
         try {
             verified = otpService.verifyOtp(email, otpInput);
@@ -340,37 +319,28 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             throw new AppException(ErrorCode.OTP_INVALID);
         }
 
-        // 2) tạo verifier & hash (DB chỉ lưu hash)
         byte[] random = new byte[48];
         RNG.nextBytes(random);
-        // It's good practice to clean the array after use if it contains sensitive data,
-        //through for a random verifier, it's less critical than for passwords
         String verifier = base64Url(random);
         String tokenHash = passwordEncoder.encode(verifier);
 
-        // 3) upsert: mỗi email 1 bản ghi
         PasswordResetToken prt = passwordResetTokenRepository.findByEmail(email).orElse(null);
         if (prt == null) {
             prt = new PasswordResetToken();
             prt.setEmail(email);
         }
         prt.setUsed(false);
-        prt.setExpiresAt(Instant.now().plusSeconds(20 * 60)); // 20 phút
+        prt.setExpiresAt(Instant.now().plusSeconds(20 * 60));
         prt.setTokenHash(tokenHash);
 
-        // 4) lưu và trả token công khai "<id>.<verifier>"
         prt = passwordResetTokenRepository.save(prt);
         String resetToken = prt.getId() + "." + verifier;
         return Optional.of(resetToken);
     }
 
-    // -----------------------------------------------------------------------------------
-    // Reset password bằng resetToken ("<tokenId>.<verifier>")
-    // -----------------------------------------------------------------------------------
     @Override
     @Transactional
     public boolean resetPassword(ResetPasswordRequest request) {
-        // 0) Validate payload
         if (request == null ||
                 request.getResetToken() == null || request.getResetToken().isBlank() ||
                 request.getNewPassword() == null || request.getNewPassword().isBlank()) {
@@ -380,8 +350,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         final String resetToken = request.getResetToken().trim();
         final String newPassword = request.getNewPassword();
 
-        // 1) Check format "<tokenId>.<verifier>"
-        //A more robust check might use regex, but this is functional for the expected format.
         final int dot = resetToken.indexOf('.');
         if (dot <= 0 || dot == resetToken.length() - 1) {
             throw new AppException(ErrorCode.INVALID_PARAMETER);
@@ -389,37 +357,31 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         final String tokenId = resetToken.substring(0, dot);
         final String verifier = resetToken.substring(dot + 1);
 
-        // 2) Load token
         Optional<PasswordResetToken> opt = passwordResetTokenRepository.findById(tokenId);
         if (opt.isEmpty()) {
             throw new AppException(ErrorCode.PASSWORD_RESET_TOKEN_NOT_FOUND);
         }
-        PasswordResetToken prt = opt.get();// safe to get now due to isEmty check
+        PasswordResetToken prt = opt.get();
 
-        // 3) Validate trạng thái token
         if (prt.isUsed() || prt.getExpiresAt() == null || prt.getExpiresAt().isBefore(Instant.now())) {
             throw new AppException(ErrorCode.PASSWORD_RESET_TOKEN_INVALID);
         }
 
-        // 4) Verify verifier với hash trong DB
         boolean matches;
         try {
             matches = passwordEncoder.matches(verifier, prt.getTokenHash());
-        } catch (Exception ex) {//Catching generic Exception is broad, consider spesific crypto exceptions if any.
+        } catch (Exception ex) {
             matches = false;
         }
         if (!matches) {
             throw new AppException(ErrorCode.PASSWORD_RESET_TOKEN_INVALID);
         }
 
-        // 5) Consume token (one-time)
         prt.setUsed(true);
         passwordResetTokenRepository.save(prt);
 
-        // 6) Cập nhật mật khẩu theo email gắn với token
         Optional<Account> accOpt = accountRepository.findAccountByEmail(prt.getEmail());
         if (!accOpt.isPresent()) {
-            // 404 trung tính (để GlobalExceptionHandler map về VN, không lộ email)
             throw new AppException(ErrorCode.ACCOUNT_NOT_FOUND);
         }
 
@@ -427,7 +389,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         acc.setPassword(passwordEncoder.encode(newPassword));
         accountRepository.save(acc);
 
-        //  session/refresh if needed
         return true;
     }
 

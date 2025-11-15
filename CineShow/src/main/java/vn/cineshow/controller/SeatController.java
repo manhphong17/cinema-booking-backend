@@ -23,8 +23,6 @@ public class SeatController {
 
     private final SeatService seatService;
 
-    // POST /rooms/{roomId}/seats/init
-    // Body: { rows, columns, defaultSeatTypeId } -> { created }
     @PostMapping("/init")
     @PreAuthorize("hasAuthority('OPERATION')")
     public ResponseData<Map<String, Integer>> initSeats(@PathVariable Long roomId,
@@ -35,8 +33,6 @@ public class SeatController {
         return new ResponseData<>(HttpStatus.OK.value(), "Khởi tạo ghế thành công", data);
     }
 
-    // GET /rooms/{roomId}/seats/matrix
-    // Trả: SeatMatrixResponse { room:{...}, matrix:[ [SeatCellDTO] ] }
     @GetMapping("/matrix")
     @PreAuthorize("hasAuthority('OPERATION')")
     public ResponseData<SeatMatrixResponse> getSeatMatrix(@PathVariable Long roomId) {
@@ -47,8 +43,6 @@ public class SeatController {
         return new ResponseData<>(HttpStatus.OK.value(), "Lấy ma trận ghế thành công", matrix);
     }
 
-    // PUT /rooms/{roomId}/seats/matrix (bulk save)
-    // Body: SeatMatrixRequest { matrix: [[SeatCellRequest]] } -> { updated, created, deleted }
     @PutMapping("/matrix")
     @PreAuthorize("hasAuthority('OPERATION')")
     public ResponseData<Map<String, Integer>> saveSeatMatrix(@PathVariable Long roomId,
@@ -57,8 +51,6 @@ public class SeatController {
         return new ResponseData<>(HttpStatus.OK.value(), "Lưu cấu hình ghế thành công", result);
     }
 
-    // PATCH /rooms/{roomId}/seats/bulk-type
-    // Body: { targets:[{rowIndex,columnIndex}...], seatTypeId } -> { affected }
     @PatchMapping("/bulk-type")
     @PreAuthorize("hasAuthority('OPERATION')")
     public ResponseData<Map<String, Integer>> bulkUpdateSeatType(@PathVariable Long roomId,
@@ -69,8 +61,6 @@ public class SeatController {
         return new ResponseData<>(HttpStatus.OK.value(), "Cập nhật loại ghế hàng loạt thành công", data);
     }
 
-    // PATCH /rooms/{roomId}/seats/bulk-block
-    // Body: { targets:[{rowIndex,columnIndex}...], blocked:true|false } -> { affected }
     @PatchMapping("/bulk-block")
     @PreAuthorize("hasAuthority('OPERATION')")
     public ResponseData<Map<String, Integer>> bulkBlockSeats(@PathVariable Long roomId,

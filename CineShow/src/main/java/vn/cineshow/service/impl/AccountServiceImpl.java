@@ -52,23 +52,14 @@ public class AccountServiceImpl implements AccountService {
     private final AccountRepository accountRepository;
     private final PasswordResetTokenRepository passwordResetTokenRepository;
     private final PasswordEncoder passwordEncoder;
-    private final RefreshTokenRepository refreshTokenRepository; // (chưa dùng vẫn giữ)
+    private final RefreshTokenRepository refreshTokenRepository;
     private final OtpService otpService;
     private final RoleRepository roleRepository;
-
-    // ========================= Helpers =========================
 
     private static String base64Url(byte[] b) {
         return Base64.getUrlEncoder().withoutPadding().encodeToString(b);
     }
 
-    /**
-     * Validate password strength:
-     * - >= 8 ký tự
-     * - có chữ hoa
-     * - có chữ thường
-     * - có số
-     */
     private void validatePasswordStrength(String password) {
         if (password.length() < 8) {
             throw new AppException(ErrorCode.PASSWORD_TOO_WEAK);
@@ -82,8 +73,6 @@ public class AccountServiceImpl implements AccountService {
             throw new AppException(ErrorCode.PASSWORD_TOO_WEAK);
         }
     }
-
-    // ==================== Forgot password (OTP) ====================
 
     @Override
     @Transactional
@@ -118,8 +107,6 @@ public class AccountServiceImpl implements AccountService {
         }
     }
 
-    // ==================== Verify OTP + phát hành reset token ====================
-
     @Override
     @Transactional
     public Optional<String> verifyOtpForReset(String email, String otpInput) {
@@ -144,15 +131,13 @@ public class AccountServiceImpl implements AccountService {
             prt.setEmail(email);
         }
         prt.setUsed(false);
-        prt.setExpiresAt(Instant.now().plusSeconds(20 * 60)); // 20 phút
+        prt.setExpiresAt(Instant.now().plusSeconds(20 * 60));
         prt.setTokenHash(tokenHash);
 
         prt = passwordResetTokenRepository.save(prt);
         String resetToken = prt.getId() + "." + verifier;
         return Optional.of(resetToken);
     }
-
-    // ==================== Reset password bằng resetToken ====================
 
     @Override
     @Transactional
@@ -210,8 +195,6 @@ public class AccountServiceImpl implements AccountService {
         return true;
     }
 
-    // ==================== Change password cho user đã đăng nhập ====================
-
     @Override
     @Transactional
     public void changePassword(Long userId, ChangePasswordRequest request) {
@@ -248,7 +231,6 @@ public class AccountServiceImpl implements AccountService {
 
         log.info("Password changed successfully for user: {}", userId);
     }
-// ============================== CRUD ==============================
 
     @Override
     @Transactional
@@ -266,15 +248,10 @@ public class AccountServiceImpl implements AccountService {
 
         final String email = req.getEmail().trim().toLowerCase();
 
-        // Chặn trùng email (kể cả đã xoá mềm)
         if (accountRepository.findByEmail(email).isPresent()) {
             throw new ResponseStatusException(BAD_REQUEST, "Email đã tồn tại");
         }
 
-        // (tuỳ chọn) kiểm tra độ mạnh mật khẩu
-        // validatePasswordStrength(req.getPassword());
-
-        // Lấy roles theo roleIds
         Set<vn.cineshow.model.Role> roles = roleRepository.findAllById(req.getRoleIds())
                 .stream()
                 .collect(Collectors.toSet());
@@ -282,7 +259,6 @@ public class AccountServiceImpl implements AccountService {
             throw new ResponseStatusException(BAD_REQUEST, "Vai trò không hợp lệ");
         }
 
-        // 1) Tạo Account trước
         Account acc = Account.builder()
                 .email(email)
                 .password(passwordEncoder.encode(req.getPassword()))
@@ -290,13 +266,11 @@ public class AccountServiceImpl implements AccountService {
                 .roles(roles)
                 .build();
 
-        // 2) Tạo User gắn với Account (lưu tên vào bảng users)
         User user = new User();
         user.setName(req.getName());
-        user.setAccount(acc);  // @MapsId
-        acc.setUser(user);     // nếu phía Account có mappedBy + cascade ALL thì save(acc) sẽ save luôn user
+        user.setAccount(acc);
+        acc.setUser(user);
 
-        // 3) Lưu
         acc = accountRepository.save(acc);
 
         return toResponse(acc);
@@ -319,28 +293,24 @@ public class AccountServiceImpl implements AccountService {
         Account acc = accountRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "Không tìm thấy người dùng"));
 
-        // Cập nhật tên -> lưu ở bảng users
         if (req.getName() != null && !req.getName().isBlank()) {
             User user = acc.getUser();
             if (user == null) {
                 user = new User();
-                user.setAccount(acc);   // @MapsId: id user = id account
+                user.setAccount(acc);
                 acc.setUser(user);
             }
             user.setName(req.getName());
         }
 
-        // Soft delete / restore
         if (req.getDeleted() != null) {
             acc.setDeleted(Boolean.TRUE.equals(req.getDeleted()));
         }
 
-        // Status (AccountStatus enum)
         if (req.getStatus() != null) {
             acc.setStatus(req.getStatus());
         }
 
-        // Roles: null -> bỏ qua, [] -> clear hết
         if (req.getRoleIds() != null) {
             acc.setRoles(
                     roleRepository.findAllById(req.getRoleIds())
@@ -349,7 +319,6 @@ public class AccountServiceImpl implements AccountService {
             );
         }
 
-        // Đổi mật khẩu nếu có
         if (req.getNewPassword() != null && !req.getNewPassword().isBlank()) {
             validatePasswordStrength(req.getNewPassword());
             acc.setPassword(passwordEncoder.encode(req.getNewPassword()));
@@ -358,8 +327,6 @@ public class AccountServiceImpl implements AccountService {
         acc = accountRepository.save(acc);
         return toResponse(acc);
     }
-
-// ============================ Helper mapper ============================
 
     private AccountResponse toResponse(Account a) {
         Set<RoleItemResponse> roleDtos;
@@ -381,7 +348,6 @@ public class AccountServiceImpl implements AccountService {
                 .status(a.getStatus())
                 .deleted(a.isDeleted())
                 .roles(roleDtos)
-                // 👉 trả về tên từ bảng users (nếu cần cho FE)
                 .name(a.getUser() != null ? a.getUser().getName() : null)
                 .createdAt(
                         a.getCreatedAt() == null
@@ -393,8 +359,6 @@ public class AccountServiceImpl implements AccountService {
                 .build();
     }
 
-
-    // ==================== Admin đổi mật khẩu trực tiếp ====================
     @Override
     @Transactional
     public void adminChangePassword(Long userId, AccountChangePasswordRequest request) {

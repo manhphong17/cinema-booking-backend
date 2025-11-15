@@ -19,6 +19,7 @@ import vn.cineshow.model.SeatType;
 import vn.cineshow.repository.*;
 import vn.cineshow.service.RoomService;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -62,7 +63,6 @@ public class RoomServiceImpl implements RoomService {
             try {
                 statusEnum = RoomStatus.valueOf(status.trim().toUpperCase());
             } catch (IllegalArgumentException ignored) {
-                // nếu FE gửi sai status -> bỏ filter theo status
             }
         }
 
@@ -107,7 +107,6 @@ public class RoomServiceImpl implements RoomService {
         entity.setRows(request.getRows());
         entity.setColumns(request.getColumns());
         
-        // String -> Enum
         entity.setStatus(RoomStatus.valueOf(request.getStatus().trim().toUpperCase()));
 
         entity.setDescription(request.getDescription());
@@ -148,7 +147,7 @@ public class RoomServiceImpl implements RoomService {
         }
         Room entity = roomRepository.findById(roomId).orElseThrow(() -> new AppException(ErrorCode.ROOM_NOT_FOUND));
 
-        if (showTimeRepository.existsByRoom_Id(roomId)) {
+        if (showTimeRepository.existsByRoom_IdAndStartTimeAfter(roomId, LocalDateTime.now())) {
             throw new AppException(ErrorCode.ROOM_IN_USE);
         }
 
@@ -162,16 +161,12 @@ public class RoomServiceImpl implements RoomService {
         entity.setRows(request.getRows());
         entity.setColumns(request.getColumns());
 
-        // Chuyển đổi status từ String sang Enum
         RoomStatus newStatus = RoomStatus.valueOf(request.getStatus().trim().toUpperCase());
 
-        // KIỂM TRA: Nếu đang cố gắng kích hoạt phòng (chuyển status thành ACTIVE)
         if (newStatus == RoomStatus.ACTIVE && !entity.getRoomType().getActive()) {
-            // Ném exception nếu loại phòng của nó đang không hoạt động
             throw new AppException(ErrorCode.ROOM_TYPE_INACTIVE);
         }
 
-        // String -> Enum
         entity.setStatus(RoomStatus.valueOf(request.getStatus().trim().toUpperCase()));
 
         entity.setDescription(request.getDescription());
@@ -186,14 +181,12 @@ public class RoomServiceImpl implements RoomService {
         if (!roomRepository.existsById(roomId)) {
             throw new AppException(ErrorCode.ROOM_NOT_FOUND);
         }
-        if (showTimeRepository.existsByRoom_Id(roomId)) {
+        if (showTimeRepository.existsByRoom_IdAndStartTimeAfter(roomId, LocalDateTime.now())) {
             throw new AppException(ErrorCode.ROOM_IN_USE);
         }
         roomRepository.deleteById(roomId);
         return true;
     }
-
-    /* ===== Helpers ===== */
 
     private Sort parseSort(String sortBy) {
         if (sortBy == null || sortBy.isBlank()) return Sort.by(Sort.Order.desc("createdAt"));
@@ -227,7 +220,6 @@ public class RoomServiceImpl implements RoomService {
                 .rows(room.getRows())
                 .columns(room.getColumns())
                 .capacity(room.getCapacity())
-                // Enum -> String cho DTO
                 .status(room.getStatus() == null ? null : room.getStatus().name())
                 .description(room.getDescription())
                 .createdAt(room.getCreatedAt())

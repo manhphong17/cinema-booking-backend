@@ -143,4 +143,10 @@ public interface ShowTimeRepository extends JpaRepository<ShowTime, Long> {
     @Query("SELECT st FROM ShowTime st WHERE st.movie.id = :movieId AND st.startTime = :startTime AND st.isDeleted = false")
     List<ShowTime> findByMovie_IdAndStartTime(@Param("movieId") Long movieId, @Param("startTime") LocalDateTime startTime);
 
+    boolean existsByRoom_IdAndStartTimeAfter(Long roomId, LocalDateTime startTime);
+
+    boolean existsByRoom_RoomType_IdAndStartTimeAfter(Long roomTypeId, LocalDateTime startTime);
+
+    @Query("select case when count(st) > 0 then true else false end from ShowTime st join st.room r join r.seats s where s.seatType.id = :seatTypeId and st.startTime > :startTime")
+    boolean existsBySeatTypeIdAndStartTimeAfter(@Param("seatTypeId") Long seatTypeId, @Param("startTime") LocalDateTime startTime);
 }
