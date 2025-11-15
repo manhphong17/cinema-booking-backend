@@ -31,6 +31,7 @@ public class OrderCheckTicketResponse {
     Boolean isCheckIn;
 
     List<TicketInfo> tickets;
+    List<OrderConcessionItem> concessions;
 
     @Getter
     @Setter

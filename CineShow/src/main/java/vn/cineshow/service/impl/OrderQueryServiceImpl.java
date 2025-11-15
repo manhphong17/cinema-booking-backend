@@ -298,6 +298,8 @@ public class OrderQueryServiceImpl implements OrderQueryService {
                         })
                         .collect(Collectors.toList());
 
+        List<OrderConcessionItem> concessions = getConcessionsByOrderId(order.getId());
+
         return OrderCheckTicketResponse.builder()
                 .orderId(order.getId())
                 .orderCode(order.getCode())
@@ -309,6 +311,7 @@ public class OrderQueryServiceImpl implements OrderQueryService {
                 .ticketCount(ticketInfos.size())
                 .isCheckIn(order.getIsCheckIn() != null ? order.getIsCheckIn() : false)
                 .tickets(ticketInfos)
+                .concessions(concessions)
                 .build();
     }
 
